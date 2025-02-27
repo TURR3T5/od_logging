@@ -27,30 +27,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const [isAuthorized, setIsAuthorized] = useState(false);
 
 	useEffect(() => {
-		// Check for active session on load
 		supabase.auth.getSession().then(({ data: { session } }) => {
 			setSession(session);
 
-			// Use user_metadata for Discord user info
 			const discordUser = (session?.user?.user_metadata as DiscordUser) || null;
 			setUser(discordUser);
-
-			// Check authorization with our simplified approach
 			setIsAuthorized(hasPermission(discordUser));
 			setIsLoading(false);
 		});
 
-		// Listen for auth changes
 		const {
 			data: { subscription },
-		} = supabase.auth.onAuthStateChange(async (event, session) => {
+		} = supabase.auth.onAuthStateChange(async (_event, session) => {
 			setSession(session);
 
-			// Use user_metadata for Discord user info
 			const discordUser = (session?.user?.user_metadata as DiscordUser) || null;
 			setUser(discordUser);
-
-			// Check authorization with our simplified approach
 			setIsAuthorized(hasPermission(discordUser));
 			setIsLoading(false);
 		});

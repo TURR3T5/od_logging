@@ -42,60 +42,49 @@ export interface DiscordUser {
   guilds?: DiscordGuild[];
 }
   
-  export interface DiscordGuild {
-    id: string;
-    name: string;
-    icon: string;
-    owner: boolean;
-    permissions: number;
-    features: string[];
-    permissions_new: string;
-    roles?: DiscordRole[];
-  }
-  
-  export interface DiscordRole {
-    id: string;
-    name: string;
-    color: number;
-    hoist: boolean;
-    position: number;
-    permissions: string;
-    managed: boolean;
-    mentionable: boolean;
-  }
-  
-  export const ALLOWED_ROLE_IDS = [
-    // Role ids skibidi?
-    "123456789012345678",
-    "876543210987654321",
-  ];
+export interface DiscordGuild {
+  id: string;
+  name: string;
+  icon: string;
+  owner: boolean;
+  permissions: number;
+  features: string[];
+  permissions_new: string;
+  roles?: DiscordRole[];
+}
 
-  export const ALLOWED_DISCORD_USER_IDS = [
-    "256031472605986829", // Your Discord user ID
-    // Add other authorized user IDs here
-  ];
+export interface DiscordRole {
+  id: string;
+  name: string;
+  color: number;
+  hoist: boolean;
+  position: number;
+  permissions: string;
+  managed: boolean;
+  mentionable: boolean;
+}
+
+export const ALLOWED_ROLE_IDS = [
+  // Role ids skibidi?
+  "123456789012345678",
+  "876543210987654321",
+];
+
+export const ALLOWED_DISCORD_USER_IDS = [
+  "256031472605986829", // Your Discord user ID
+  // Add other authorized user IDs here
+];
   
 export const hasPermission = (user: any): boolean => {
   if (!user) {
-    console.log("hasPermission: No user provided");
     return false;
   }
   
-  // Log all potential ID fields to see what we're working with
-  console.log("hasPermission checking user:", user);
-  
-  // Check if the provided Discord ID is in our allowed list
-  const discordId = user.provider_id || user.sub || 
-                    (user.user_metadata && (user.user_metadata.provider_id || user.user_metadata.sub));
-  
-  console.log("Discord ID extracted:", discordId);
-  console.log("Allowed IDs:", ALLOWED_DISCORD_USER_IDS);
+  const discordId = user.provider_id || user.sub || (user.user_metadata && (user.user_metadata.provider_id || user.user_metadata.sub));
   
   if (discordId && ALLOWED_DISCORD_USER_IDS.includes(discordId)) {
-    console.log("User authorized!");
     return true;
   }
   
-  console.log("User not authorized");
   return false;
 };

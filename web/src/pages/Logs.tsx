@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../components/AuthProvider';
-import { Navigate } from '@tanstack/react-router';
-import { Container, Title, Table, Group, Button, Text, TextInput, Select, Pagination, Loader, Paper, Box, Center } from '@mantine/core';
+import { useRouter } from '@tanstack/react-router';
+import { Container, Title, Text, Paper, Group, Box } from '@mantine/core';
+import MainLayout from '../layouts/MainLayout';
+import LogTable from '../components/LogTable';
+import { DEFAULT_THEME } from '@mantine/core';
 
 export interface Log {
 	id: string;
@@ -15,21 +17,31 @@ export interface Log {
 }
 
 export default function LogsPage() {
-	const { isAuthorized, isLoading, user, signOut } = useAuth();
 	const [logs, setLogs] = useState<Log[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [page, setPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(1);
-	const [filter, setFilter] = useState('');
-	const [eventType, setEventType] = useState<string | null>(null);
+	const router = useRouter();
 
 	const LOGS_PER_PAGE = 15;
 
-	// Redirect if not authorized
-	if (!isLoading && !isAuthorized) {
-		return <Navigate to='/login' />;
-	}
+	// Parse URL query parameters for filtering
+	const getQueryFilters = () => {
+		const params = new URLSearchParams(router.state.location.search);
+		return {
+			category: params.get('category') || '',
+			type: params.get('type') || '',
+			eventType: params.get('eventType') || '',
+			serverId: params.get('serverId') || '',
+			playerId: params.get('playerId') || '',
+			playerName: params.get('playerName') || '',
+		};
+	};
 
+	const filters = getQueryFilters();
+	const pageTitle = filters.type ? `${filters.type.charAt(0).toUpperCase() + filters.type.slice(1)} Logs` : 'Server Logs';
+
+	// Fetch logs from Supabase based on current filters and pagination
 	useEffect(() => {
 		const fetchLogs = async () => {
 			setLoading(true);
@@ -39,13 +51,31 @@ export default function LogsPage() {
 				.order('created_at', { ascending: false })
 				.range((page - 1) * LOGS_PER_PAGE, page * LOGS_PER_PAGE - 1);
 
-			// Apply filters if set
-			if (filter) {
-				query = query.or(`player_name.ilike.%${filter}%,player_id.ilike.%${filter}%,details.ilike.%${filter}%`);
+			// Apply filters from URL
+			if (filters.eventType) {
+				query = query.eq('event_type', filters.eventType);
 			}
 
-			if (eventType) {
-				query = query.eq('event_type', eventType);
+			if (filters.serverId) {
+				query = query.eq('server_id', filters.serverId);
+			}
+
+			if (filters.playerId) {
+				query = query.eq('player_id', filters.playerId);
+			}
+
+			if (filters.playerName) {
+				query = query.ilike('player_name', `%${filters.playerName}%`);
+			}
+
+			// We can add more specific filters based on category and type
+			// This would depend on your specific data structure and event types
+			if (filters.category && filters.type) {
+				// Example for inventory items
+				if (filters.category === 'inventory' && filters.type === 'items') {
+					query = query.like('event_type', 'inventory%');
+				}
+				// Add more specific filters as needed
 			}
 
 			const { data, count, error } = await query;
@@ -61,102 +91,34 @@ export default function LogsPage() {
 		};
 
 		fetchLogs();
-	}, [page, filter, eventType]);
-
-	// Get unique event types for filter dropdown
-	const [eventTypes, setEventTypes] = useState<string[]>([]);
-
-	useEffect(() => {
-		const fetchEventTypes = async () => {
-			const { data, error } = await supabase.from('logs').select('event_type').limit(1000);
-
-			if (error || !data) return;
-
-			const uniqueTypes = [...new Set(data.map((log) => log.event_type))];
-			setEventTypes(uniqueTypes);
-		};
-
-		fetchEventTypes();
-	}, []);
+	}, [page, filters]);
 
 	return (
-		<Container size='xl' p='md'>
-			<Group justify='space-between' mb='lg'>
-				<Title order={2}>FiveM Server Logs</Title>
-				<Group>
-					{user && (
-						<Text>
-							Logged in as <b>{user.username}</b>
-						</Text>
-					)}
-					<Button onClick={signOut} color='red' variant='outline'>
-						Logout
-					</Button>
-				</Group>
-			</Group>
-
-			<Paper shadow='sm' p='md' mb='lg'>
-				<Group justify='space-between'>
-					<Group>
-						<TextInput placeholder='Search logs' value={filter} onChange={(e) => setFilter(e.target.value)} width={250} />
-						<Select placeholder='Filter by event type' value={eventType} onChange={setEventType} data={eventTypes.map((type) => ({ value: type, label: type }))} clearable width={200} />
+		<MainLayout>
+			<Container size='xl'>
+				<Paper p='md' mb='md' style={{ backgroundColor: DEFAULT_THEME.colors.dark[7] }}>
+					<Group justify='space-between' mb='md'>
+						<Box>
+							<Title order={2}>{pageTitle}</Title>
+							{filters.category && (
+								<Text c='dimmed' size='sm'>
+									Category: {filters.category}
+								</Text>
+							)}
+						</Box>
 					</Group>
-				</Group>
-			</Paper>
 
-			{loading ? (
-				<Center h={200}>
-					<Loader size='xl' />
-				</Center>
-			) : logs.length === 0 ? (
-				<Text size='lg' ta='center' p='xl'>
-					No logs found. Adjust your filters or check back later.
-				</Text>
-			) : (
-				<>
-					<Box style={{ overflowX: 'auto' }}>
-						<Table striped highlightOnHover>
-							<thead>
-								<tr>
-									<th>Timestamp</th>
-									<th>Event Type</th>
-									<th>Player</th>
-									<th>Details</th>
-								</tr>
-							</thead>
-							<tbody>
-								{logs.map((log) => (
-									<tr key={log.id}>
-										<td>{new Date(log.created_at).toLocaleString()}</td>
-										<td>{log.event_type}</td>
-										<td>
-											{log.player_name ? (
-												<>
-													{log.player_name}
-													{log.player_id && (
-														<Text size='xs' color='dimmed'>
-															ID: {log.player_id}
-														</Text>
-													)}
-												</>
-											) : (
-												'System'
-											)}
-										</td>
-										<td>
-											<pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{typeof log.details === 'object' ? JSON.stringify(log.details, null, 2) : log.details}</pre>
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</Table>
-					</Box>
-
-					<Group justify='center' mt='md'>
-						<Pagination total={totalPages} value={page} onChange={setPage} size='sm' />
-					</Group>
-				</>
-			)}
-		</Container>
+					<LogTable
+						data={logs}
+						isLoading={loading}
+						pagination={{
+							page,
+							totalPages,
+							onPageChange: setPage,
+						}}
+					/>
+				</Paper>
+			</Container>
+		</MainLayout>
 	);
 }

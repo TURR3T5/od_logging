@@ -8,7 +8,7 @@ import './styles/index.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
 	<React.StrictMode>
-		<MantineProvider>
+		<MantineProvider defaultColorScheme='dark'>
 			<RouterProvider router={router} />
 		</MantineProvider>
 	</React.StrictMode>
