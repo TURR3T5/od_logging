@@ -3,83 +3,93 @@ import { supabase } from '../lib/supabase';
 import { DiscordUser, hasPermission } from '../lib/discord';
 
 interface AuthContextType {
-  user: DiscordUser | null;
-  session: any;
-  isLoading: boolean;
-  isAuthorized: boolean;
-  signInWithDiscord: () => Promise<void>;
-  signOut: () => Promise<void>;
+	user: DiscordUser | null;
+	session: any;
+	isLoading: boolean;
+	isAuthorized: boolean;
+	signInWithDiscord: () => Promise<void>;
+	signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
-  user: null,
-  session: null,
-  isLoading: true,
-  isAuthorized: false,
-  signInWithDiscord: async () => {},
-  signOut: async () => {},
+	user: null,
+	session: null,
+	isLoading: true,
+	isAuthorized: false,
+	signInWithDiscord: async () => {},
+	signOut: async () => {},
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<DiscordUser | null>(null);
-  const [session, setSession] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthorized, setIsAuthorized] = useState(false);
+	const [user, setUser] = useState<DiscordUser | null>(null);
+	const [session, setSession] = useState<any>(null);
+	const [isLoading, setIsLoading] = useState(true);
+	const [isAuthorized, setIsAuthorized] = useState(false);
 
-  useEffect(() => {
-    // Check for active session on load
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user?.user_metadata as DiscordUser || null);
-      setIsAuthorized(hasPermission(session?.user?.user_metadata as DiscordUser || null));
-      setIsLoading(false);
-    });
+	useEffect(() => {
+		// Check for active session on load
+		supabase.auth.getSession().then(({ data: { session } }) => {
+			setSession(session);
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user?.user_metadata as DiscordUser || null);
-        setIsAuthorized(hasPermission(session?.user?.user_metadata as DiscordUser || null));
-        setIsLoading(false);
-      }
-    );
+			// Use user_metadata for Discord user info
+			const discordUser = (session?.user?.user_metadata as DiscordUser) || null;
+			setUser(discordUser);
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+			// Check authorization with our simplified approach
+			setIsAuthorized(hasPermission(discordUser));
+			setIsLoading(false);
+		});
 
-  const signInWithDiscord = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'discord',
-      options: {
-        scopes: 'identify email guilds guilds.members.read',
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-    if (error) throw error;
-  };
+		// Listen for auth changes
+		const {
+			data: { subscription },
+		} = supabase.auth.onAuthStateChange(async (event, session) => {
+			setSession(session);
 
-  const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-  };
+			// Use user_metadata for Discord user info
+			const discordUser = (session?.user?.user_metadata as DiscordUser) || null;
+			setUser(discordUser);
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        session,
-        isLoading,
-        isAuthorized,
-        signInWithDiscord,
-        signOut,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+			// Check authorization with our simplified approach
+			setIsAuthorized(hasPermission(discordUser));
+			setIsLoading(false);
+		});
+
+		return () => {
+			subscription.unsubscribe();
+		};
+	}, []);
+
+	const signInWithDiscord = async () => {
+		const { error } = await supabase.auth.signInWithOAuth({
+			provider: 'discord',
+			options: {
+				scopes: 'identify email guilds guilds.members.read',
+				redirectTo: `${window.location.origin}/auth/callback`,
+			},
+		});
+		if (error) throw error;
+	};
+
+	const signOut = async () => {
+		const { error } = await supabase.auth.signOut();
+		if (error) throw error;
+	};
+
+	return (
+		<AuthContext.Provider
+			value={{
+				user,
+				session,
+				isLoading,
+				isAuthorized,
+				signInWithDiscord,
+				signOut,
+			}}
+		>
+			{children}
+		</AuthContext.Provider>
+	);
 };
 
 export const useAuth = () => useContext(AuthContext);
