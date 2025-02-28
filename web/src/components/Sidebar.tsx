@@ -1,60 +1,46 @@
-import { useState } from 'react';
-import { Box, ScrollArea, Group, Text, Collapse, ThemeIcon, UnstyledButton } from '@mantine/core';
-import { Gauge, Package, Users, ShoppingCart, Car, Gavel, FileText, CaretRight, IconWeight } from '@phosphor-icons/react';
+import { useState, useEffect } from 'react';
+import { Box, ScrollArea, Text, Collapse } from '@mantine/core';
+import { CaretRight } from '@phosphor-icons/react';
 import { useNavigate, useRouter } from '@tanstack/react-router';
-import { DEFAULT_THEME } from '@mantine/core';
 
-// Define the sidebar section types
 interface SidebarItem {
 	label: string;
-	icon: React.FC<{ size?: number; weight?: IconWeight }>;
 	path?: string;
 	children?: SidebarItem[];
 }
 
-// Define sections for the sidebar - this could be moved to a config file
 const sidebarSections: SidebarItem[] = [
 	{
-		label: 'Dashboard',
-		icon: Gauge,
-		path: '/logs',
-	},
-	{
 		label: 'Inventory',
-		icon: Package,
 		children: [
-			{ label: 'Items', path: '/logs?category=inventory&type=items', icon: Package },
-			{ label: 'Shops', path: '/logs?category=inventory&type=shops', icon: ShoppingCart },
-			{ label: 'Crafting', path: '/logs?category=inventory&type=crafting', icon: Package },
+			{ label: 'Items', path: '/logs?category=inventory&type=items' },
+			{ label: 'Shops', path: '/logs?category=inventory&type=shops' },
+			{ label: 'Crafting', path: '/logs?category=inventory&type=crafting' },
 		],
 	},
 	{
 		label: 'Players',
-		icon: Users,
 		children: [
-			{ label: 'Connections', path: '/logs?category=players&type=connections', icon: Users },
-			{ label: 'Characters', path: '/logs?category=players&type=characters', icon: Users },
+			{ label: 'Connections', path: '/logs?category=players&type=connections' },
+			{ label: 'Characters', path: '/logs?category=players&type=characters' },
 		],
 	},
 	{
 		label: 'Vehicles',
-		icon: Car,
 		children: [
-			{ label: 'Spawned', path: '/logs?category=vehicles&type=spawned', icon: Car },
-			{ label: 'Purchases', path: '/logs?category=vehicles&type=purchases', icon: ShoppingCart },
+			{ label: 'Spawned', path: '/logs?category=vehicles&type=spawned' },
+			{ label: 'Purchases', path: '/logs?category=vehicles&type=purchases' },
 		],
 	},
 	{
 		label: 'Admin',
-		icon: Gavel,
 		children: [
-			{ label: 'Actions', path: '/logs?category=admin&type=actions', icon: Gavel },
-			{ label: 'Reports', path: '/logs?category=admin&type=reports', icon: FileText },
+			{ label: 'Actions', path: '/logs?category=admin&type=actions' },
+			{ label: 'Reports', path: '/logs?category=admin&type=reports' },
 		],
 	},
 ];
 
-// Component for a sidebar section with optional collapsible subsections
 const SidebarSection = ({ item, expanded, toggle, isActive }: { item: SidebarItem; expanded: boolean; toggle: () => void; isActive: boolean }) => {
 	const navigate = useNavigate();
 	const hasChildren = !!item.children && item.children.length > 0;
@@ -69,25 +55,25 @@ const SidebarSection = ({ item, expanded, toggle, isActive }: { item: SidebarIte
 
 	return (
 		<>
-			<UnstyledButton onClick={handleClick} className={`block w-full px-3 py-2 rounded-sm text-gray-0 transition-colors duration-200 ${isActive ? 'bg-dark-6' : ''} hover:bg-dark-5`}>
-				<Group justify='space-between'>
-					<Group gap='xs'>
-						<ThemeIcon variant='light' size={30} color='blue'>
-							<item.icon size={18} />
-						</ThemeIcon>
-						<Text>{item.label}</Text>
-					</Group>
-					{hasChildren && (
-						<div className={`transition-transform duration-200 ${expanded ? 'rotate-90' : ''}`}>
-							<CaretRight size={16} />
-						</div>
-					)}
-				</Group>
-			</UnstyledButton>
+			<div
+				onClick={handleClick}
+				className={`
+          flex justify-between items-center px-3 py-2.5 rounded-md 
+          ${isActive ? 'bg-blue-50 text-blue-800 font-medium' : 'text-gray-700 hover:text-gray-900'} 
+          hover:bg-gray-100 cursor-pointer transition-colors
+        `}
+			>
+				<Text size='sm'>{item.label}</Text>
+				{hasChildren && (
+					<span className={`transform transition-transform duration-200 ${expanded ? 'rotate-90' : ''}`}>
+						<CaretRight size={16} className={isActive ? 'text-blue-600' : 'text-[#a3a3a3]'} />
+					</span>
+				)}
+			</div>
 
 			{hasChildren && (
 				<Collapse in={expanded}>
-					<div className='pl-9'>
+					<div className='ml-3 pl-3 border-l border-gray-200 my-1'>
 						{item.children?.map((child, index) => (
 							<SubItem key={index} item={child} />
 						))}
@@ -98,21 +84,22 @@ const SidebarSection = ({ item, expanded, toggle, isActive }: { item: SidebarIte
 	);
 };
 
-// Component for a subsection
 const SubItem = ({ item }: { item: SidebarItem }) => {
 	const navigate = useNavigate();
 	const router = useRouter();
-
-	// Check if the current path matches this item's path
 	const isActive = item.path ? router.state.location.pathname + router.state.location.search === item.path : false;
 
 	return (
-		<UnstyledButton onClick={() => item.path && navigate({ to: item.path })} className={`block w-full py-2 transition-colors duration-200 ${isActive ? 'text-blue-4 font-semibold' : 'text-gray-3'} hover:text-blue-2`}>
-			<Group gap='xs'>
-				{item.icon && <item.icon size={16} />}
-				<Text size='sm'>{item.label}</Text>
-			</Group>
-		</UnstyledButton>
+		<div
+			onClick={() => item.path && navigate({ to: item.path })}
+			className={`
+        px-3 py-2 my-0.5 rounded-md cursor-pointer text-sm 
+        ${isActive ? 'bg-blue-50 text-blue-800 font-medium' : 'text-gray-600 hover:text-gray-900'} 
+        hover:bg-gray-100 transition-colors
+      `}
+		>
+			{item.label}
+		</div>
 	);
 };
 
@@ -124,7 +111,6 @@ export default function Sidebar({ opened }: SidebarProps) {
 	const router = useRouter();
 	const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
 
-	// Toggle expanded state for a section
 	const toggleSection = (label: string) => {
 		setExpandedSections((prev) => ({
 			...prev,
@@ -132,7 +118,6 @@ export default function Sidebar({ opened }: SidebarProps) {
 		}));
 	};
 
-	// Check if a section should be highlighted as active
 	const isSectionActive = (item: SidebarItem): boolean => {
 		const currentPath = router.state.location.pathname + router.state.location.search;
 
@@ -147,12 +132,27 @@ export default function Sidebar({ opened }: SidebarProps) {
 		return false;
 	};
 
+	useEffect(() => {
+		const newExpandedSections: Record<string, boolean> = {};
+
+		sidebarSections.forEach((section) => {
+			if (isSectionActive(section)) {
+				newExpandedSections[section.label] = true;
+			}
+		});
+
+		setExpandedSections((prev) => ({
+			...prev,
+			...newExpandedSections,
+		}));
+	}, [router.state.location.pathname, router.state.location.search]);
+
 	return (
-		<nav className={`h-full w-[320px] p-8 bg-[#141414] ${opened ? '' : 'hidden'} sm:block`}>
-			<div className='flex-1 overflow-auto'>
-				<ScrollArea>
+		<nav className={`h-full w-[260px] ${opened ? '' : 'hidden'} sm:block`}>
+			<div className='p-4 h-full'>
+				<ScrollArea className='h-full'>
 					{sidebarSections.map((section, index) => (
-						<Box key={index} mb='sm'>
+						<Box key={index} mb={2}>
 							<SidebarSection item={section} expanded={!!expandedSections[section.label]} toggle={() => toggleSection(section.label)} isActive={isSectionActive(section)} />
 						</Box>
 					))}
