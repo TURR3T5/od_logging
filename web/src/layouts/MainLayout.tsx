@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
-import { AppShell, useMantineTheme } from '@mantine/core';
-import { useMediaQuery } from '@mantine/hooks';
+import { useEffect } from 'react';
+import { AppShell } from '@mantine/core';
 import { useAuth } from '../components/AuthProvider';
 import { useNavigate } from '@tanstack/react-router';
 import Header from '../components/Header';
@@ -12,30 +11,19 @@ interface MainLayoutProps {
 }
 
 export default function MainLayout({ children, requireAuth = true }: MainLayoutProps) {
-	const theme = useMantineTheme();
-	const [sidebarOpened, setSidebarOpened] = useState(false);
-	const isMobile = useMediaQuery(`(max-width: ${theme.breakpoints.sm})`);
 	const { isAuthorized, isLoading } = useAuth();
 	const navigate = useNavigate();
 
-	// Close sidebar on mobile by default
-	useEffect(() => {
-		setSidebarOpened(!isMobile);
-	}, [isMobile]);
-
-	// Redirect to login if authentication is required but user is not authorized
 	useEffect(() => {
 		if (requireAuth && !isLoading && !isAuthorized) {
 			navigate({ to: '/login' });
 		}
 	}, [requireAuth, isAuthorized, isLoading, navigate]);
 
-	// If loading authentication state, show nothing yet
 	if (isLoading) {
 		return null;
 	}
 
-	// If auth is required and user is not authorized, don't render content
 	if (requireAuth && !isAuthorized) {
 		return null;
 	}
@@ -46,14 +34,53 @@ export default function MainLayout({ children, requireAuth = true }: MainLayoutP
 			navbar={{
 				width: 300,
 				breakpoint: 'sm',
-				collapsed: { mobile: !sidebarOpened },
+				collapsed: { desktop: false, mobile: !isAuthorized },
 			}}
 			header={{ height: 60 }}
 			styles={(theme) => ({
+				root: {
+					display: 'flex',
+					flexDirection: 'column',
+					alignItems: 'center',
+					backgroundColor: '#111',
+					position: 'relative',
+					overflow: 'hidden',
+				},
 				main: {
-					backgroundColor: theme.colors.dark[9],
+					backgroundColor: '#111',
 					color: theme.colors.gray[0],
 					minHeight: '100vh',
+					width: '100%',
+					maxWidth: '1920px',
+					margin: '0 auto',
+					paddingTop: '80px',
+					paddingLeft: isAuthorized ? '320px' : '20px',
+					transition: 'padding-left 0.3s ease',
+					'@media (max-width: 768px)': {
+						paddingLeft: '20px',
+					},
+				},
+				navbar: {
+					backgroundColor: '#111',
+					width: '300px',
+					position: 'fixed',
+					left: 'calc(50% - 960px)',
+					top: '60px',
+					bottom: 0,
+					zIndex: 90,
+					'@media (max-width: 1920px)': {
+						left: '0px',
+					},
+				},
+				header: {
+					backgroundColor: '#111',
+					borderBottom: `1px solid ${theme.colors.dark[7]}`,
+					position: 'fixed',
+					width: '100%',
+					zIndex: 100,
+					maxWidth: '1920px',
+					left: '50%',
+					transform: 'translateX(-50%)',
 				},
 			})}
 		>
@@ -63,7 +90,7 @@ export default function MainLayout({ children, requireAuth = true }: MainLayoutP
 
 			{isAuthorized && (
 				<AppShell.Navbar>
-					<Sidebar opened={sidebarOpened} />
+					<Sidebar />
 				</AppShell.Navbar>
 			)}
 

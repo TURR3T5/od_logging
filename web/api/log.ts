@@ -1,4 +1,3 @@
-
 import { NextApiRequest, NextApiResponse } from 'next'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '../src/types/supabase'
@@ -41,6 +40,8 @@ export default async function handler(
         body: {
           server_id: 'server_name',
           event_type: 'event_name',
+          category: 'category_name',
+          type: 'type_name',
           player_id: 'optional_player_id',
           player_name: 'optional_player_name',
           details: { /* additional details */ }
@@ -62,6 +63,8 @@ export default async function handler(
     const {
       server_id,
       event_type,
+      category,
+      type,
       player_id,
       player_name,
       details
@@ -79,6 +82,8 @@ export default async function handler(
         {
           server_id,
           event_type,
+          category,
+          type,
           player_id,
           player_name,
           details
