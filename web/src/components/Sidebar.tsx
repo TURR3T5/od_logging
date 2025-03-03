@@ -184,7 +184,7 @@ export default function Sidebar() {
 	}, [activeCategory, activeSectionIndex]);
 
 	return (
-		<nav className='h-full bg-[#111] border-r border-[#222]'>
+		<nav className='h-full bg-[#111]'>
 			<div className='p-4 h-full'>
 				<ScrollArea className='h-full'>
 					{sidebarSections.map((section, index) => (

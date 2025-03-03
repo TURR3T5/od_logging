@@ -5,9 +5,11 @@ import { MantineProvider } from '@mantine/core';
 export default function App() {
 	return (
 		<MantineProvider defaultColorScheme='dark'>
-			<AuthProvider>
-				<Outlet />
-			</AuthProvider>
+			<div className='app-container'>
+				<AuthProvider>
+					<Outlet />
+				</AuthProvider>
+			</div>
 		</MantineProvider>
 	);
 }
