@@ -8,7 +8,7 @@ export default function HomePage() {
 	const navigate = useNavigate();
 
 	return (
-		<MainLayout requireAuth={false} showSidebar={false}>
+		<MainLayout requireAuth={false}>
 			<Container size='lg' my='xl'>
 				<Box className='flex flex-col items-center justify-center' style={{ minHeight: 'calc(100vh - 160px)' }}>
 					<Title order={1} className='text-center mb-6' c='blue'>
@@ -35,27 +35,6 @@ export default function HomePage() {
 						)}
 					</Paper>
 
-					<Group grow className='w-full max-w-3xl'>
-						<Paper p='md' radius='md' withBorder>
-							<Title order={3} c='blue' className='mb-2'>
-								Features
-							</Title>
-							<Text component='ul' className='list-disc pl-5'>
-								<li>Player connection tracking</li>
-								<li>Inventory and item management logs</li>
-								<li>Vehicle spawn and purchase records</li>
-								<li>Administrator actions and reports</li>
-								<li>Searchable and filterable logs</li>
-							</Text>
-						</Paper>
-
-						<Paper p='md' radius='md' withBorder>
-							<Title order={3} c='blue' className='mb-2'>
-								About
-							</Title>
-							<Text>This system was developed specifically for the Odessa FiveM server to provide administrators with enhanced visibility and accountability. The system is protected by Discord authentication to ensure only authorized personnel can access sensitive server information.</Text>
-						</Paper>
-					</Group>
 				</Box>
 			</Container>
 		</MainLayout>

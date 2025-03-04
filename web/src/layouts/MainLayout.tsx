@@ -2,27 +2,25 @@ import { useEffect, useState } from 'react';
 import { AppShell, useMantineTheme } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { useAuth } from '../components/AuthProvider';
-import { useNavigate, useLocation } from '@tanstack/react-router';
+import { useNavigate, useRouter } from '@tanstack/react-router';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 
 interface MainLayoutProps {
 	children: React.ReactNode;
 	requireAuth?: boolean;
-	showSidebar?: boolean;
 }
 
-export default function MainLayout({ children, requireAuth = true, showSidebar }: MainLayoutProps) {
+export default function MainLayout({ children, requireAuth = true }: MainLayoutProps) {
 	const theme = useMantineTheme();
 	const [sidebarOpened, setSidebarOpened] = useState(false);
 	const isMobile = useMediaQuery(`(max-width: ${theme.breakpoints.sm})`);
 	const isTablet = useMediaQuery(`(max-width: ${theme.breakpoints.md})`);
 	const { isAuthorized, isLoading } = useAuth();
 	const navigate = useNavigate();
-	const location = useLocation();
+	const router = useRouter();
 
-	const isLogsPage = location.pathname.startsWith('/logs');
-	const shouldShowSidebar = showSidebar !== undefined ? showSidebar : isAuthorized && isLogsPage;
+	const isLogsPage = router.state.location.pathname.startsWith('/logs');
 
 	useEffect(() => {
 		setSidebarOpened(!isMobile);
@@ -42,14 +40,20 @@ export default function MainLayout({ children, requireAuth = true, showSidebar }
 		return null;
 	}
 
+	const showSidebar = isAuthorized && isLogsPage;
+
 	return (
 		<AppShell
 			padding={isMobile ? 'xs' : 'md'}
-			navbar={{
-				width: isTablet ? 250 : 300,
-				breakpoint: 'sm',
-				collapsed: { mobile: !sidebarOpened },
-			}}
+			navbar={
+				showSidebar
+					? {
+							width: isTablet ? 250 : 300,
+							breakpoint: 'sm',
+							collapsed: { mobile: !sidebarOpened },
+					  }
+					: undefined
+			}
 			header={{ height: 60 }}
 			styles={(theme) => ({
 				main: {
@@ -66,13 +70,13 @@ export default function MainLayout({ children, requireAuth = true, showSidebar }
 				<Header />
 			</AppShell.Header>
 
-			{shouldShowSidebar && (
+			{showSidebar && (
 				<AppShell.Navbar>
 					<Sidebar />
 				</AppShell.Navbar>
 			)}
 
-			<AppShell.Main className='content-area'>{children}</AppShell.Main>
+			<AppShell.Main>{children}</AppShell.Main>
 		</AppShell>
 	);
 }
