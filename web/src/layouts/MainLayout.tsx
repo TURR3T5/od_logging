@@ -2,22 +2,27 @@ import { useEffect, useState } from 'react';
 import { AppShell, useMantineTheme } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { useAuth } from '../components/AuthProvider';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useLocation } from '@tanstack/react-router';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 
 interface MainLayoutProps {
 	children: React.ReactNode;
 	requireAuth?: boolean;
+	showSidebar?: boolean;
 }
 
-export default function MainLayout({ children, requireAuth = true }: MainLayoutProps) {
+export default function MainLayout({ children, requireAuth = true, showSidebar }: MainLayoutProps) {
 	const theme = useMantineTheme();
 	const [sidebarOpened, setSidebarOpened] = useState(false);
 	const isMobile = useMediaQuery(`(max-width: ${theme.breakpoints.sm})`);
 	const isTablet = useMediaQuery(`(max-width: ${theme.breakpoints.md})`);
 	const { isAuthorized, isLoading } = useAuth();
 	const navigate = useNavigate();
+	const location = useLocation();
+
+	const isLogsPage = location.pathname.startsWith('/logs');
+	const shouldShowSidebar = showSidebar !== undefined ? showSidebar : isAuthorized && isLogsPage;
 
 	useEffect(() => {
 		setSidebarOpened(!isMobile);
@@ -61,7 +66,7 @@ export default function MainLayout({ children, requireAuth = true }: MainLayoutP
 				<Header />
 			</AppShell.Header>
 
-			{isAuthorized && (
+			{shouldShowSidebar && (
 				<AppShell.Navbar>
 					<Sidebar />
 				</AppShell.Navbar>
