@@ -26,7 +26,7 @@ export default function AuthCallbackPage() {
 
 	if (!isLoading) {
 		if (isAuthorized) {
-			return <Navigate to='/logs' />;
+			return <Navigate to='/' />;
 		} else {
 			return <Navigate to='/login' />;
 		}

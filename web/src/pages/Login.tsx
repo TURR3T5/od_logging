@@ -9,7 +9,7 @@ export default function LoginPage() {
 	const theme = useMantineTheme();
 
 	if (isAuthorized && !isLoading) {
-		return <Navigate to='/logs' />;
+		return <Navigate to='/' />;
 	}
 
 	return (

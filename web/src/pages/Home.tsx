@@ -34,7 +34,8 @@ export default function HomePage() {
 		<MainLayout requireAuth={false}>
 			<Container size='lg' my='xl'>
 				<Box className='flex flex-col items-center justify-center' style={{ minHeight: 'calc(100vh - 160px)' }}>
-
+					<h1>Welcome to the Home Page</h1>
+					<p>This is the home page. You will be redirected to the logs page if you are authorized.</p>
 				</Box>
 			</Container>
 		</MainLayout>

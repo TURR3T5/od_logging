@@ -19,8 +19,8 @@ export default function Header() {
 			<Container size='xl' py='md' style={{ height: '100%', maxWidth: '1920px', margin: '0 auto' }}>
 				<Group justify='space-between' style={{ height: '100%' }}>
 					<Group>
-						<Text fw={700} size='lg' c='blue' onClick={() => navigate({ to: '/' })} className='cursor-pointer'>
-							FiveM Logging System
+						<Text fw={700} size='lg' variant='gradient' gradient={{ from: 'yellow', to: 'grape', deg: 90 }} onClick={() => navigate({ to: '/' })} className='cursor-pointer'>
+							OdessaRP
 						</Text>
 
 						<Group ml='xl' gap='xl' className='hidden md:flex'>
