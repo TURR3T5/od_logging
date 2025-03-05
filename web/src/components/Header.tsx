@@ -15,46 +15,48 @@ export default function Header() {
 	];
 
 	return (
-		<Box component='header' className='bg-[#111] sticky top-0 z-[20] border-b border-[#222]' style={{ height: '60px', width: '100%' }}>
-			<Container size='xl' py='sm' style={{ height: '100%', maxWidth: '1920px', margin: '0 auto' }}>
-				<Group justify='space-between' style={{ height: '100%' }}>
-					<Group>
-						<Text fw={700} size='lg' variant='gradient' gradient={{ from: 'yellow', to: 'grape', deg: 90 }} onClick={() => navigate({ to: '/' })} className='cursor-pointer'>
-							OdessaRP
-						</Text>
+		<div className='w-full bg-[#111] border-b border-[#222]' style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 20 }}>
+			<Box component='header' className='bg-[#111] sticky top-0 z-[20]' style={{ height: '60px', maxWidth: '1920px', margin: '0 auto' }}>
+				<Container size='xl' py='sm' style={{ height: '100%', maxWidth: '1920px', margin: '0 auto' }}>
+					<Group justify='space-between' style={{ height: '100%' }}>
+						<Group>
+							<Text fw={700} size='lg' variant='gradient' gradient={{ from: 'yellow', to: 'grape', deg: 90 }} onClick={() => navigate({ to: '/' })} className='cursor-pointer'>
+								OdessaRP
+							</Text>
 
-						<Group ml='xl' gap='xl' className='hidden md:flex'>
-							{menuItems.map((item, index) => (
-								<Group key={index} gap='xs' className='cursor-pointer hover:text-blue-4 transition-colors duration-200' onClick={item.onClick}>
-									<item.icon size={18} />
-									<Text c='gray.0'>{item.label}</Text>
+							<Group ml='xl' gap='xl' className='hidden md:flex'>
+								{menuItems.map((item, index) => (
+									<Group key={index} gap='xs' className='cursor-pointer hover:text-blue-4 transition-colors duration-200' onClick={item.onClick}>
+										<item.icon size={18} />
+										<Text c='gray.0'>{item.label}</Text>
+									</Group>
+								))}
+							</Group>
+						</Group>
+
+						{/* Mobile menu button */}
+						<Burger opened={opened} onClick={toggle} size='sm' color='gray.0' className='md:hidden' />
+
+						{/* Auth buttons on desktop */}
+						<Group className='hidden md:flex'>
+							{isLoading ? (
+								<Text>Loading...</Text>
+							) : isAuthorized ? (
+								<Group>
+									<Text c='gray.0'>{user?.username && `Welcome, ${user.username}`}</Text>
+									<Button variant='outline' color='red' onClick={signOut} leftSection={<SignOut size={16} />}>
+										Logout
+									</Button>
 								</Group>
-							))}
+							) : (
+								<Button variant='gradient' gradient={{ from: 'indigo', to: 'blue' }} onClick={signInWithDiscord}>
+									Login with Discord
+								</Button>
+							)}
 						</Group>
 					</Group>
-
-					{/* Mobile menu button */}
-					<Burger opened={opened} onClick={toggle} size='sm' color='gray.0' className='md:hidden' />
-
-					{/* Auth buttons on desktop */}
-					<Group className='hidden md:flex'>
-						{isLoading ? (
-							<Text>Loading...</Text>
-						) : isAuthorized ? (
-							<Group>
-								<Text c='gray.0'>{user?.username && `Welcome, ${user.username}`}</Text>
-								<Button variant='outline' color='red' onClick={signOut} leftSection={<SignOut size={16} />}>
-									Logout
-								</Button>
-							</Group>
-						) : (
-							<Button variant='gradient' gradient={{ from: 'indigo', to: 'blue' }} onClick={signInWithDiscord}>
-								Login with Discord
-							</Button>
-						)}
-					</Group>
-				</Group>
-			</Container>
+				</Container>
+			</Box>
 
 			{/* Mobile drawer */}
 			<Drawer opened={opened} onClose={close} size='100%' padding='md' title='Menu' zIndex={1000} overlayProps={{ opacity: 0.5, blur: 4 }}>
@@ -97,6 +99,6 @@ export default function Header() {
 					</Box>
 				</Box>
 			</Drawer>
-		</Box>
+		</div>
 	);
 }

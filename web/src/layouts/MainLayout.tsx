@@ -32,6 +32,13 @@ export default function MainLayout({ children, requireAuth = true }: MainLayoutP
 		}
 	}, [requireAuth, isAuthorized, isLoading, navigate]);
 
+	useEffect(() => {
+		document.body.style.backgroundColor = '#111';
+		return () => {
+			document.body.style.backgroundColor = '';
+		};
+	}, []);
+
 	if (isLoading) {
 		return null;
 	}
@@ -43,40 +50,42 @@ export default function MainLayout({ children, requireAuth = true }: MainLayoutP
 	const showSidebar = isAuthorized && isLogsPage;
 
 	return (
-		<AppShell
-			padding={isMobile ? 'xs' : 'md'}
-			navbar={
-				showSidebar
-					? {
-							width: isTablet ? 250 : 300,
-							breakpoint: 'sm',
-							collapsed: { mobile: !sidebarOpened },
-					  }
-					: undefined
-			}
-			header={{ height: 60 }}
-			styles={(theme) => ({
-				main: {
-					backgroundColor: '#111',
-					color: theme.colors.gray[0],
-					minHeight: '100vh',
-					maxWidth: '1920px',
-					margin: '0 auto',
-				},
-			})}
-			withBorder={false}
-		>
-			<AppShell.Header>
-				<Header />
-			</AppShell.Header>
+		<div className='outer-container' style={{ backgroundColor: '#111', minHeight: '100vh' }}>
+			<AppShell
+				padding={isMobile ? 'xs' : 'md'}
+				navbar={
+					showSidebar
+						? {
+								width: isTablet ? 250 : 300,
+								breakpoint: 'sm',
+								collapsed: { mobile: !sidebarOpened },
+						  }
+						: undefined
+				}
+				header={{ height: 60 }}
+				styles={(theme) => ({
+					main: {
+						backgroundColor: '#111',
+						color: theme.colors.gray[0],
+						minHeight: 'calc(100vh - 60px)',
+						maxWidth: '1920px',
+						margin: '0 auto',
+					},
+				})}
+				withBorder={false}
+			>
+				<AppShell.Header>
+					<Header />
+				</AppShell.Header>
 
-			{showSidebar && (
-				<AppShell.Navbar>
-					<Sidebar />
-				</AppShell.Navbar>
-			)}
+				{showSidebar && (
+					<AppShell.Navbar>
+						<Sidebar />
+					</AppShell.Navbar>
+				)}
 
-			<AppShell.Main>{children}</AppShell.Main>
-		</AppShell>
+				<AppShell.Main>{children}</AppShell.Main>
+			</AppShell>
+		</div>
 	);
 }
