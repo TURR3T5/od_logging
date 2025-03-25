@@ -41,17 +41,14 @@ const sidebarSections: SidebarItem[] = [
 	},
 ];
 
-// Store active section and item
 const useActiveState = () => {
 	const router = useRouter();
 	const search = router.state.location.search;
 
-	// Extract category and type from search params
 	const params = new URLSearchParams(search);
 	const activeCategory = params.get('category') || '';
 	const activeType = params.get('type') || '';
 
-	// Find active section and item indexes
 	let activeSectionIndex = -1;
 	let activeItemIndex = -1;
 
@@ -77,8 +74,6 @@ const useActiveState = () => {
 
 const SidebarSection = ({ sectionIndex, item, expanded, toggle, hasActiveChild, onNavigate }: { sectionIndex: number; item: SidebarItem; expanded: boolean; toggle: () => void; hasActiveChild: boolean; onNavigate: (path: string) => void }) => {
 	const hasChildren = !!item.children && item.children.length > 0;
-
-	// Section is NOT active itself, but it does get a special highlight when a child is active
 	const hasActiveChildStyle = hasActiveChild && !expanded ? 'text-[#bbc5d0] font-medium' : '';
 
 	const handleClick = () => {
