@@ -62,11 +62,23 @@ export default function LogsPage() {
 			}
 
 			if (currentFilters.playerId) {
-				query = query.eq('player_id', currentFilters.playerId);
+				query = query.or(`player_id.ilike.%${currentFilters.playerId}%,details->discord_id.ilike.%${currentFilters.playerId}%,server_id.ilike.%${currentFilters.playerId}%`);
 			}
 
 			if (currentFilters.playerName) {
-				query = query.ilike('player_name', `%${currentFilters.playerName}%`);
+				query = query.or(`player_name.ilike.%${currentFilters.playerName}%,player_id.ilike.%${currentFilters.playerName}%,details->discord_id.ilike.%${currentFilters.playerName}%,server_id.ilike.%${currentFilters.playerName}%`);
+			}
+
+			if (searchParams.playerSearch) {
+				query = query.or(`player_name.ilike.%${searchParams.playerSearch}%,player_id.ilike.%${searchParams.playerSearch}%,details->discord_id.ilike.%${searchParams.playerSearch}%,server_id.ilike.%${searchParams.playerSearch}%`);
+			}
+			
+			if (searchParams.eventTypeSearch) {
+				query = query.ilike('event_type', `%${searchParams.eventTypeSearch}%`);
+			}
+			
+			if (searchParams.dateRange) {
+				query = query.gte('created_at', searchParams.dateRange.start).lte('created_at', searchParams.dateRange.end);
 			}
 
 			if (currentFilters.category) {

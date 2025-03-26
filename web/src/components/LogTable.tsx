@@ -28,6 +28,18 @@ const dateRangeFilterFn = (row: any, columnId: string, filterValue: [string, str
 	}
 };
 
+const playerFilterFn = (row: any, columnId: string, filterValue: any) => {
+	if (!filterValue) return true;
+
+	const searchTerm = String(filterValue).toLowerCase();
+	const playerName = String(row.original.player_name || '').toLowerCase();
+	const serverId = String(row.original.server_id || '').toLowerCase();
+	const playerId = String(row.original.player_id || '').toLowerCase();
+	const discordId = String(row.original.details?.discord_id || '').toLowerCase();
+
+	return playerName.includes(searchTerm) || serverId.includes(searchTerm) || playerId.includes(searchTerm) || discordId.includes(searchTerm);
+};
+
 function DateFilter({ column }: { column: any }) {
 	const [startDate, setStartDate] = useState<Date | null>(null);
 	const [endDate, setEndDate] = useState<Date | null>(null);
@@ -121,6 +133,7 @@ interface LogTableProps {
 		onPageChange: (page: number) => void;
 	};
 	extraColumns?: ColumnDef<Log>[];
+	onSearch?: (filters: { playerSearch?: string; eventTypeSearch?: string; dateRange?: { start: string; end: string } | null }) => void;
 }
 
 export default function LogTable({ data, isLoading, pagination, extraColumns = [] }: LogTableProps) {
@@ -130,9 +143,21 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 	const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
 	const [selectedLog, setSelectedLog] = useState<Log | null>(null);
 	const [modalOpen, setModalOpen] = useState(false);
+	const [playerSearchTerm, setPlayerSearchTerm] = useState('');
+	const [searchSubmitted, setSearchSubmitted] = useState(false);
 
 	useEffect(() => {
 		setHasAttemptedLoad(true);
+
+		const params = new URLSearchParams(window.location.search);
+		const playerName = params.get('playerName');
+		const playerId = params.get('playerId');
+
+		if (playerName || playerId) {
+			const searchTerm = playerName || playerId || '';
+			setPlayerSearchTerm(searchTerm);
+			setColumnFilters([{ id: 'player', value: searchTerm }]);
+		}
 	}, []);
 
 	const handleOpenModal = (log: Log) => {
@@ -193,6 +218,7 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 					)}
 				</Box>
 			),
+			filterFn: playerFilterFn,
 		},
 		{
 			id: 'event_type',
@@ -294,7 +320,7 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 											{header.column.id === 'player' && (
 												<Box mt={8}>
 													<TextInput
-														placeholder='Search player...'
+														placeholder='Search by name/ID/discord...'
 														value={(header.column.getFilterValue() as string) ?? ''}
 														onChange={(e) => header.column.setFilterValue(e.target.value)}
 														size='xs'
