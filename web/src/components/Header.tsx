@@ -1,5 +1,4 @@
-import { Group, Text, Button, Box, Container, Burger, Drawer } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
+import { Group, Text, Button, Box, Container } from '@mantine/core';
 import { useAuth } from '../components/AuthProvider';
 import { useNavigate } from '@tanstack/react-router';
 import { SignOut, Gauge, ListBullets } from '@phosphor-icons/react';
@@ -7,17 +6,25 @@ import { SignOut, Gauge, ListBullets } from '@phosphor-icons/react';
 export default function Header() {
 	const { isAuthorized, isLoading, user, signInWithDiscord, signOut } = useAuth();
 	const navigate = useNavigate();
-	const [opened, { toggle, close }] = useDisclosure(false);
 
 	const menuItems = [
 		{ label: 'Home', icon: Gauge, onClick: () => navigate({ to: '/' }) },
-		{ label: 'Server Logs', icon: ListBullets, onClick: () => navigate({ to: '/logs' }) },
+		{
+			label: 'Server Logs',
+			icon: ListBullets,
+			onClick: () => navigate({ to: '/logs' }),
+			requireAuth: true,
+		},
 	];
+
+	const filteredMenuItems = menuItems.filter((item) => !item.requireAuth || (item.requireAuth && isAuthorized));
 
 	return (
 		<Box
-			className='w-full bg-[#111] border-b border-[#222]'
 			style={{
+				width: '100%',
+				backgroundColor: '#111',
+				borderBottom: '1px solid #222',
 				position: 'fixed',
 				top: 0,
 				left: 0,
@@ -26,7 +33,6 @@ export default function Header() {
 				height: '60px',
 			}}
 		>
-			{/* Centered container for header content */}
 			<Container
 				size='100%'
 				py='sm'
@@ -38,31 +44,41 @@ export default function Header() {
 			>
 				<Group justify='space-between' style={{ height: '100%' }}>
 					<Group>
-						<Text fw={700} size='lg' variant='gradient' gradient={{ from: 'yellow', to: 'grape', deg: 90 }} onClick={() => navigate({ to: '/' })} className='cursor-pointer'>
+						<Text fw={700} size='lg' variant='gradient' gradient={{ from: 'yellow', to: 'grape', deg: 90 }} onClick={() => navigate({ to: '/' })} style={{ cursor: 'pointer' }}>
 							OdessaRP
 						</Text>
 
-						<Group ml='xl' gap='xl' className='hidden md:flex'>
-							{menuItems.map((item, index) => (
-								<Group key={index} gap='xs' className='cursor-pointer hover:text-blue-4 transition-colors duration-200' onClick={item.onClick}>
-									<item.icon size={18} />
-									<Text c='gray.0'>{item.label}</Text>
+						<Group ml='xl' gap='xl'>
+							{filteredMenuItems.map((item, index) => (
+								<Group
+									key={index}
+									gap='xs'
+									onClick={item.onClick}
+									style={{
+										cursor: 'pointer',
+										transition: 'color 200ms ease',
+										'&:hover': {
+											color: '#4dabf7',
+										},
+										alignItems: 'center',
+									}}
+								>
+									<item.icon size={18} style={{ display: 'flex', alignItems: 'center' }} />
+									<Text c='gray.0' style={{ display: 'flex', alignItems: 'center' }}>
+										{item.label}
+									</Text>
 								</Group>
 							))}
 						</Group>
 					</Group>
 
-					{/* Mobile menu button */}
-					<Burger opened={opened} onClick={toggle} size='sm' color='gray.0' className='md:hidden' />
-
-					{/* Auth buttons on desktop */}
-					<Group className='hidden md:flex'>
+					<Group>
 						{isLoading ? (
 							<Text>Loading...</Text>
 						) : isAuthorized ? (
 							<Group>
 								<Text c='gray.0'>{user?.username && `Welcome, ${user.username}`}</Text>
-								<Button variant='outline' color='red' onClick={signOut} leftSection={<SignOut size={16} />}>
+								<Button variant='outline' color='red' onClick={signOut} leftSection={<SignOut size={16} style={{ display: 'flex', alignItems: 'center' }} />}>
 									Logout
 								</Button>
 							</Group>
@@ -74,48 +90,6 @@ export default function Header() {
 					</Group>
 				</Group>
 			</Container>
-
-			{/* Mobile drawer */}
-			<Drawer opened={opened} onClose={close} size='100%' padding='md' title='Menu' zIndex={1000} overlayProps={{ opacity: 0.5, blur: 4 }}>
-				<Box className='flex flex-col h-full'>
-					<Box className='flex-1'>
-						{menuItems.map((item, index) => (
-							<Box key={index} className='py-2.5 hover:bg-dark-6'>
-								<Group
-									gap='xs'
-									onClick={() => {
-										item.onClick();
-										close();
-									}}
-									className='cursor-pointer px-2'
-								>
-									<item.icon size={20} />
-									<Text size='lg'>{item.label}</Text>
-								</Group>
-							</Box>
-						))}
-					</Box>
-
-					<Box py='md' className='border-t border-dark-5 mt-4'>
-						{isLoading ? (
-							<Text>Loading...</Text>
-						) : isAuthorized ? (
-							<>
-								<Text c='gray.0' mb='xs'>
-									{user?.username && `Logged in as ${user.username}`}
-								</Text>
-								<Button fullWidth variant='outline' color='red' onClick={signOut} leftSection={<SignOut size={16} />}>
-									Logout
-								</Button>
-							</>
-						) : (
-							<Button fullWidth variant='gradient' gradient={{ from: 'indigo', to: 'blue' }} onClick={signInWithDiscord}>
-								Login with Discord
-							</Button>
-						)}
-					</Box>
-				</Box>
-			</Drawer>
 		</Box>
 	);
 }
