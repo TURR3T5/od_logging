@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Container, Box, Title, Text, Button, Group, Paper, Grid, Card, Badge, Center, rgba, darken } from '@mantine/core';
+import { Container, Box, Title, Text, Button, Group, Paper, Grid, Card, Badge, Center } from '@mantine/core';
 import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '../components/AuthProvider';
 import MainLayout from '../layouts/MainLayout';
@@ -15,7 +15,7 @@ export default function HomePage() {
 		setIsLoaded(true);
 	}, []);
 
-	// Slideshow images - replace with actual server images
+	// Slideshow images
 	const slides = [
 		{
 			image: './1.webp',
@@ -90,25 +90,44 @@ export default function HomePage() {
 	return (
 		<MainLayout requireAuth={false}>
 			{/* Hero Section with Slideshow */}
-			<Box className='relative overflow-hidden' style={{ height: '80vh', minHeight: '600px' }}>
+			<Box
+				style={{
+					height: '80vh',
+					minHeight: '600px',
+					position: 'relative',
+					overflow: 'hidden',
+				}}
+			>
 				{slides.map((slide, index) => (
 					<Box
 						key={index}
-						className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ${currentSlide === index ? 'opacity-100' : 'opacity-0'}`}
 						style={{
+							position: 'absolute',
+							inset: 0,
+							width: '100%',
+							height: '100%',
 							zIndex: currentSlide === index ? 1 : 0,
+							opacity: currentSlide === index ? 1 : 0,
+							transition: 'opacity 1s ease',
 						}}
 					>
-						<Center className='h-full px-6'>
+						<Center style={{ height: '100%', padding: '0 24px' }}>
 							<Box
-								className='absolute w-11/12 h-4/5 rounded-2xl overflow-hidden'
 								style={{
+									position: 'absolute',
+									width: '91.666667%',
+									height: '80%',
+									borderRadius: '16px',
+									overflow: 'hidden',
 									maxWidth: '1800px',
 								}}
 							>
 								<Box
-									className='absolute inset-0 w-full h-full'
 									style={{
+										position: 'absolute',
+										inset: 0,
+										width: '100%',
+										height: '100%',
 										backgroundImage: `url(${slide.image})`,
 										backgroundSize: 'cover',
 										backgroundPosition: 'center',
@@ -119,26 +138,45 @@ export default function HomePage() {
 								/>
 							</Box>
 
-							<Container size='xl' className='relative z-10'>
+							<Container size='xl' style={{ position: 'relative', zIndex: 10 }}>
 								<Box
-									className='flex flex-col justify-center h-full text-white max-w-3xl my-24'
 									style={{
+										display: 'flex',
+										flexDirection: 'column',
+										justifyContent: 'center',
+										height: '100%',
+										color: 'white',
+										maxWidth: '48rem',
+										margin: '6rem 0',
 										opacity: isLoaded ? 1 : 0,
 										transform: isLoaded ? 'translateY(0)' : 'translateY(20px)',
 										transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
 									}}
 								>
-									<Box className='text-center'>
-										<Badge size='xl' radius='sm' color='blue' className='mb-5' variant='light'>
+									<Box style={{ textAlign: 'center' }}>
+										<Badge size='xl' radius='sm' color='blue' variant='light' style={{ marginBottom: '20px' }}>
 											FiveM Rollespil Server
 										</Badge>
-										<Title className='text-6xl font-bold mb-6' style={{ textShadow: '0 2px 10px rgba(0,0,0,0.7)' }}>
+										<Title
+											style={{
+												fontSize: '3.75rem',
+												fontWeight: 'bold',
+												marginBottom: '24px',
+												textShadow: '0 2px 10px rgba(0,0,0,0.7)',
+											}}
+										>
 											{slide.title}
 										</Title>
-										<Text className='text-2xl mb-10' style={{ textShadow: '0 2px 6px rgba(0,0,0,0.8)' }}>
+										<Text
+											style={{
+												fontSize: '1.5rem',
+												marginBottom: '40px',
+												textShadow: '0 2px 6px rgba(0,0,0,0.8)',
+											}}
+										>
 											{slide.subtitle}
 										</Text>
-										<Group justify='center' className='mt-6'>
+										<Group justify='center' style={{ marginTop: '24px' }}>
 											<Button component='a' href='https://discord.gg/odessarp' target='_blank' size='lg' leftSection={<DiscordLogo size={20} />} variant='gradient' gradient={{ from: 'indigo', to: 'blue' }}>
 												Tilslut vores Discord
 											</Button>
@@ -154,12 +192,26 @@ export default function HomePage() {
 				))}
 
 				{/* Slide Indicators */}
-				<Box className='absolute bottom-8 left-0 right-0 z-10 flex justify-center'>
+				<Box
+					style={{
+						position: 'absolute',
+						bottom: '32px',
+						left: 0,
+						right: 0,
+						zIndex: 10,
+						display: 'flex',
+						justifyContent: 'center',
+					}}
+				>
 					{slides.map((_, index) => (
 						<Box
 							key={index}
-							className='h-1.5 rounded-full mx-1 cursor-pointer transition-all'
 							style={{
+								height: '6px',
+								borderRadius: '9999px',
+								margin: '0 4px',
+								cursor: 'pointer',
+								transition: 'all 0.3s',
 								width: currentSlide === index ? '2rem' : '1rem',
 								backgroundColor: currentSlide === index ? 'white' : 'rgba(255,255,255,0.5)',
 							}}
@@ -170,25 +222,58 @@ export default function HomePage() {
 			</Box>
 
 			{/* About Server Section */}
-			<Box className='py-20 bg-[#0a0a0a]'>
+			<Box
+				style={{
+					padding: '80px 0',
+					backgroundColor: '#0a0a0a',
+				}}
+			>
 				<Container size='xl'>
-					<Box className='mx-auto max-w-4xl text-center'>
-						<Badge size='lg' radius='sm' color='blue' className='mb-2' variant='light'>
+					<Box
+						style={{
+							maxWidth: '64rem',
+							margin: '0 auto',
+							textAlign: 'center',
+						}}
+					>
+						<Badge size='lg' radius='sm' color='blue' variant='light' style={{ marginBottom: '8px' }}>
 							Om Vores Server
 						</Badge>
-						<Title order={2} className='text-3xl font-bold mb-4 text-center'>
+						<Title
+							order={2}
+							style={{
+								fontSize: '1.875rem',
+								fontWeight: 'bold',
+								marginBottom: '16px',
+								textAlign: 'center',
+							}}
+						>
 							Oplev OdessaRP
 						</Title>
-						<Text size='lg' className='mb-6 text-gray-300 text-center'>
+						<Text
+							size='lg'
+							style={{
+								marginBottom: '24px',
+								color: '#d1d5db',
+								textAlign: 'center',
+							}}
+						>
 							OdessaRP tilbyder en fordybende rollespilsoplevelse i et omhyggeligt udformet bymiljø. Vores server har tilpassede scripts, unikke jobs, spillerejet virksomheder, realistisk økonomi og et dedikeret fællesskab af rollespillere.
 						</Text>
-						<Text size='lg' className='mb-8 text-gray-300 text-center'>
+						<Text
+							size='lg'
+							style={{
+								marginBottom: '32px',
+								color: '#d1d5db',
+								textAlign: 'center',
+							}}
+						>
 							Uanset om du vil bekæmpe kriminalitet som politibetjent, redde liv som paramediciner, opbygge et forretningsimperium eller leve livet på kanten i den kriminelle underverden, tilbyder OdessaRP endeløse muligheder for din karakters historie.
 						</Text>
 
 						{isAuthorized && (
 							<Center>
-								<Button variant='gradient' gradient={{ from: 'blue', to: 'indigo' }} size='lg' onClick={() => navigate({ to: '/logs' })} className='mt-4'>
+								<Button variant='gradient' gradient={{ from: 'blue', to: 'indigo' }} size='lg' onClick={() => navigate({ to: '/logs' })} style={{ marginTop: '16px' }}>
 									Tilgå Admin Dashboard
 								</Button>
 							</Center>
@@ -198,13 +283,21 @@ export default function HomePage() {
 			</Box>
 
 			{/* Server Features Section */}
-			<Box className='py-20'>
+			<Box style={{ padding: '80px 0' }}>
 				<Container size='xl'>
-					<Box className='text-center mb-16'>
-						<Badge size='lg' radius='sm' color='blue' className='mb-2' variant='light'>
+					<Box style={{ textAlign: 'center', marginBottom: '64px' }}>
+						<Badge size='lg' radius='sm' color='blue' variant='light' style={{ marginBottom: '8px' }}>
 							Server Funktioner
 						</Badge>
-						<Title order={2} className='text-3xl font-bold mb-4 text-center'>
+						<Title
+							order={2}
+							style={{
+								fontSize: '1.875rem',
+								fontWeight: 'bold',
+								marginBottom: '16px',
+								textAlign: 'center',
+							}}
+						>
 							Hvad Gør OdessaRP Speciel
 						</Title>
 						<Text size='lg' ta='center' w='100%' c='gray.3'>
@@ -219,19 +312,27 @@ export default function HomePage() {
 									padding='xl'
 									radius='md'
 									withBorder
-									className='h-full transition-all duration-300 hover:translate-y-[-5px]'
 									style={(theme) => ({
 										backgroundColor: theme.colors.dark[8],
 										borderColor: theme.colors.dark[5],
+										height: '100%',
+										transition: 'all 0.3s',
 										'&:hover': {
+											transform: 'translateY(-5px)',
 											borderColor: theme.colors.blue[5],
 										},
 									})}
 								>
 									<Box
-										className='flex justify-center items-center mb-4 p-3 rounded-full mx-auto'
 										style={(theme) => ({
-											backgroundColor: rgba(theme.colors.blue[9], 0.1),
+											display: 'flex',
+											justifyContent: 'center',
+											alignItems: 'center',
+											marginBottom: '16px',
+											padding: '12px',
+											borderRadius: '9999px',
+											margin: '0 auto',
+											backgroundColor: 'rgba(24, 100, 171, 0.1)',
 											color: theme.colors.blue[5],
 											width: '70px',
 											height: '70px',
@@ -239,10 +340,23 @@ export default function HomePage() {
 									>
 										{feature.icon}
 									</Box>
-									<Title order={4} className='text-center mb-3'>
+									<Title
+										order={4}
+										style={{
+											textAlign: 'center',
+											marginBottom: '12px',
+										}}
+									>
 										{feature.title}
 									</Title>
-									<Text className='text-center text-gray-400'>{feature.description}</Text>
+									<Text
+										style={{
+											textAlign: 'center',
+											color: '#9ca3af',
+										}}
+									>
+										{feature.description}
+									</Text>
 								</Card>
 							</Grid.Col>
 						))}
@@ -252,15 +366,18 @@ export default function HomePage() {
 
 			{/* Statistics Section */}
 			<Box
-				className='py-20 relative overflow-hidden'
-				style={(theme) => ({
-					backgroundColor: darken(theme.colors.dark[9], 0.2),
+				style={() => ({
+					padding: '80px 0',
+					position: 'relative',
+					overflow: 'hidden',
+					backgroundColor: '#090909',
 				})}
 			>
 				<Box
-					className='absolute inset-0'
 					style={{
-						backgroundImage: 'url("/api/placeholder/1920/1080")',
+						position: 'absolute',
+						inset: 0,
+						backgroundImage: 'url("./1.webp")',
 						backgroundSize: 'cover',
 						backgroundPosition: 'center',
 						opacity: 0.2,
@@ -268,15 +385,31 @@ export default function HomePage() {
 					}}
 				/>
 
-				<Container size='xl' className='relative z-10'>
-					<Box className='text-center mb-16'>
-						<Badge size='lg' radius='sm' color='blue' className='mb-2' variant='light'>
+				<Container size='xl' style={{ position: 'relative', zIndex: 10 }}>
+					<Box style={{ textAlign: 'center', marginBottom: '64px' }}>
+						<Badge size='lg' radius='sm' color='blue' variant='light' style={{ marginBottom: '8px' }}>
 							Server Statistikker
 						</Badge>
-						<Title order={2} className='text-3xl font-bold mb-4 text-center'>
+						<Title
+							order={2}
+							style={{
+								fontSize: '1.875rem',
+								fontWeight: 'bold',
+								marginBottom: '16px',
+								textAlign: 'center',
+							}}
+						>
 							Bliv en Del af Vores Voksende Fællesskab
 						</Title>
-						<Text size='lg' className='max-w-3xl mx-auto text-gray-300 text-center'>
+						<Text
+							size='lg'
+							style={{
+								maxWidth: '48rem',
+								margin: '0 auto',
+								color: '#d1d5db',
+								textAlign: 'center',
+							}}
+						>
 							OdessaRP fortsætter med at udvide med nye spillere, funktioner og oplevelser. Bliv en del af vores historie i dag.
 						</Text>
 					</Box>
@@ -288,17 +421,34 @@ export default function HomePage() {
 									p='xl'
 									radius='md'
 									withBorder
-									className='h-full flex flex-col items-center justify-center transition-transform hover:scale-105'
 									style={(theme) => ({
-										backgroundColor: rgba(theme.colors.dark[8], 0.7),
+										backgroundColor: 'rgba(26, 26, 26, 0.7)',
 										backdropFilter: 'blur(10px)',
 										borderColor: theme.colors.dark[5],
+										height: '100%',
+										display: 'flex',
+										flexDirection: 'column',
+										alignItems: 'center',
+										justifyContent: 'center',
+										transition: 'transform 0.3s',
+										'&:hover': {
+											transform: 'scale(1.05)',
+										},
 									})}
 								>
-									<Text size='3rem' fw={800} variant='gradient' gradient={{ from: 'blue', to: 'cyan' }} className='mb-2 text-center'>
+									<Text
+										style={{
+											fontSize: '3rem',
+											fontWeight: 800,
+											marginBottom: '8px',
+											textAlign: 'center',
+										}}
+										variant='gradient'
+										gradient={{ from: 'blue', to: 'cyan' }}
+									>
 										{stat.value}
 									</Text>
-									<Text size='lg' c='dimmed' className='text-center'>
+									<Text size='lg' c='dimmed' style={{ textAlign: 'center' }}>
 										{stat.label}
 									</Text>
 								</Paper>
@@ -309,20 +459,42 @@ export default function HomePage() {
 			</Box>
 
 			{/* Call to Action Section */}
-			<Box className='py-20 text-center'>
+			<Box
+				style={{
+					padding: '80px 0',
+					textAlign: 'center',
+				}}
+			>
 				<Container size='md'>
-					<Title order={2} className='text-4xl font-bold mb-6 text-center'>
+					<Title
+						order={2}
+						style={{
+							fontSize: '2.25rem',
+							fontWeight: 'bold',
+							marginBottom: '24px',
+							textAlign: 'center',
+						}}
+					>
 						Klar til at Starte Din Rejse?
 					</Title>
-					<Text size='xl' className='mb-10 text-gray-300 max-w-2xl mx-auto text-center'>
+					<Text
+						size='xl'
+						style={{
+							marginBottom: '40px',
+							color: '#d1d5db',
+							maxWidth: '42rem',
+							margin: '0 auto 40px',
+							textAlign: 'center',
+						}}
+					>
 						Forbind med andre spillere, deltag i events og skab uforglemmelige rollespilsoplevelser i vores fordybende FiveM server.
 					</Text>
 
 					<Group justify='center' gap='xl'>
-						<Button component='a' href='https://discord.gg/odessarp' target='_blank' size='xl' leftSection={<DiscordLogo size={24} />} variant='gradient' gradient={{ from: 'indigo', to: 'blue' }} className='px-8'>
+						<Button component='a' href='https://discord.gg/odessarp' target='_blank' size='xl' leftSection={<DiscordLogo size={24} />} variant='gradient' gradient={{ from: 'indigo', to: 'blue' }} style={{ padding: '0 32px' }}>
 							Tilslut Vores Discord
 						</Button>
-						<Button component='a' href='fivem://connect/play.odessarp.com' size='xl' variant='outline' rightSection={<ArrowRight size={24} />} color='blue' className='px-8'>
+						<Button component='a' href='fivem://connect/play.odessarp.com' size='xl' variant='outline' rightSection={<ArrowRight size={24} />} color='blue' style={{ padding: '0 32px' }}>
 							Forbind til Server
 						</Button>
 					</Group>
