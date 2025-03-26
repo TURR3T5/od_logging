@@ -35,7 +35,7 @@ const playerFilterFn = (row: any, filterValue: any) => {
 	const playerName = String(row.original.player_name || '').toLowerCase();
 	const serverId = String(row.original.server_id || '').toLowerCase();
 	const playerId = String(row.original.player_id || '').toLowerCase();
-	const discordId = String(row.original.details?.discord_id || '').toLowerCase();
+	const discordId = String(row.original.discord_id || '').toLowerCase();
 
 	return playerName.includes(searchTerm) || serverId.includes(searchTerm) || playerId.includes(searchTerm) || discordId.includes(searchTerm);
 };
@@ -448,7 +448,7 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 
 							<Group mb='xs'>
 								<Text fw={500}>Discord ID:</Text>
-								<Text>{selectedLog.details?.discord_id || 'N/A'}</Text>
+								<Text>{selectedLog.discord_id || 'N/A'}</Text>
 							</Group>
 
 							<Group mb='xs'>

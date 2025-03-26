@@ -86,7 +86,7 @@ app.post('/log', verifyApiKey, async (req, res) => {
       player_id,
       player_name,
       discord_id,
-      details
+      details = {}
     } = req.body;
 
     if (!server_id || !event_type) {
@@ -110,14 +110,12 @@ app.post('/log', verifyApiKey, async (req, res) => {
 
     if (error) {
       console.error('Supabase error:', error);
-      throw error;
+      return res.status(500).json({ error: 'Failed to log event', details: error });
     }
 
-    console.log('Successfully logged event');
     return res.status(200).json({ success: true, data });
   } catch (error) {
-    console.error('Error logging event:', error.message);
-    return res.status(500).json({ error: 'Failed to log event' });
+    return res.status(500).json({ error: 'Unexpected error logging event', details: error.message });
   }
 });
 
