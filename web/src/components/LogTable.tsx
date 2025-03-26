@@ -1,8 +1,8 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel, getFacetedRowModel, getFacetedUniqueValues, ColumnDef, flexRender, SortingState, ColumnFiltersState } from '@tanstack/react-table';
 import { Table, ScrollArea, Paper, TextInput, Group, Box, Text, ActionIcon, Pagination, Center, Badge, Button, Modal } from '@mantine/core';
-import { ArrowUp, ArrowDown, X, Eye } from '@phosphor-icons/react';
-import { Log } from '../pages/Logs';
+import { ArrowUp, ArrowDown, X, Eye, MagnifyingGlass } from '@phosphor-icons/react';
+import { Log, SearchFilters } from '../pages/Logs';
 import { format } from 'date-fns';
 import { DateTimePicker } from '@mantine/dates';
 
@@ -28,7 +28,7 @@ const dateRangeFilterFn = (row: any, columnId: string, filterValue: [string, str
 	}
 };
 
-const playerFilterFn = (row: any, columnId: string, filterValue: any) => {
+const playerFilterFn = (row: any, filterValue: any) => {
 	if (!filterValue) return true;
 
 	const searchTerm = String(filterValue).toLowerCase();
@@ -40,29 +40,31 @@ const playerFilterFn = (row: any, columnId: string, filterValue: any) => {
 	return playerName.includes(searchTerm) || serverId.includes(searchTerm) || playerId.includes(searchTerm) || discordId.includes(searchTerm);
 };
 
-function DateFilter({ column }: { column: any }) {
+function DateFilter({ onDateRangeChange }: { column: any; onDateRangeChange: (range: { start: string; end: string } | null) => void }) {
 	const [startDate, setStartDate] = useState<Date | null>(null);
 	const [endDate, setEndDate] = useState<Date | null>(null);
 
 	const handleStartDateChange = (date: Date | null) => {
 		setStartDate(date);
-		applyFilters(date, endDate);
+		if (date && endDate) {
+			onDateRangeChange({
+				start: date.toISOString(),
+				end: endDate.toISOString(),
+			});
+		} else if (!date && !endDate) {
+			onDateRangeChange(null);
+		}
 	};
 
 	const handleEndDateChange = (date: Date | null) => {
 		setEndDate(date);
-		applyFilters(startDate, date);
-	};
-
-	const applyFilters = (start: Date | null, end: Date | null) => {
-		if (start && end) {
-			column.setFilterValue([start.toISOString(), end.toISOString()]);
-		} else if (start) {
-			column.setFilterValue([start.toISOString(), new Date().toISOString()]);
-		} else if (end) {
-			column.setFilterValue(['1970-01-01T00:00:00.000Z', end.toISOString()]);
-		} else {
-			column.setFilterValue(undefined);
+		if (startDate && date) {
+			onDateRangeChange({
+				start: startDate.toISOString(),
+				end: date.toISOString(),
+			});
+		} else if (!startDate && !date) {
+			onDateRangeChange(null);
 		}
 	};
 
@@ -72,7 +74,7 @@ function DateFilter({ column }: { column: any }) {
 				placeholder='Start date'
 				valueFormat='DD MMM YYYY HH:mm'
 				clearable
-				size='xs'
+				size='sm'
 				value={startDate}
 				onChange={handleStartDateChange}
 				rightSection={
@@ -82,7 +84,9 @@ function DateFilter({ column }: { column: any }) {
 							onClick={(e) => {
 								e.stopPropagation();
 								setStartDate(null);
-								applyFilters(null, endDate);
+								if (!endDate) {
+									onDateRangeChange(null);
+								}
 							}}
 						>
 							<X size={12} />
@@ -94,7 +98,7 @@ function DateFilter({ column }: { column: any }) {
 				placeholder='End date'
 				valueFormat='DD MMM YYYY HH:mm'
 				clearable
-				size='xs'
+				size='sm'
 				value={endDate}
 				onChange={handleEndDateChange}
 				rightSection={
@@ -104,7 +108,9 @@ function DateFilter({ column }: { column: any }) {
 							onClick={(e) => {
 								e.stopPropagation();
 								setEndDate(null);
-								applyFilters(startDate, null);
+								if (!startDate) {
+									onDateRangeChange(null);
+								}
 							}}
 						>
 							<X size={12} />
@@ -133,10 +139,10 @@ interface LogTableProps {
 		onPageChange: (page: number) => void;
 	};
 	extraColumns?: ColumnDef<Log>[];
-	onSearch?: (filters: { playerSearch?: string; eventTypeSearch?: string; dateRange?: { start: string; end: string } | null }) => void;
+	onSearch?: (filters: SearchFilters) => void;
 }
 
-export default function LogTable({ data, isLoading, pagination, extraColumns = [] }: LogTableProps) {
+export default function LogTable({ data, isLoading, pagination, extraColumns = [], onSearch }: LogTableProps) {
 	const [sorting, setSorting] = useState<SortingState>([{ id: 'timestamp', desc: true }]);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [globalFilter, setGlobalFilter] = useState('');
@@ -144,20 +150,11 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 	const [selectedLog, setSelectedLog] = useState<Log | null>(null);
 	const [modalOpen, setModalOpen] = useState(false);
 	const [playerSearchTerm, setPlayerSearchTerm] = useState('');
-	const [searchSubmitted, setSearchSubmitted] = useState(false);
+	const [eventTypeSearchTerm, setEventTypeSearchTerm] = useState('');
+	const [dateRange, setDateRange] = useState<{ start: string; end: string } | null>(null);
 
 	useEffect(() => {
 		setHasAttemptedLoad(true);
-
-		const params = new URLSearchParams(window.location.search);
-		const playerName = params.get('playerName');
-		const playerId = params.get('playerId');
-
-		if (playerName || playerId) {
-			const searchTerm = playerName || playerId || '';
-			setPlayerSearchTerm(searchTerm);
-			setColumnFilters([{ id: 'player', value: searchTerm }]);
-		}
 	}, []);
 
 	const handleOpenModal = (log: Log) => {
@@ -170,6 +167,29 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 		setTimeout(() => {
 			setSelectedLog(null);
 		}, 300);
+	};
+
+	const handleSearchSubmit = () => {
+		if (onSearch) {
+			onSearch({
+				playerSearch: playerSearchTerm,
+				eventTypeSearch: eventTypeSearchTerm,
+				dateRange: dateRange,
+			});
+		}
+	};
+
+	const handleClearSearch = () => {
+		setPlayerSearchTerm('');
+		setEventTypeSearchTerm('');
+		setDateRange(null);
+		if (onSearch) {
+			onSearch({
+				playerSearch: '',
+				eventTypeSearch: '',
+				dateRange: null,
+			});
+		}
 	};
 
 	const formattedDetails = useMemo(() => {
@@ -205,9 +225,14 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 									Steam: {row.original.player_id}
 								</Text>
 							)}
-							{row.original.details?.discord_id && (
+							{row.original.details?.discord_id && !row.original.discord_id && (
 								<Text size='xs' c='dimmed'>
 									Discord: {row.original.details.discord_id}
+								</Text>
+							)}
+							{row.original.discord_id && (
+								<Text size='xs' c='dimmed'>
+									Discord: {row.original.discord_id}
 								</Text>
 							)}
 						</>
@@ -288,12 +313,37 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 		);
 	}
 
-	if (data.length === 0) {
+	if (data.length === 0 && !isLoading) {
 		return (
 			<Box>
-				<Center p='xl'>
-					<Text>No logs found. Try adjusting your search or check back later.</Text>
-				</Center>
+				<Paper shadow='xs' p='md' style={{ borderRadius: '8px', border: '1px solid #2C2E33' }}>
+					<Box mb='md'>
+						<Group justify='space-between' mb='xs'>
+							<Text fw={500}>Search Logs</Text>
+							<Group>
+								<Button size='xs' variant='outline' color='gray' onClick={handleClearSearch}>
+									Clear
+								</Button>
+								<Button size='xs' leftSection={<MagnifyingGlass size={14} />} onClick={handleSearchSubmit}>
+									Search
+								</Button>
+							</Group>
+						</Group>
+						<Group mb='xs' style={{ display: 'flex', gap: '8px' }}>
+							<TextInput placeholder='Search players, IDs, Discord...' size='sm' value={playerSearchTerm} onChange={(e) => setPlayerSearchTerm(e.target.value)} style={{ flex: 1 }} />
+							<TextInput placeholder='Event type' size='sm' value={eventTypeSearchTerm} onChange={(e) => setEventTypeSearchTerm(e.target.value)} style={{ flex: 1 }} />
+							<DateFilter
+								column={null}
+								onDateRangeChange={(range) => {
+									setDateRange(range);
+								}}
+							/>
+						</Group>
+					</Box>
+					<Center p='xl'>
+						<Text>No logs found. Try adjusting your search or check back later.</Text>
+					</Center>
+				</Paper>
 			</Box>
 		);
 	}
@@ -301,6 +351,31 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 	return (
 		<Box>
 			<Paper shadow='xs' p={0} style={{ overflow: 'hidden', borderRadius: '8px', border: '1px solid #2C2E33' }}>
+				{/* Search Controls */}
+				<Box p='md' style={{ borderBottom: '1px solid #2C2E33', backgroundColor: '#1a1a1a' }}>
+					<Group justify='space-between' mb='xs'>
+						<Text fw={500}>Search Logs</Text>
+						<Group>
+							<Button size='xs' variant='outline' color='gray' onClick={handleClearSearch}>
+								Clear
+							</Button>
+							<Button size='xs' leftSection={<MagnifyingGlass size={14} />} onClick={handleSearchSubmit}>
+								Search
+							</Button>
+						</Group>
+					</Group>
+					<Group mb='xs' style={{ display: 'flex', gap: '8px' }}>
+						<TextInput placeholder='Search players, IDs, Discord...' size='sm' value={playerSearchTerm} onChange={(e) => setPlayerSearchTerm(e.target.value)} style={{ flex: 1 }} />
+						<TextInput placeholder='Event type' size='sm' value={eventTypeSearchTerm} onChange={(e) => setEventTypeSearchTerm(e.target.value)} style={{ flex: 1 }} />
+						<DateFilter
+							column={null}
+							onDateRangeChange={(range) => {
+								setDateRange(range);
+							}}
+						/>
+					</Group>
+				</Box>
+
 				<ScrollArea>
 					<Table striped highlightOnHover style={{ minWidth: 800 }}>
 						<thead style={{ backgroundColor: '#1E1E1E' }}>
@@ -315,60 +390,6 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 													</Text>
 													<SortingIndicator column={header.column} />
 												</Group>
-											)}
-
-											{header.column.id === 'player' && (
-												<Box mt={8}>
-													<TextInput
-														placeholder='Search by name/ID/discord...'
-														value={(header.column.getFilterValue() as string) ?? ''}
-														onChange={(e) => header.column.setFilterValue(e.target.value)}
-														size='xs'
-														rightSection={
-															header.column.getFilterValue() ? (
-																<ActionIcon
-																	size='xs'
-																	onClick={(e) => {
-																		e.stopPropagation();
-																		header.column.setFilterValue(undefined);
-																	}}
-																>
-																	<X size={12} />
-																</ActionIcon>
-															) : null
-														}
-													/>
-												</Box>
-											)}
-
-											{header.column.id === 'event_type' && (
-												<Box mt={8}>
-													<TextInput
-														placeholder='Search event type...'
-														value={(header.column.getFilterValue() as string) ?? ''}
-														onChange={(e) => header.column.setFilterValue(e.target.value)}
-														size='xs'
-														rightSection={
-															header.column.getFilterValue() ? (
-																<ActionIcon
-																	size='xs'
-																	onClick={(e) => {
-																		e.stopPropagation();
-																		header.column.setFilterValue(undefined);
-																	}}
-																>
-																	<X size={12} />
-																</ActionIcon>
-															) : null
-														}
-													/>
-												</Box>
-											)}
-
-											{header.column.id === 'timestamp' && (
-												<Box mt={8}>
-													<DateFilter column={header.column} />
-												</Box>
 											)}
 										</th>
 									))}

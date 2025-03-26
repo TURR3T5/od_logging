@@ -1,5 +1,4 @@
 export interface DiscordUser {
-  // Existing properties
   avatar_url?: string;
   email?: string;
   email_verified?: boolean;
@@ -18,16 +17,13 @@ export interface DiscordUser {
   avatar?: string;
   discriminator?: string;
   
-  // Add this new property to match the nested structure
   user_metadata?: {
     provider_id?: string;
     sub?: string;
     avatar_url?: string;
     email?: string;
-    // Other possible nested properties
   };
   
-  // Rest of the existing properties
   public_flags?: number;
   premium_type?: number;
   flags?: number;
@@ -71,8 +67,7 @@ export const ALLOWED_ROLE_IDS = [
 ];
 
 export const ALLOWED_DISCORD_USER_IDS = [
-  "256031472605986829", // Your Discord user ID
-  // Add other authorized user IDs here
+  "256031472605986829",
 ];
   
 export const hasPermission = (user: any): boolean => {

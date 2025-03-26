@@ -14,7 +14,14 @@ export interface Log {
 	type?: string;
 	player_id?: string;
 	player_name?: string;
+	discord_id?: string;
 	details: any;
+}
+
+export interface SearchFilters {
+	playerSearch: string;
+	eventTypeSearch: string;
+	dateRange: { start: string; end: string } | null;
 }
 
 export default function LogsPage() {
@@ -23,6 +30,11 @@ export default function LogsPage() {
 	const [page, setPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(1);
 	const router = useRouter();
+	const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+		playerSearch: '',
+		eventTypeSearch: '',
+		dateRange: null,
+	});
 
 	const LOGS_PER_PAGE = 15;
 
@@ -47,49 +59,139 @@ export default function LogsPage() {
 		try {
 			const currentFilters = getQueryFilters();
 
-			let query = supabase
-				.from('logs')
-				.select('*', { count: 'exact' })
-				.order('created_at', { ascending: false })
-				.range((page - 1) * LOGS_PER_PAGE, page * LOGS_PER_PAGE - 1);
+			let query = supabase.from('logs').select('*', { count: 'exact' }).order('created_at', { ascending: false });
 
-			if (currentFilters.eventType) {
-				query = query.eq('event_type', currentFilters.eventType);
-			}
-
-			if (currentFilters.serverId) {
-				query = query.eq('server_id', currentFilters.serverId);
-			}
-
-			if (currentFilters.playerId) {
-				query = query.or(`player_id.ilike.%${currentFilters.playerId}%,details->discord_id.ilike.%${currentFilters.playerId}%,server_id.ilike.%${currentFilters.playerId}%`);
-			}
-
-			if (currentFilters.playerName) {
-				query = query.or(`player_name.ilike.%${currentFilters.playerName}%,player_id.ilike.%${currentFilters.playerName}%,details->discord_id.ilike.%${currentFilters.playerName}%,server_id.ilike.%${currentFilters.playerName}%`);
-			}
-
-			if (searchParams.playerSearch) {
-				query = query.or(`player_name.ilike.%${searchParams.playerSearch}%,player_id.ilike.%${searchParams.playerSearch}%,details->discord_id.ilike.%${searchParams.playerSearch}%,server_id.ilike.%${searchParams.playerSearch}%`);
-			}
-			
-			if (searchParams.eventTypeSearch) {
-				query = query.ilike('event_type', `%${searchParams.eventTypeSearch}%`);
-			}
-			
-			if (searchParams.dateRange) {
-				query = query.gte('created_at', searchParams.dateRange.start).lte('created_at', searchParams.dateRange.end);
-			}
+			const appliedFilters = [];
 
 			if (currentFilters.category) {
 				query = query.eq('category', currentFilters.category);
+				appliedFilters.push(`Category: ${currentFilters.category}`);
 			}
 
 			if (currentFilters.type) {
 				query = query.eq('type', currentFilters.type);
+				appliedFilters.push(`Type: ${currentFilters.type}`);
 			}
 
-			const { data, count, error } = await query;
+			if (currentFilters.eventType) {
+				query = query.eq('event_type', currentFilters.eventType);
+				appliedFilters.push(`Event type: ${currentFilters.eventType}`);
+			}
+
+			if (searchFilters.eventTypeSearch) {
+				query = query.ilike('event_type', `%${searchFilters.eventTypeSearch}%`);
+				appliedFilters.push(`Event type search: ${searchFilters.eventTypeSearch}`);
+			}
+
+			if (currentFilters.serverId) {
+				query = query.eq('server_id', currentFilters.serverId);
+				appliedFilters.push(`Server ID: ${currentFilters.serverId}`);
+			}
+
+			if (searchFilters.playerSearch) {
+				const searchTerm = searchFilters.playerSearch.trim();
+				if (searchTerm) {
+					appliedFilters.push(`Player search: ${searchTerm}`);
+
+					query = query.or(`player_name.ilike.%${searchTerm}%,` + `player_id.ilike.%${searchTerm}%,` + `server_id.ilike.%${searchTerm}%,` + `discord_id.ilike.%${searchTerm}%`);
+
+					try {
+						const detailsQuery = supabase.from('logs').select('id').filter('details::text', 'ilike', `%${searchTerm}%`);
+
+						if (currentFilters.category) {
+							detailsQuery.eq('category', currentFilters.category);
+						}
+
+						if (currentFilters.type) {
+							detailsQuery.eq('type', currentFilters.type);
+						}
+
+						const { data: detailsMatches, error: detailsError } = await detailsQuery;
+
+						if (!detailsError && detailsMatches && detailsMatches.length > 0) {
+							const matchingIds = detailsMatches.map((row) => row.id);
+							console.log(`Found ${matchingIds.length} matches in details field`);
+
+							query = query.or(`id.in.(${matchingIds.join(',')})`);
+						}
+					} catch (e) {
+						console.warn('Error searching in details field:', e);
+					}
+				}
+			}
+
+			if (currentFilters.playerId) {
+				const playerId = currentFilters.playerId.trim();
+				if (playerId) {
+					appliedFilters.push(`Player ID: ${playerId}`);
+					query = query.or(`player_id.ilike.%${playerId}%,server_id.ilike.%${playerId}%`);
+				}
+			}
+
+			if (currentFilters.playerName) {
+				const playerName = currentFilters.playerName.trim();
+				if (playerName) {
+					appliedFilters.push(`Player name: ${playerName}`);
+					query = query.ilike('player_name', `%${playerName}%`);
+				}
+			}
+
+			if (searchFilters.dateRange) {
+				query = query.gte('created_at', searchFilters.dateRange.start).lte('created_at', searchFilters.dateRange.end);
+				const startDate = new Date(searchFilters.dateRange.start).toLocaleDateString();
+				const endDate = new Date(searchFilters.dateRange.end).toLocaleDateString();
+				appliedFilters.push(`Date range: ${startDate} - ${endDate}`);
+			}
+
+			const countQuery = supabase.from('logs').select('*', { count: 'exact' });
+
+			if (currentFilters.category) {
+				countQuery.eq('category', currentFilters.category);
+			}
+			if (currentFilters.type) {
+				countQuery.eq('type', currentFilters.type);
+			}
+			if (currentFilters.eventType) {
+				countQuery.eq('event_type', currentFilters.eventType);
+			}
+			if (searchFilters.eventTypeSearch) {
+				countQuery.ilike('event_type', `%${searchFilters.eventTypeSearch}%`);
+			}
+			if (currentFilters.serverId) {
+				countQuery.eq('server_id', currentFilters.serverId);
+			}
+			if (searchFilters.playerSearch) {
+				const searchTerm = searchFilters.playerSearch.trim();
+				if (searchTerm) {
+					countQuery.or(`player_name.ilike.%${searchTerm}%,` + `player_id.ilike.%${searchTerm}%,` + `server_id.ilike.%${searchTerm}%,` + `discord_id.ilike.%${searchTerm}%`);
+				}
+			}
+			if (currentFilters.playerId) {
+				const playerId = currentFilters.playerId.trim();
+				if (playerId) {
+					countQuery.or(`player_id.ilike.%${playerId}%,server_id.ilike.%${playerId}%`);
+				}
+			}
+			if (currentFilters.playerName) {
+				const playerName = currentFilters.playerName.trim();
+				if (playerName) {
+					countQuery.ilike('player_name', `%${playerName}%`);
+				}
+			}
+			if (searchFilters.dateRange) {
+				countQuery.gte('created_at', searchFilters.dateRange.start).lte('created_at', searchFilters.dateRange.end);
+			}
+
+			const { count, error: countError } = await countQuery;
+
+			if (countError) {
+				console.error('Error getting count:', countError);
+				return;
+			}
+
+			query = query.range((page - 1) * LOGS_PER_PAGE, page * LOGS_PER_PAGE - 1);
+
+			const { data, error } = await query;
 
 			if (error) {
 				console.error('Error fetching logs:', error);
@@ -103,7 +205,7 @@ export default function LogsPage() {
 		} finally {
 			setLoading(false);
 		}
-	}, [page, LOGS_PER_PAGE, getQueryFilters]);
+	}, [page, LOGS_PER_PAGE, getQueryFilters, searchFilters]);
 
 	const handleUrlChange = useCallback(() => {
 		setPage(1);
@@ -134,6 +236,11 @@ export default function LogsPage() {
 	useEffect(() => {
 		fetchLogs();
 	}, [page, fetchLogs]);
+
+	const handleSearch = (newFilters: SearchFilters) => {
+		setSearchFilters(newFilters);
+		setPage(1);
+	};
 
 	return (
 		<MainLayout>
@@ -166,6 +273,7 @@ export default function LogsPage() {
 								totalPages,
 								onPageChange: setPage,
 							}}
+							onSearch={handleSearch}
 						/>
 					</Paper>
 				</Container>

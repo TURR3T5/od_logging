@@ -33,38 +33,10 @@ const logsRoute = createRoute({
 	component: LogsPage,
 });
 
-// Create routes organized by log category
-const inventoryLogsRoute = createRoute({
-	getParentRoute: () => logsRoute,
-	path: '/inventory',
-	component: LogsPage,
-});
+const routeTree = rootRoute.addChildren([homeRoute, loginRoute, authCallbackRoute, logsRoute]);
 
-const playersLogsRoute = createRoute({
-	getParentRoute: () => logsRoute,
-	path: '/players',
-	component: LogsPage,
-});
-
-const vehiclesLogsRoute = createRoute({
-	getParentRoute: () => logsRoute,
-	path: '/vehicles',
-	component: LogsPage,
-});
-
-const adminLogsRoute = createRoute({
-	getParentRoute: () => logsRoute,
-	path: '/admin',
-	component: LogsPage,
-});
-
-// Build the route tree with all defined routes
-const routeTree = rootRoute.addChildren([homeRoute, loginRoute, authCallbackRoute, logsRoute.addChildren([inventoryLogsRoute, playersLogsRoute, vehiclesLogsRoute, adminLogsRoute])]);
-
-// Create the router instance
 export const router = createRouter({ routeTree });
 
-// Type augmentation for router types
 declare module '@tanstack/react-router' {
 	interface Register {
 		router: typeof router;

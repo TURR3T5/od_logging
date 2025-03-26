@@ -1,16 +1,13 @@
-// web/server.js
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import { createClient } from '@supabase/supabase-js';
 import bodyParser from 'body-parser';
 
-dotenv.config({ path: './.env.local' }); // Load environment variables
-
+dotenv.config({ path: './.env.local' });
 const app = express();
 const PORT = 3001;
 
-// Environment variables
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const fivemApiKey = process.env.FIVEM_API_KEY;
@@ -20,10 +17,8 @@ if (!supabaseUrl || !supabaseServiceKey || !fivemApiKey) {
   process.exit(1);
 }
 
-// Create Supabase client
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// Middleware
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'OPTIONS'],
@@ -31,7 +26,6 @@ app.use(cors({
 }));
 app.use(bodyParser.json());
 
-// Verify API key middleware
 const verifyApiKey = (req, res, next) => {
   const apiKey = req.headers['x-api-key'];
   if (apiKey !== fivemApiKey) {
@@ -40,7 +34,6 @@ const verifyApiKey = (req, res, next) => {
   next();
 };
 
-// Routes
 app.get('/', (req, res) => {
   res.json({
     message: 'FiveM logging API is running',
@@ -71,11 +64,8 @@ app.get('/log', (req, res) => {
         type: 'type_name',
         player_id: 'optional_player_id (Steam ID)',
         player_name: 'optional_player_name (In-game character name)',
-        details: { 
-          /* additional details */ 
-          discord_id: 'optional_discord_id',
-          // Any other relevant details for the specific log type
-        }
+        discord_id: 'optional_discord_id',
+        details: {}
       }
     },
     categories: [
@@ -97,24 +87,12 @@ app.post('/log', verifyApiKey, async (req, res) => {
       player_name,
       details
     } = req.body;
-
-    // Validate required fields
     if (!server_id || !event_type) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    console.log('Received log:', {
-      server_id,
-      event_type,
-      category,
-      type,
-      player_id,
-      player_name,
-      // Log only relevant parts of details to avoid sensitive info
-      details: details ? 'Details included' : 'No details'
-    });
+    const discord_id = details?.discord_id || null;
 
-    // Insert log into Supabase
     const { data, error } = await supabase
       .from('logs')
       .insert([
@@ -125,7 +103,8 @@ app.post('/log', verifyApiKey, async (req, res) => {
           type,
           player_id,
           player_name,
-          details
+          details,
+          discord_id
         }
       ]);
 
@@ -142,10 +121,8 @@ app.post('/log', verifyApiKey, async (req, res) => {
   }
 });
 
-// Start server
 app.listen(PORT, () => {
   console.log(`API Server running on http://localhost:${PORT}`);
 });
 
-// Export app for testing purposes
 export default app;

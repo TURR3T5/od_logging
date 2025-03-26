@@ -18,7 +18,7 @@ export default function LoginPage() {
 				style={{
 					display: 'flex',
 					flexDirection: 'column',
-					minHeight: 'calc(100vh - 60px)', // Adjust for header
+					minHeight: 'calc(100vh - 60px)',
 					backgroundColor: '#111',
 				}}
 			>

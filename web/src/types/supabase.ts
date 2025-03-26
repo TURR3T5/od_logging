@@ -11,7 +11,8 @@ export interface Database {
           type: string | null;
           player_id: string | null;
           player_name: string | null;
-          details: any;  // Will contain discord_id and other specific log details
+          discord_id: string | null;
+          details: any;
         };
         Insert: {
           id?: string;
@@ -22,6 +23,7 @@ export interface Database {
           type?: string | null;
           player_id?: string | null;
           player_name?: string | null;
+          discord_id?: string | null;
           details?: any;
         };
         Update: {
@@ -33,6 +35,7 @@ export interface Database {
           type?: string | null;
           player_id?: string | null;
           player_name?: string | null;
+          discord_id?: string | null;
           details?: any;
         };
       };
