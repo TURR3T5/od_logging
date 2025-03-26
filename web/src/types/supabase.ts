@@ -11,7 +11,7 @@ export interface Database {
           type: string | null;
           player_id: string | null;
           player_name: string | null;
-          details: any;
+          details: any;  // Will contain discord_id and other specific log details
         };
         Insert: {
           id?: string;

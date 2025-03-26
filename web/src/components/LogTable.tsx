@@ -180,6 +180,11 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 									Steam: {row.original.player_id}
 								</Text>
 							)}
+							{row.original.details?.discord_id && (
+								<Text size='xs' c='dimmed'>
+									Discord: {row.original.details.discord_id}
+								</Text>
+							)}
 						</>
 					) : (
 						<Badge color='gray' variant='light'>
@@ -370,6 +375,16 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 					<>
 						<Box mb='md'>
 							<Group mb='xs'>
+								<Text fw={500}>Category:</Text>
+								<Badge color='indigo'>{selectedLog.category || 'N/A'}</Badge>
+							</Group>
+
+							<Group mb='xs'>
+								<Text fw={500}>Type:</Text>
+								<Badge color='teal'>{selectedLog.type || 'N/A'}</Badge>
+							</Group>
+
+							<Group mb='xs'>
 								<Text fw={500}>Event Type:</Text>
 								<Badge color='blue'>{selectedLog.event_type}</Badge>
 							</Group>
@@ -380,8 +395,18 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 							</Group>
 
 							<Group mb='xs'>
-								<Text fw={500}>Player ID:</Text>
+								<Text fw={500}>Server ID:</Text>
+								<Text>{selectedLog.server_id || 'N/A'}</Text>
+							</Group>
+
+							<Group mb='xs'>
+								<Text fw={500}>Steam ID:</Text>
 								<Text>{selectedLog.player_id || 'N/A'}</Text>
+							</Group>
+
+							<Group mb='xs'>
+								<Text fw={500}>Discord ID:</Text>
+								<Text>{selectedLog.details?.discord_id || 'N/A'}</Text>
 							</Group>
 
 							<Group mb='xs'>

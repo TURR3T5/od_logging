@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { createClient } from '@supabase/supabase-js'
-import type { Database } from '../src/types/supabase'
+import type { Database } from '../../src/types/supabase'
 
 const supabaseUrl = process.env.SUPABASE_URL || ''
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
@@ -42,11 +42,20 @@ export default async function handler(
           event_type: 'event_name',
           category: 'category_name',
           type: 'type_name',
-          player_id: 'optional_player_id',
-          player_name: 'optional_player_name',
-          details: { /* additional details */ }
+          player_id: 'optional_player_id (Steam ID)',
+          player_name: 'optional_player_name (In-game character name)',
+          details: { 
+            /* additional details */ 
+            discord_id: 'optional_discord_id',
+            // Any other relevant details for the specific log type
+          }
         }
-      }
+      },
+      categories: [
+        "economy", "inventory", "player", "vehicles", "mechanic",
+        "crime", "drugs", "illegal", "business", "food",
+        "comms", "social", "housing", "admin", "police", "crafting"
+      ]
     });
   }
 
