@@ -1,4 +1,4 @@
-import { NextApiRequest, NextApiResponse } from 'next'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '../../src/types/supabase'
 
@@ -8,67 +8,46 @@ const fivemApiKey = process.env.FIVEM_API_KEY || ''
 
 const supabase = createClient<Database>(supabaseUrl, supabaseServiceKey)
 
-export default async function handler(
-  req: NextApiRequest, 
-  res: NextApiResponse
-) {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', 'true')
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-API-KEY, Content-Type, Authorization'
-  )
-  res.setHeader(
-    'Access-Control-Allow-Methods',
-    'GET, POST, OPTIONS'
-  )
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end()
-  }
-  
-  if (req.method === 'GET') {
-    return res.status(200).json({
-      message: 'This is the FiveM logging API endpoint. It accepts POST requests with a valid API key.',
-      usage: {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': 'your-api-key-here'
-        },
-        body: {
-          server_id: 'server_name',
-          event_type: 'event_name',
-          category: 'category_name',
-          type: 'type_name',
-          player_id: 'optional_player_id (Steam ID)',
-          player_name: 'optional_player_name (In-game character name)',
-          details: { 
-            /* additional details */ 
-            discord_id: 'optional_discord_id',
-            // Any other relevant details for the specific log type
-          }
-        }
+export async function GET() {
+  return NextResponse.json({
+    message: 'This is the FiveM logging API endpoint. It accepts POST requests with a valid API key.',
+    usage: {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': 'your-api-key-here'
       },
-      categories: [
-        "economy", "inventory", "player", "vehicles", "mechanic",
-        "crime", "drugs", "illegal", "business", "food",
-        "comms", "social", "housing", "admin", "police", "crafting"
-      ]
-    });
-  }
+      body: {
+        server_id: 'server_name',
+        event_type: 'event_name',
+        category: 'category_name',
+        type: 'type_name',
+        player_id: 'optional_player_id (Steam ID)',
+        player_name: 'optional_player_name (In-game character name)',
+        details: { 
+          /* additional details */ 
+          discord_id: 'optional_discord_id',
+          // Any other relevant details for the specific log type
+        }
+      }
+    },
+    categories: [
+      "economy", "inventory", "player", "vehicles", "mechanic",
+      "crime", "drugs", "illegal", "business", "food",
+      "comms", "social", "housing", "admin", "police", "crafting"
+    ]
+  })
+}
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
-  }
-
-  const apiKey = req.headers['x-api-key']
+export async function POST(request: NextRequest) {
+  // Check API key
+  const apiKey = request.headers.get('x-api-key')
   if (apiKey !== fivemApiKey) {
-    return res.status(401).json({ error: 'Unauthorized' })
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
+    const body = await request.json()
     const {
       server_id,
       event_type,
@@ -77,11 +56,11 @@ export default async function handler(
       player_id,
       player_name,
       details
-    } = req.body
+    } = body
 
     // Validate required fields
     if (!server_id || !event_type) {
-      return res.status(400).json({ error: 'Missing required fields' })
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
     // Insert log into Supabase
@@ -103,9 +82,21 @@ export default async function handler(
       throw error
     }
 
-    return res.status(200).json({ success: true, data })
+    return NextResponse.json({ success: true, data })
   } catch (error: any) {
     console.error('Error logging event:', error.message)
-    return res.status(500).json({ error: 'Failed to log event' })
+    return NextResponse.json({ error: 'Failed to log event' }, { status: 500 })
   }
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'X-API-KEY, Content-Type, Authorization'
+    }
+  })
 }
