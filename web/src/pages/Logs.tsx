@@ -36,7 +36,7 @@ export default function LogsPage() {
 		dateRange: null,
 	});
 
-	const LOGS_PER_PAGE = 15;
+	const LOGS_PER_PAGE = 8;
 
 	const getQueryFilters = useCallback(() => {
 		const params = new URLSearchParams(window.location.search);
@@ -216,7 +216,6 @@ export default function LogsPage() {
 					width: '100%',
 					display: 'flex',
 					justifyContent: 'center',
-					padding: '20px 0',
 				}}
 			>
 				<Container size='xl' style={{ maxWidth: '1600px', width: '100%' }}>

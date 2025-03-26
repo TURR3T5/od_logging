@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AppShell, useMantineTheme } from '@mantine/core';
+import { AppShell, useMantineTheme, Box } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { useAuth } from '../components/AuthProvider';
 import { useNavigate, useRouter } from '@tanstack/react-router';
@@ -50,12 +50,24 @@ export default function MainLayout({ children, requireAuth = true }: MainLayoutP
 	const showSidebar = isAuthorized && isLogsPage;
 
 	return (
-		<div className='app-root'>
-			<div className='header-container' style={{ width: '100%', borderBottom: '1px solid #222', backgroundColor: '#111' }}>
+		<Box>
+			<Box
+				w='100%'
+				style={{
+					borderBottom: '1px solid #222',
+					backgroundColor: '#111',
+				}}
+			>
 				<Header />
-			</div>
+			</Box>
 
-			<div className='content-container' style={{ maxWidth: '1920px', margin: '0 auto', marginTop: '60px' }}>
+			<Box
+				style={{
+					maxWidth: '1920px',
+					margin: '0 auto',
+					marginTop: '60px',
+				}}
+			>
 				<AppShell
 					padding={isMobile ? 'xs' : 'md'}
 					navbar={
@@ -97,7 +109,7 @@ export default function MainLayout({ children, requireAuth = true }: MainLayoutP
 					)}
 					<AppShell.Main>{children}</AppShell.Main>
 				</AppShell>
-			</div>
-		</div>
+			</Box>
+		</Box>
 	);
 }

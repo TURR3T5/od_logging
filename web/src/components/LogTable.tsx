@@ -311,7 +311,7 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 	if (data.length === 0 && !isLoading) {
 		return (
 			<Box>
-				<Paper shadow='xs' p='md' style={{ borderRadius: '8px', border: '1px solid #2C2E33' }}>
+				<Paper shadow='xs' p='md' radius='md' withBorder style={{ borderColor: '#2C2E33' }}>
 					<Box mb='md'>
 						<Group justify='space-between' mb='xs'>
 							<Text fw={500}>Search Logs</Text>
@@ -324,7 +324,7 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 								</Button>
 							</Group>
 						</Group>
-						<Group mb='xs' style={{ display: 'flex', gap: '8px' }}>
+						<Group mb='xs' gap='xs'>
 							<TextInput placeholder='Search players, IDs, Discord...' size='sm' value={playerSearchTerm} onChange={(e) => setPlayerSearchTerm(e.target.value)} style={{ flex: 1 }} />
 							<TextInput placeholder='Event type' size='sm' value={eventTypeSearchTerm} onChange={(e) => setEventTypeSearchTerm(e.target.value)} style={{ flex: 1 }} />
 							<DateFilter
@@ -359,7 +359,7 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 							</Button>
 						</Group>
 					</Group>
-					<Group mb='xs' style={{ display: 'flex', gap: '8px' }}>
+					<Group mb='xs' style={{ gap: 8, display: 'flex' }}>
 						<TextInput placeholder='Search players, IDs, Discord...' size='sm' value={playerSearchTerm} onChange={(e) => setPlayerSearchTerm(e.target.value)} style={{ flex: 1 }} />
 						<TextInput placeholder='Event type' size='sm' value={eventTypeSearchTerm} onChange={(e) => setEventTypeSearchTerm(e.target.value)} style={{ flex: 1 }} />
 						<DateFilter
@@ -461,16 +461,16 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 							Details:
 						</Text>
 						<Box
-							style={{
+							style={(theme) => ({
 								fontFamily: 'monospace',
 								whiteSpace: 'pre-wrap',
 								maxHeight: '400px',
 								overflow: 'auto',
-								backgroundColor: '#1E1E1E',
-								padding: '12px',
-								borderRadius: '4px',
-								fontSize: '14px',
-							}}
+								backgroundColor: theme.colors.dark[7],
+								padding: theme.spacing.md,
+								borderRadius: theme.radius.sm,
+								fontSize: theme.fontSizes.sm,
+							})}
 						>
 							{formattedDetails}
 						</Box>

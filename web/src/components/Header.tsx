@@ -1,14 +1,14 @@
 import { Group, Text, Button, Box, Container } from '@mantine/core';
 import { useAuth } from '../components/AuthProvider';
 import { useNavigate } from '@tanstack/react-router';
-import { SignOut, Gauge, ListBullets } from '@phosphor-icons/react';
+import { SignOut, House, ListBullets } from '@phosphor-icons/react';
 
 export default function Header() {
 	const { isAuthorized, isLoading, user, signInWithDiscord, signOut } = useAuth();
 	const navigate = useNavigate();
 
 	const menuItems = [
-		{ label: 'Home', icon: Gauge, onClick: () => navigate({ to: '/' }) },
+		{ label: 'Home', icon: House, onClick: () => navigate({ to: '/' }) },
 		{
 			label: 'Server Logs',
 			icon: ListBullets,
@@ -21,9 +21,9 @@ export default function Header() {
 
 	return (
 		<Box
+			w='100%'
+			bg='#111'
 			style={{
-				width: '100%',
-				backgroundColor: '#111',
 				borderBottom: '1px solid #222',
 				position: 'fixed',
 				top: 0,
@@ -42,7 +42,7 @@ export default function Header() {
 					margin: '0 auto',
 				}}
 			>
-				<Group justify='space-between' style={{ height: '100%' }}>
+				<Group justify='space-between' h='100%'>
 					<Group>
 						<Text fw={700} size='lg' variant='gradient' gradient={{ from: 'yellow', to: 'grape', deg: 90 }} onClick={() => navigate({ to: '/' })} style={{ cursor: 'pointer' }}>
 							OdessaRP
@@ -54,16 +54,16 @@ export default function Header() {
 									key={index}
 									gap='xs'
 									onClick={item.onClick}
-									style={{
+									style={(theme) => ({
 										cursor: 'pointer',
 										transition: 'color 200ms ease',
 										'&:hover': {
-											color: '#4dabf7',
+											color: theme.colors.blue[4],
 										},
 										alignItems: 'center',
-									}}
+									})}
 								>
-									<item.icon size={18} style={{ display: 'flex', alignItems: 'center' }} />
+									<item.icon size={22} style={{ display: 'flex', alignItems: 'center' }} />
 									<Text c='gray.0' style={{ display: 'flex', alignItems: 'center' }}>
 										{item.label}
 									</Text>
