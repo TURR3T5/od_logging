@@ -134,7 +134,7 @@ export default function LogsPage() {
 				}}
 			>
 				<Container size='xl' style={{ maxWidth: '1600px', width: '100%' }}>
-					<Paper p='md' mb='md' style={{ backgroundColor: '#1A1B1E', width: '100%' }}>
+					<Paper p='md' mb='md' bg='dark.8' style={{ backgroundColor: '', width: '100%' }}>
 						<Group justify='space-between' mb='md'>
 							<Box>
 								<Title order={2}>{pageTitle}</Title>
