@@ -209,7 +209,7 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 			header: 'Player',
 			accessorFn: (row) => row.player_name || 'System',
 			cell: ({ row }) => (
-				<Box>
+				<Box style={{ width: '250px', minWidth: '250px' }}>
 					{row.original.player_name ? (
 						<>
 							<Text size='sm' fw={500}>
@@ -247,9 +247,11 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 			cell: ({ row }) => {
 				const eventType = row.original.event_type;
 				return (
-					<Badge color='blue' variant='light'>
-						{eventType}
-					</Badge>
+					<Box style={{ width: '180px', minWidth: '180px' }}>
+						<Badge color='blue' variant='light'>
+							{eventType}
+						</Badge>
+					</Box>
 				);
 			},
 		},
@@ -259,7 +261,11 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 			accessorFn: (row) => new Date(row.created_at),
 			cell: ({ row }) => {
 				const date = new Date(row.original.created_at);
-				return <Text size='sm'>{format(date, 'yyyy-MM-dd HH:mm:ss')}</Text>;
+				return (
+					<Box style={{ width: '180px', minWidth: '180px' }}>
+						<Text size='sm'>{format(date, 'yyyy-MM-dd HH:mm:ss')}</Text>
+					</Box>
+				);
 			},
 			filterFn: dateRangeFilterFn,
 		},
@@ -268,9 +274,11 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 			header: 'Actions',
 			cell: ({ row }) => {
 				return (
-					<Button variant='subtle' size='xs' leftSection={<Eye size={14} />} onClick={() => handleOpenModal(row.original)}>
-						Details
-					</Button>
+					<Box style={{ width: '100px', minWidth: '100px' }}>
+						<Button variant='subtle' size='xs' leftSection={<Eye size={14} />} onClick={() => handleOpenModal(row.original)}>
+							Details
+						</Button>
+					</Box>
 				);
 			},
 		},
@@ -372,12 +380,20 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 				</Box>
 
 				<ScrollArea>
-					<Table striped highlightOnHover style={{ minWidth: 800 }}>
+					<Table striped highlightOnHover style={{ minWidth: 800, tableLayout: 'fixed' }}>
 						<thead style={{ backgroundColor: '#1E1E1E' }}>
 							{table.getHeaderGroups().map((headerGroup) => (
 								<tr key={headerGroup.id}>
 									{headerGroup.headers.map((header) => (
-										<th key={header.id} style={{ padding: '12px 16px', borderBottom: '1px solid #2C2E33' }}>
+										<th
+											key={header.id}
+											style={{
+												padding: '12px 16px',
+												borderBottom: '1px solid #2C2E33',
+												width: header.id === 'player' ? '250px' : header.id === 'event_type' ? '180px' : header.id === 'timestamp' ? '180px' : header.id === 'actions' ? '100px' : 'auto',
+												minWidth: header.id === 'player' ? '250px' : header.id === 'event_type' ? '180px' : header.id === 'timestamp' ? '180px' : header.id === 'actions' ? '100px' : 'auto',
+											}}
+										>
 											{header.isPlaceholder ? null : (
 												<Group gap={4} align='center' style={{ cursor: 'pointer' }} onClick={header.column.getToggleSortingHandler()}>
 													<Text fw={500} size='sm'>
@@ -395,7 +411,16 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 							{table.getRowModel().rows.map((row) => (
 								<tr key={row.id} style={{ borderBottom: '1px solid #2C2E33' }}>
 									{row.getVisibleCells().map((cell) => (
-										<td key={cell.id} style={{ padding: '12px 16px' }}>
+										<td
+											key={cell.id}
+											style={{
+												padding: '12px 16px',
+												width: cell.column.id === 'player' ? '250px' : cell.column.id === 'event_type' ? '180px' : cell.column.id === 'timestamp' ? '180px' : cell.column.id === 'actions' ? '100px' : 'auto',
+												minWidth: cell.column.id === 'player' ? '250px' : cell.column.id === 'event_type' ? '180px' : cell.column.id === 'timestamp' ? '180px' : cell.column.id === 'actions' ? '100px' : 'auto',
+												overflow: 'hidden',
+												textOverflow: 'ellipsis',
+											}}
+										>
 											{flexRender(cell.column.columnDef.cell, cell.getContext())}
 										</td>
 									))}

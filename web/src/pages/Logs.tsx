@@ -95,14 +95,22 @@ export default function LogsPage() {
 				}
 			}
 
+			// Build filter for player search
 			if (searchFilters.playerSearch) {
 				const searchTerm = searchFilters.playerSearch.trim();
 				if (searchTerm) {
 					appliedFilters.push(`Player search: ${searchTerm}`);
 
-					const searchConditions = [`player_name.ilike.%${searchTerm}%`, `player_id.ilike.%${searchTerm}%`, `server_id.ilike.%${searchTerm}%`, `discord_id.ilike.%${searchTerm}%`, `details->>${searchTerm}.ilike.%${searchTerm}%`];
+					// Use a different approach for OR conditions that works with PostgREST
+					const filterConditions = [`player_name.ilike.%${searchTerm}%`, `server_id.ilike.%${searchTerm}%`, `discord_id.ilike.%${searchTerm}%`];
 
-					query = query.or(searchConditions.join(','));
+					// For player_id, only include it if the search term could be a number
+					if (!isNaN(Number(searchTerm))) {
+						filterConditions.push(`player_id.ilike.%${searchTerm}%`);
+					}
+
+					// Join the conditions and apply them
+					query = query.or(filterConditions.join(','));
 				}
 			}
 
@@ -113,6 +121,7 @@ export default function LogsPage() {
 				appliedFilters.push(`Date range: ${startDate} - ${endDate}`);
 			}
 
+			// Count query with same filters
 			const countQuery = supabase.from('logs').select('*', { count: 'exact' });
 
 			if (currentFilters.category) {
@@ -138,13 +147,22 @@ export default function LogsPage() {
 				}
 			}
 
+			// Apply same player search to count query
 			if (searchFilters.playerSearch) {
 				const searchTerm = searchFilters.playerSearch.trim();
 				if (searchTerm) {
-					const searchConditions = [`player_name.ilike.%${searchTerm}%`, `player_id.ilike.%${searchTerm}%`, `server_id.ilike.%${searchTerm}%`, `discord_id.ilike.%${searchTerm}%`, `details->>${searchTerm}.ilike.%${searchTerm}%`];
-					countQuery.or(searchConditions.join(','));
+					const filterConditions = [`player_name.ilike.%${searchTerm}%`, `server_id.ilike.%${searchTerm}%`, `discord_id.ilike.%${searchTerm}%`];
+
+					// For player_id, only include it if the search term could be a number
+					if (!isNaN(Number(searchTerm))) {
+						filterConditions.push(`player_id.ilike.%${searchTerm}%`);
+					}
+
+					// Join the conditions and apply them
+					countQuery.or(filterConditions.join(','));
 				}
 			}
+
 			if (searchFilters.dateRange) {
 				countQuery.gte('created_at', searchFilters.dateRange.start).lte('created_at', searchFilters.dateRange.end);
 			}
