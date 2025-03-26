@@ -85,13 +85,13 @@ app.post('/log', verifyApiKey, async (req, res) => {
       type,
       player_id,
       player_name,
+      discord_id,
       details
     } = req.body;
+
     if (!server_id || !event_type) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
-
-    const discord_id = details?.discord_id || null;
 
     const { data, error } = await supabase
       .from('logs')
@@ -103,8 +103,8 @@ app.post('/log', verifyApiKey, async (req, res) => {
           type,
           player_id,
           player_name,
-          details,
-          discord_id
+          discord_id,
+          details
         }
       ]);
 

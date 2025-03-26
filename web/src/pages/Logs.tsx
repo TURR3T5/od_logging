@@ -45,8 +45,7 @@ export default function LogsPage() {
 			type: params.get('type') || '',
 			eventType: params.get('eventType') || '',
 			serverId: params.get('serverId') || '',
-			playerId: params.get('playerId') || '',
-			playerName: params.get('playerName') || '',
+			discordId: params.get('discordId') || '',
 		};
 	}, []);
 
@@ -88,51 +87,22 @@ export default function LogsPage() {
 				appliedFilters.push(`Server ID: ${currentFilters.serverId}`);
 			}
 
+			if (currentFilters.discordId) {
+				const discordId = currentFilters.discordId.trim();
+				if (discordId) {
+					query = query.ilike('discord_id', `%${discordId}%`);
+					appliedFilters.push(`Discord ID: ${discordId}`);
+				}
+			}
+
 			if (searchFilters.playerSearch) {
 				const searchTerm = searchFilters.playerSearch.trim();
 				if (searchTerm) {
 					appliedFilters.push(`Player search: ${searchTerm}`);
 
-					query = query.or(`player_name.ilike.%${searchTerm}%,` + `player_id.ilike.%${searchTerm}%,` + `server_id.ilike.%${searchTerm}%,` + `discord_id.ilike.%${searchTerm}%`);
+					const searchConditions = [`player_name.ilike.%${searchTerm}%`, `player_id.ilike.%${searchTerm}%`, `server_id.ilike.%${searchTerm}%`, `discord_id.ilike.%${searchTerm}%`, `details->>${searchTerm}.ilike.%${searchTerm}%`];
 
-					try {
-						const detailsQuery = supabase.from('logs').select('id').filter('details::text', 'ilike', `%${searchTerm}%`);
-
-						if (currentFilters.category) {
-							detailsQuery.eq('category', currentFilters.category);
-						}
-
-						if (currentFilters.type) {
-							detailsQuery.eq('type', currentFilters.type);
-						}
-
-						const { data: detailsMatches, error: detailsError } = await detailsQuery;
-
-						if (!detailsError && detailsMatches && detailsMatches.length > 0) {
-							const matchingIds = detailsMatches.map((row) => row.id);
-							console.log(`Found ${matchingIds.length} matches in details field`);
-
-							query = query.or(`id.in.(${matchingIds.join(',')})`);
-						}
-					} catch (e) {
-						console.warn('Error searching in details field:', e);
-					}
-				}
-			}
-
-			if (currentFilters.playerId) {
-				const playerId = currentFilters.playerId.trim();
-				if (playerId) {
-					appliedFilters.push(`Player ID: ${playerId}`);
-					query = query.or(`player_id.ilike.%${playerId}%,server_id.ilike.%${playerId}%`);
-				}
-			}
-
-			if (currentFilters.playerName) {
-				const playerName = currentFilters.playerName.trim();
-				if (playerName) {
-					appliedFilters.push(`Player name: ${playerName}`);
-					query = query.ilike('player_name', `%${playerName}%`);
+					query = query.or(searchConditions.join(','));
 				}
 			}
 
@@ -160,22 +130,19 @@ export default function LogsPage() {
 			if (currentFilters.serverId) {
 				countQuery.eq('server_id', currentFilters.serverId);
 			}
+
+			if (currentFilters.discordId) {
+				const discordId = currentFilters.discordId.trim();
+				if (discordId) {
+					countQuery.ilike('discord_id', `%${discordId}%`);
+				}
+			}
+
 			if (searchFilters.playerSearch) {
 				const searchTerm = searchFilters.playerSearch.trim();
 				if (searchTerm) {
-					countQuery.or(`player_name.ilike.%${searchTerm}%,` + `player_id.ilike.%${searchTerm}%,` + `server_id.ilike.%${searchTerm}%,` + `discord_id.ilike.%${searchTerm}%`);
-				}
-			}
-			if (currentFilters.playerId) {
-				const playerId = currentFilters.playerId.trim();
-				if (playerId) {
-					countQuery.or(`player_id.ilike.%${playerId}%,server_id.ilike.%${playerId}%`);
-				}
-			}
-			if (currentFilters.playerName) {
-				const playerName = currentFilters.playerName.trim();
-				if (playerName) {
-					countQuery.ilike('player_name', `%${playerName}%`);
+					const searchConditions = [`player_name.ilike.%${searchTerm}%`, `player_id.ilike.%${searchTerm}%`, `server_id.ilike.%${searchTerm}%`, `discord_id.ilike.%${searchTerm}%`, `details->>${searchTerm}.ilike.%${searchTerm}%`];
+					countQuery.or(searchConditions.join(','));
 				}
 			}
 			if (searchFilters.dateRange) {

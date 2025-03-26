@@ -225,11 +225,6 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 									Steam: {row.original.player_id}
 								</Text>
 							)}
-							{row.original.details?.discord_id && !row.original.discord_id && (
-								<Text size='xs' c='dimmed'>
-									Discord: {row.original.details.discord_id}
-								</Text>
-							)}
 							{row.original.discord_id && (
 								<Text size='xs' c='dimmed'>
 									Discord: {row.original.discord_id}
