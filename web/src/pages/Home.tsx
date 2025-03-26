@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Container, Box, Title, Text, Button, Group, Paper, Grid, Card, Image, Badge, rgba, darken } from '@mantine/core';
+import { Container, Box, Title, Text, Button, Group, Paper, Grid, Card, Badge, Center, rgba, darken } from '@mantine/core';
 import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '../components/AuthProvider';
 import MainLayout from '../layouts/MainLayout';
@@ -15,26 +15,27 @@ export default function HomePage() {
 		setIsLoaded(true);
 	}, []);
 
+	// Slideshow images - replace with actual server images
 	const slides = [
 		{
+			image: './1.webp',
+			title: 'Velkommen til OdessaRP',
+			subtitle: 'Oplev fordybende rollespil',
+		},
+		{
 			image: './2.webp',
-			title: 'Welcome to OdessaRP',
-			subtitle: 'Experience Immersive Roleplay',
+			title: 'Dynamisk Økonomi',
+			subtitle: 'Byg dit imperium i vores by',
+		},
+		{
+			image: './3.webp',
+			title: 'Tilpassede Køretøjer',
+			subtitle: 'Kør med stil i eksklusive biler',
 		},
 		{
 			image: './4.webp',
-			title: 'Dynamic Economy',
-			subtitle: 'Build Your Empire in Our City',
-		},
-		{
-			image: './8.webp',
-			title: 'Custom Vehicles',
-			subtitle: 'Drive in Style with Exclusive Cars',
-		},
-		{
-			image: './15.webp',
-			title: 'Join Our Community',
-			subtitle: 'Create Unforgettable Stories',
+			title: 'Bliv en del af vores fællesskab',
+			subtitle: 'Skab uforglemmelige historier',
 		},
 	];
 
@@ -49,41 +50,41 @@ export default function HomePage() {
 	const serverFeatures = [
 		{
 			icon: <Users size={36} weight='duotone' />,
-			title: 'Active Community',
-			description: 'Join our thriving community of roleplayers creating immersive experiences together.',
+			title: 'Aktivt Fællesskab',
+			description: 'Tilslut vores blomstrende fællesskab af rollespillere, der skaber fordybende oplevelser sammen.',
 		},
 		{
 			icon: <Car size={36} weight='duotone' />,
-			title: 'Custom Vehicles',
-			description: 'Choose from our extensive collection of custom vehicles with unique handling and modifications.',
+			title: 'Tilpassede Køretøjer',
+			description: 'Vælg fra vores omfattende samling af tilpassede køretøjer med unik håndtering og modifikationer.',
 		},
 		{
 			icon: <Buildings size={36} weight='duotone' />,
-			title: 'Economy System',
-			description: 'Engage in a realistic economy with jobs, businesses, and property ownership.',
+			title: 'Økonomisk System',
+			description: 'Deltag i en realistisk økonomi med jobs, virksomheder og ejendomsbesiddelse.',
 		},
 		{
 			icon: <ShieldCheck size={36} weight='duotone' />,
-			title: 'Professional Staff',
-			description: '24/7 support from our dedicated staff team ensuring a safe and enjoyable experience.',
+			title: 'Professionelt Personale',
+			description: '24/7 support fra vores dedikerede personale, der sikrer en sikker og behagelig oplevelse.',
 		},
 		{
 			icon: <Calendar size={36} weight='duotone' />,
-			title: 'Regular Events',
-			description: 'Participate in weekly community events, competitions, and special roleplay scenarios.',
+			title: 'Regelmæssige Events',
+			description: 'Deltag i ugentlige fællesskabsbegivenheder, konkurrencer og særlige rollespilsscenarier.',
 		},
 		{
 			icon: <GameController size={36} weight='duotone' />,
-			title: 'Custom Scripts',
-			description: 'Enjoy unique gameplay features with our custom-developed server scripts.',
+			title: 'Tilpassede Scripts',
+			description: 'Nyd unikke gameplay-funktioner med vores specialudviklede server scripts.',
 		},
 	];
 
 	const serverStats = [
-		{ value: '5000+', label: 'Registered Players' },
-		{ value: '100+', label: 'Custom Vehicles' },
-		{ value: '50+', label: 'Business Options' },
-		{ value: '24/7', label: 'Staff Support' },
+		{ value: '5000+', label: 'Registrerede Spillere' },
+		{ value: '100+', label: 'Tilpassede Køretøjer' },
+		{ value: '50+', label: 'Virksomhedsmuligheder' },
+		{ value: '24/7', label: 'Personalestøtte' },
 	];
 
 	return (
@@ -98,47 +99,57 @@ export default function HomePage() {
 							zIndex: currentSlide === index ? 1 : 0,
 						}}
 					>
-						<Box
-							className='absolute inset-0 w-full h-full'
-							style={{
-								backgroundImage: `url(${slide.image})`,
-								backgroundSize: 'cover',
-								backgroundPosition: 'center',
-								filter: 'brightness(0.6)',
-								transition: 'transform 6s ease-in-out',
-								transform: currentSlide === index ? 'scale(1.05)' : 'scale(1)',
-							}}
-						/>
-						<Container size='xl' className='relative h-full z-10'>
+						<Center className='h-full px-6'>
 							<Box
-								className='flex flex-col justify-center h-full text-white max-w-3xl'
+								className='absolute w-11/12 h-4/5 rounded-2xl overflow-hidden'
 								style={{
-									opacity: isLoaded ? 1 : 0,
-									transform: isLoaded ? 'translateY(0)' : 'translateY(20px)',
-									transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
+									maxWidth: '1800px',
 								}}
 							>
-								<Box>
-									<Badge size='xl' radius='sm' color='blue' className='mb-4' variant='filled'>
-										FiveM Roleplay Server
-									</Badge>
-									<Title className='text-6xl font-bold mb-4' style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
-										{slide.title}
-									</Title>
-									<Text className='text-2xl mb-8' style={{ textShadow: '0 2px 6px rgba(0,0,0,0.6)' }}>
-										{slide.subtitle}
-									</Text>
-									<Group>
-										<Button component='a' href='https://discord.gg/odessarp' target='_blank' size='lg' leftSection={<DiscordLogo size={20} />} variant='gradient' gradient={{ from: 'indigo', to: 'blue' }}>
-											Join Our Discord
-										</Button>
-										<Button component='a' href='fivem://connect/play.odessarp.com' size='lg' variant='outline' color='white' rightSection={<ArrowRight size={20} />}>
-											Connect to Server
-										</Button>
-									</Group>
-								</Box>
+								<Box
+									className='absolute inset-0 w-full h-full'
+									style={{
+										backgroundImage: `url(${slide.image})`,
+										backgroundSize: 'cover',
+										backgroundPosition: 'center',
+										filter: 'brightness(0.5) blur(2px)',
+										transition: 'transform 6s ease-in-out',
+										transform: currentSlide === index ? 'scale(1.05)' : 'scale(1)',
+									}}
+								/>
 							</Box>
-						</Container>
+
+							<Container size='xl' className='relative z-10'>
+								<Box
+									className='flex flex-col justify-center h-full text-white max-w-3xl my-24'
+									style={{
+										opacity: isLoaded ? 1 : 0,
+										transform: isLoaded ? 'translateY(0)' : 'translateY(20px)',
+										transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
+									}}
+								>
+									<Box className='text-center'>
+										<Badge size='xl' radius='sm' color='blue' className='mb-5' variant='light'>
+											FiveM Rollespil Server
+										</Badge>
+										<Title className='text-6xl font-bold mb-6' style={{ textShadow: '0 2px 10px rgba(0,0,0,0.7)' }}>
+											{slide.title}
+										</Title>
+										<Text className='text-2xl mb-10' style={{ textShadow: '0 2px 6px rgba(0,0,0,0.8)' }}>
+											{slide.subtitle}
+										</Text>
+										<Group justify='center' className='mt-6'>
+											<Button component='a' href='https://discord.gg/odessarp' target='_blank' size='lg' leftSection={<DiscordLogo size={20} />} variant='gradient' gradient={{ from: 'indigo', to: 'blue' }}>
+												Tilslut vores Discord
+											</Button>
+											<Button component='a' href='fivem://connect/play.odessarp.com' size='lg' variant='outline' color='white' rightSection={<ArrowRight size={20} />}>
+												Forbind til server
+											</Button>
+										</Group>
+									</Box>
+								</Box>
+							</Container>
+						</Center>
 					</Box>
 				))}
 
@@ -161,54 +172,28 @@ export default function HomePage() {
 			{/* About Server Section */}
 			<Box className='py-20 bg-[#0a0a0a]'>
 				<Container size='xl'>
-					<Grid gutter='xl'>
-						<Grid.Col span={{ base: 12, md: 6 }} className='flex flex-col justify-center'>
-							<Badge size='lg' radius='sm' color='blue' className='mb-2' variant='filled'>
-								About Our Server
-							</Badge>
-							<Title order={2} className='text-3xl font-bold mb-4'>
-								Experience OdessaRP
-							</Title>
-							<Text size='lg' className='mb-6 text-gray-300'>
-								OdessaRP provides an immersive roleplaying experience in a meticulously crafted city environment. Our server features custom scripts, unique jobs, player-owned businesses, realistic economy, and a dedicated community of roleplayers.
-							</Text>
-							<Text size='lg' className='mb-6 text-gray-300'>
-								Whether you want to fight crime as a police officer, save lives as a paramedic, build a business empire, or live life on the edge in the criminal underworld, OdessaRP offers endless possibilities for your character's story.
-							</Text>
+					<Box className='mx-auto max-w-4xl text-center'>
+						<Badge size='lg' radius='sm' color='blue' className='mb-2' variant='light'>
+							Om Vores Server
+						</Badge>
+						<Title order={2} className='text-3xl font-bold mb-4 text-center'>
+							Oplev OdessaRP
+						</Title>
+						<Text size='lg' className='mb-6 text-gray-300 text-center'>
+							OdessaRP tilbyder en fordybende rollespilsoplevelse i et omhyggeligt udformet bymiljø. Vores server har tilpassede scripts, unikke jobs, spillerejet virksomheder, realistisk økonomi og et dedikeret fællesskab af rollespillere.
+						</Text>
+						<Text size='lg' className='mb-8 text-gray-300 text-center'>
+							Uanset om du vil bekæmpe kriminalitet som politibetjent, redde liv som paramediciner, opbygge et forretningsimperium eller leve livet på kanten i den kriminelle underverden, tilbyder OdessaRP endeløse muligheder for din karakters historie.
+						</Text>
 
-							{isAuthorized && (
-								<Button variant='gradient' gradient={{ from: 'blue', to: 'indigo' }} size='lg' onClick={() => navigate({ to: '/logs' })} className='mt-4 self-start'>
-									Access Admin Dashboard
+						{isAuthorized && (
+							<Center>
+								<Button variant='gradient' gradient={{ from: 'blue', to: 'indigo' }} size='lg' onClick={() => navigate({ to: '/logs' })} className='mt-4'>
+									Tilgå Admin Dashboard
 								</Button>
-							)}
-						</Grid.Col>
-
-						<Grid.Col span={{ base: 12, md: 6 }}>
-							<Box className='rounded-xl overflow-hidden relative'>
-								<Image src='/api/placeholder/800/600' alt='OdessaRP Gameplay' className='w-full h-full object-cover' />
-								<Box className='absolute inset-0 flex items-center justify-center'>
-									<Box
-										className='w-20 h-20 rounded-full flex items-center justify-center cursor-pointer'
-										style={(theme) => ({
-											backgroundColor: theme.colors.blue[5],
-											'&:hover': {
-												backgroundColor: theme.colors.blue[6],
-											},
-										})}
-									>
-										<Box
-											className='w-0 h-0 ml-2'
-											style={{
-												borderTop: '15px solid transparent',
-												borderBottom: '15px solid transparent',
-												borderLeft: '25px solid white',
-											}}
-										/>
-									</Box>
-								</Box>
-							</Box>
-						</Grid.Col>
-					</Grid>
+							</Center>
+						)}
+					</Box>
 				</Container>
 			</Box>
 
@@ -216,14 +201,14 @@ export default function HomePage() {
 			<Box className='py-20'>
 				<Container size='xl'>
 					<Box className='text-center mb-16'>
-						<Badge size='lg' radius='sm' color='blue' className='mb-2' variant='filled'>
-							Server Features
+						<Badge size='lg' radius='sm' color='blue' className='mb-2' variant='light'>
+							Server Funktioner
 						</Badge>
-						<Title order={2} className='text-3xl font-bold mb-4'>
-							What Makes OdessaRP Special
+						<Title order={2} className='text-3xl font-bold mb-4 text-center'>
+							Hvad Gør OdessaRP Speciel
 						</Title>
-						<Text size='lg' className='max-w-3xl mx-auto text-gray-300'>
-							Our server offers a premium roleplaying experience with custom scripts, vehicles, and locations. Explore what makes our community stand out.
+						<Text size='lg' ta='center' w='100%' c='gray.3'>
+							Vores server tilbyder en førsteklasses rollespilsoplevelse med tilpassede scripts, køretøjer og lokationer. Udforsk hvad der gør vores fællesskab unikt.
 						</Text>
 					</Box>
 
@@ -236,8 +221,8 @@ export default function HomePage() {
 									withBorder
 									className='h-full transition-all duration-300 hover:translate-y-[-5px]'
 									style={(theme) => ({
-										backgroundColor: 'dark.8',
-										borderColor: 'dark.5',
+										backgroundColor: theme.colors.dark[8],
+										borderColor: theme.colors.dark[5],
 										'&:hover': {
 											borderColor: theme.colors.blue[5],
 										},
@@ -285,14 +270,14 @@ export default function HomePage() {
 
 				<Container size='xl' className='relative z-10'>
 					<Box className='text-center mb-16'>
-						<Badge size='lg' radius='sm' color='blue' className='mb-2' variant='filled'>
-							Server Statistics
+						<Badge size='lg' radius='sm' color='blue' className='mb-2' variant='light'>
+							Server Statistikker
 						</Badge>
-						<Title order={2} className='text-3xl font-bold mb-4'>
-							Join Our Growing Community
+						<Title order={2} className='text-3xl font-bold mb-4 text-center'>
+							Bliv en Del af Vores Voksende Fællesskab
 						</Title>
-						<Text size='lg' className='max-w-3xl mx-auto text-gray-300'>
-							OdessaRP continues to expand with new players, features, and experiences. Become part of our story today.
+						<Text size='lg' className='max-w-3xl mx-auto text-gray-300 text-center'>
+							OdessaRP fortsætter med at udvide med nye spillere, funktioner og oplevelser. Bliv en del af vores historie i dag.
 						</Text>
 					</Box>
 
@@ -310,10 +295,10 @@ export default function HomePage() {
 										borderColor: theme.colors.dark[5],
 									})}
 								>
-									<Text size='3rem' fw={800} variant='gradient' gradient={{ from: 'blue', to: 'cyan' }} className='mb-2'>
+									<Text size='3rem' fw={800} variant='gradient' gradient={{ from: 'blue', to: 'cyan' }} className='mb-2 text-center'>
 										{stat.value}
 									</Text>
-									<Text size='lg' c='dimmed'>
+									<Text size='lg' c='dimmed' className='text-center'>
 										{stat.label}
 									</Text>
 								</Paper>
@@ -326,19 +311,19 @@ export default function HomePage() {
 			{/* Call to Action Section */}
 			<Box className='py-20 text-center'>
 				<Container size='md'>
-					<Title order={2} className='text-4xl font-bold mb-6'>
-						Ready to Start Your Journey?
+					<Title order={2} className='text-4xl font-bold mb-6 text-center'>
+						Klar til at Starte Din Rejse?
 					</Title>
-					<Text size='xl' className='mb-10 text-gray-300 max-w-2xl mx-auto'>
-						Connect with other players, participate in events, and create unforgettable roleplay experiences in our immersive FiveM server.
+					<Text size='xl' className='mb-10 text-gray-300 max-w-2xl mx-auto text-center'>
+						Forbind med andre spillere, deltag i events og skab uforglemmelige rollespilsoplevelser i vores fordybende FiveM server.
 					</Text>
 
 					<Group justify='center' gap='xl'>
 						<Button component='a' href='https://discord.gg/odessarp' target='_blank' size='xl' leftSection={<DiscordLogo size={24} />} variant='gradient' gradient={{ from: 'indigo', to: 'blue' }} className='px-8'>
-							Join Our Discord
+							Tilslut Vores Discord
 						</Button>
 						<Button component='a' href='fivem://connect/play.odessarp.com' size='xl' variant='outline' rightSection={<ArrowRight size={24} />} color='blue' className='px-8'>
-							Connect to Server
+							Forbind til Server
 						</Button>
 					</Group>
 				</Container>
