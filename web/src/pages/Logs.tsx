@@ -3,7 +3,6 @@ import { supabase } from '../lib/supabase';
 import { useRouter } from '@tanstack/react-router';
 import { Container, Title, Text, Paper, Group, Box, Tabs, Menu, Button, Tooltip, SimpleGrid, Card, Badge } from '@mantine/core';
 import { DownloadSimple, ChartPie, ListBullets, BookmarkSimple } from '@phosphor-icons/react';
-import { AreaChart, BarChart, PieChart } from '@mantine/charts';
 import MainLayout from '../layouts/MainLayout';
 import LogTable from '../components/LogTable';
 
@@ -244,80 +243,13 @@ export default function LogsPage() {
 		}
 	}, [page, LOGS_PER_PAGE, getQueryFilters, searchFilters]);
 
-	// Fetch stats for dashboard visualizations
-	const fetchStatsData = useCallback(async () => {
-		try {
-			// Fetch data for category distribution
-			const { data: categoryData, error: categoryError } = await supabase
-				.from('logs')
-				.select('category, count:count(*)')
-				.not('category', 'is', null)
-				.select('category, count:count(*)', { head: false }).group('category');
-
-			if (categoryError) {
-				console.error('Error fetching category stats:', categoryError);
-			} else {
-				const formattedCategoryData = categoryData.map((item) => ({
-					name: item.category,
-					value: item.count,
-					color: COLORS[categoryData.indexOf(item) % COLORS.length],
-				}));
-				setCategoryStats(formattedCategoryData);
-			}
-
-			// Fetch data for event type distribution
-			const { data: eventTypeData, error: eventTypeError } = await supabase.from('logs').select('event_type, count').group('event_type').order('count', { ascending: false }).limit(8);
-
-			if (eventTypeError) {
-				console.error('Error fetching event type stats:', eventTypeError);
-			} else {
-				const formattedEventTypeData = eventTypeData.map((item) => ({
-					name: item.event_type,
-					value: item.count,
-					color: COLORS[eventTypeData.indexOf(item) % COLORS.length],
-				}));
-				setEventTypeStats(formattedEventTypeData);
-			}
-
-			// Fetch time series data (last 7 days)
-			const endDate = new Date();
-			const startDate = new Date();
-			startDate.setDate(startDate.getDate() - 7);
-
-			const { data: timeData, error: timeError } = await supabase.from('logs').select('created_at').gte('created_at', startDate.toISOString()).lte('created_at', endDate.toISOString());
-
-			if (timeError) {
-				console.error('Error fetching time series data:', timeError);
-			} else {
-				// Group by day
-				const groupedData = timeData.reduce((acc, log) => {
-					const date = new Date(log.created_at).toLocaleDateString();
-					acc[date] = (acc[date] || 0) + 1;
-					return acc;
-				}, {});
-
-				// Format for chart
-				const formattedTimeData = Object.entries(groupedData).map(([date, count]) => ({
-					date,
-					count: count as number,
-				}));
-
-				setTimeSeriesData(formattedTimeData);
-			}
-		} catch (err) {
-			console.error('Failed to fetch stats data:', err);
-		}
-	}, [COLORS]);
-
 	const handleUrlChange = useCallback(() => {
 		setPage(1);
 		fetchLogs();
-		fetchStatsData();
-	}, [fetchLogs, fetchStatsData]);
+	}, [fetchLogs]);
 
 	useEffect(() => {
 		fetchLogs();
-		fetchStatsData();
 
 		const handlePopState = () => {
 			handleUrlChange();
@@ -573,70 +505,6 @@ export default function LogsPage() {
 										</Text>
 									</Card>
 								</SimpleGrid>
-
-								<SimpleGrid cols={{ base: 1, md: 2 }} spacing='md' mb='md'>
-									{/* Category Distribution Chart */}
-									<Card withBorder p='md' radius='md' style={{ height: '400px' }}>
-										<Text fw={700} size='sm' mb='md'>
-											Kategori Fordeling
-										</Text>
-										<Box style={{ height: 320 }}>
-											<PieChart data={categoryStats} size={240} withLabels labelsPosition='outside' labelsType='percent' tooltipDataSource='segment' withTooltip />
-										</Box>
-									</Card>
-
-									{/* Event Type Distribution Chart */}
-									<Card withBorder p='md' radius='md' style={{ height: '400px' }}>
-										<Text fw={700} size='sm' mb='md'>
-											Top Hændelsestyper
-										</Text>
-										<Box style={{ height: 320 }}>
-											<BarChart
-												h={280}
-												data={eventTypeStats}
-												dataKey='name'
-												series={[{ name: 'value', color: 'blue.6' }]}
-												orientation='vertical'
-												withTooltip
-												tooltipProps={{ offset: 10 }}
-												tickLine='x'
-												yAxisProps={{
-													tickLength: 5,
-													tickRotation: -45,
-													autoScale: true,
-												}}
-												xAxisProps={{ domain: [0, 'auto'] }}
-											/>
-										</Box>
-									</Card>
-								</SimpleGrid>
-
-								{/* Time Series Chart */}
-								<Card withBorder p='md' radius='md' mb='md'>
-									<Text fw={700} size='sm' mb='md'>
-										Aktivitets Trend (Sidste 7 Dage)
-									</Text>
-									<Box style={{ height: 300 }}>
-										<AreaChart
-											h={250}
-											data={formattedTimeSeriesData}
-											dataKey='date'
-											series={[{ name: 'Aktivitet', color: 'blue.6' }]}
-											curveType='linear'
-											withDots={false}
-											withTooltip
-											withLegend
-											gridAxis='x'
-											tickLine='y'
-											xAxisProps={{
-												tickRotation: -45,
-												tickLength: 10,
-												paddingTop: 20,
-											}}
-											yAxisProps={{ domain: [0, 'auto'] }}
-										/>
-									</Box>
-								</Card>
 							</Box>
 						)}
 					</Paper>
