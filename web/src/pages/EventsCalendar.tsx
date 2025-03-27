@@ -214,7 +214,7 @@ export default function EventsCalendarPage() {
 			<Container size='xl' py='xs'>
 				<Group justify='space-between' mb='lg'>
 					<Group align='center'>
-						<Title order={1}>Begivenheder Kalender</Title>
+						<Title order={1}>Begivenheder</Title>
 
 						<Button.Group>
 							<Button variant={viewMode === 'month' ? 'filled' : 'outline'} onClick={() => setViewMode('month')}>
