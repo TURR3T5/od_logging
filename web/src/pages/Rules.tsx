@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { Container, Title, Text, Box, Paper, Group, Badge, Divider, TextInput, Tabs, List, Alert, Chip, Button, ActionIcon, Loader, Center } from '@mantine/core';
-import { MagnifyingGlass, Lightbulb, X, Info, Plus, FileArrowDown } from '@phosphor-icons/react';
+import { MagnifyingGlass, X, Info, Plus, FileArrowDown, Lightbulb } from '@phosphor-icons/react';
 import { notifications } from '@mantine/notifications';
 import { debounce, throttle } from 'lodash';
 import MainLayout from '../layouts/MainLayout';
 import { useAuth } from '../components/AuthProvider';
 import RuleApiService, { Rule, RulesResponse } from '../lib/RuleApiService';
-import VirtualizedRulesList from '../components/rules/VirtualizedRulesList';
+import VirtualizedRulesList from '../components/rules/RuleList';
 import './RulesPage.css';
 
 const EditRuleModal = lazy(() => import('../components/rules/EditRuleModal'));

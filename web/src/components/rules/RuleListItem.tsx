@@ -81,7 +81,7 @@ const RuleListItem = memo(
 				<Accordion.Control onClick={() => handleAccordionChange(rule.id)}>
 					<Group justify='space-between'>
 						<Group>
-							<Badge color={rule.category === 'community' ? 'blue' : 'green'} size='lg' style={{ cursor: 'pointer' }} onClick={handleBadgeClick}>
+							<Badge color={rule.category === 'community' ? 'blue' : 'green'} size='lg' variant='light' style={{ cursor: 'pointer' }} onClick={handleBadgeClick}>
 								{rule.badge}
 							</Badge>
 							<Text fw={500}>{rule.title}</Text>
