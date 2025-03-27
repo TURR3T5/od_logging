@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, memo } from 'react';
 import { Container, Title, Text, Box, Paper, Accordion, Group, Badge, Divider, TextInput, Tabs, List, Alert, Chip, Button, Modal, ActionIcon, MultiSelect, Switch, Textarea, Timeline, Loader, Center, Card, Tooltip, SegmentedControl } from '@mantine/core';
 import { MagnifyingGlass, Lightbulb, X, Info, Pencil, PushPin, ClockCounterClockwise, ArrowRight, Eye, Check, Plus, FileArrowDown } from '@phosphor-icons/react';
 import { notifications } from '@mantine/notifications';
 import MainLayout from '../layouts/MainLayout';
 import { useAuth } from '../components/AuthProvider';
 import { supabase } from '../lib/supabase';
+import { debounce } from 'lodash';
 import './RulesPage.css';
 
 interface Rule {
@@ -107,6 +108,13 @@ export default function RulesPage() {
 
 	const displayCommunityRules = activeTab === 'all' || activeTab === 'community';
 	const displayRoleplayRules = activeTab === 'all' || activeTab === 'roleplay';
+
+	const debouncedSearch = useCallback(
+		debounce((value: string) => {
+			setSearchQuery(value);
+		}, 300),
+		[]
+	);
 
 	const fetchRules = async () => {
 		setIsLoading(true);
@@ -245,33 +253,36 @@ export default function RulesPage() {
 		}
 	};
 
-	const scrollToRule = (ruleId: string) => {
-		const element = document.getElementById(`rule-${ruleId}`);
-		if (element) {
-			const rule = [...communityRules, ...roleplayRules].find((r) => r.id === ruleId);
+	const scrollToRule = useCallback(
+		(ruleId: string) => {
+			const element = document.getElementById(`rule-${ruleId}`);
+			if (element) {
+				const rule = [...communityRules, ...roleplayRules].find((r) => r.id === ruleId);
 
-			if (rule) {
-				setActiveTab(rule.category === 'community' ? 'community' : 'roleplay');
+				if (rule) {
+					setActiveTab(rule.category === 'community' ? 'community' : 'roleplay');
 
-				if (rule.category === 'community') {
-					setActiveCommunityRule(ruleId);
-				} else {
-					setActiveRoleplayRule(ruleId);
-				}
+					if (rule.category === 'community') {
+						setActiveCommunityRule(ruleId);
+					} else {
+						setActiveRoleplayRule(ruleId);
+					}
 
-				setTimeout(() => {
-					element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-					element.classList.add('highlight-rule');
 					setTimeout(() => {
-						element.classList.remove('highlight-rule');
-					}, 2000);
-				}, 100);
-			}
-		}
-	};
+						element.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-	const openEditModal = (rule: Rule) => {
+						element.classList.add('highlight-rule');
+						setTimeout(() => {
+							element.classList.remove('highlight-rule');
+						}, 2000);
+					}, 100);
+				}
+			}
+		},
+		[communityRules, roleplayRules]
+	);
+
+	const openEditModal = useCallback((rule: Rule) => {
 		setCurrentRule(rule);
 		setEditedTitle(rule.title);
 		setEditedContent(rule.content);
@@ -280,9 +291,9 @@ export default function RulesPage() {
 		setEditedBadge(rule.badge);
 		setChangeNotes('');
 		setEditModalOpen(true);
-	};
+	}, []);
 
-	const handleSaveRule = async () => {
+	const handleSaveRule = useCallback(async () => {
 		if (!currentRule) return;
 
 		setIsSaving(true);
@@ -319,9 +330,9 @@ export default function RulesPage() {
 		} finally {
 			setIsSaving(false);
 		}
-	};
+	}, [currentRule, editedTitle, editedContent, editedTags, isPinned, editedBadge, changeNotes, user]);
 
-	const handleCreateRule = async () => {
+	const handleCreateRule = useCallback(async () => {
 		if (!newRule.badge || !newRule.title || !newRule.content) {
 			notifications.show({
 				title: 'Manglende information',
@@ -367,25 +378,28 @@ export default function RulesPage() {
 				color: 'red',
 			});
 		}
-	};
+	}, [newRule]);
 
-	const openHistoryModal = async (ruleId: string) => {
-		setHistoryLoading(true);
-		setHistoryModalOpen(true);
-		try {
-			const history = await fetchRuleHistory(ruleId);
-			setRuleHistory(history || []);
-		} catch (error) {
-			console.error('Error fetching rule history:', error);
-			notifications.show({
-				title: 'Fejl',
-				message: 'Der opstod en fejl ved hentning af regelhistorik',
-				color: 'red',
-			});
-		} finally {
-			setHistoryLoading(false);
-		}
-	};
+	const openHistoryModal = useCallback(
+		async (ruleId: string) => {
+			setHistoryLoading(true);
+			setHistoryModalOpen(true);
+			try {
+				const history = await fetchRuleHistory(ruleId);
+				setRuleHistory(history || []);
+			} catch (error) {
+				console.error('Error fetching rule history:', error);
+				notifications.show({
+					title: 'Fejl',
+					message: 'Der opstod en fejl ved hentning af regelhistorik',
+					color: 'red',
+				});
+			} finally {
+				setHistoryLoading(false);
+			}
+		},
+		[fetchRuleHistory]
+	);
 
 	const exportRules = () => {
 		const data = {
@@ -411,28 +425,38 @@ export default function RulesPage() {
 		});
 	};
 
-	const RuleItem = ({ rule }: { rule: Rule }) => {
-		const isActive = rule.category === 'community' ? rule.id === activeCommunityRule : rule.id === activeRoleplayRule;
+	const RuleItem = memo(({ rule, isActive, onEdit, onPin, onHistory, onBadgeClick }: { rule: Rule; isActive: boolean; onEdit: (rule: Rule) => void; onPin: (rule: Rule) => void; onHistory: (ruleId: string) => void; onBadgeClick: (ruleId: string) => void }) => {
+		const handleEditClick = useCallback(
+			(e: React.MouseEvent<HTMLDivElement>) => {
+				e.stopPropagation();
+				onEdit(rule);
+			},
+			[rule, onEdit]
+		);
 
-		const handleEditClick = (e: React.MouseEvent) => {
-			e.stopPropagation();
-			openEditModal(rule);
-		};
+		const handlePinClick = useCallback(
+			(e: React.MouseEvent<HTMLDivElement>) => {
+				e.stopPropagation();
+				onPin(rule);
+			},
+			[rule, onPin]
+		);
 
-		const handlePinClick = (e: React.MouseEvent) => {
-			e.stopPropagation();
-			togglePinnedRule(rule);
-		};
+		const handleHistoryClick = useCallback(
+			(e: React.MouseEvent<HTMLDivElement>) => {
+				e.stopPropagation();
+				onHistory(rule.id);
+			},
+			[rule.id, onHistory]
+		);
 
-		const handleHistoryClick = (e: React.MouseEvent) => {
-			e.stopPropagation();
-			openHistoryModal(rule.id);
-		};
-
-		const handleBadgeClick = (e: React.MouseEvent) => {
-			e.stopPropagation();
-			scrollToRule(rule.id);
-		};
+		const handleBadgeClick = useCallback(
+			(e: React.MouseEvent<HTMLDivElement>) => {
+				e.stopPropagation();
+				onBadgeClick(rule.id);
+			},
+			[rule.id, onBadgeClick]
+		);
 
 		return (
 			<Accordion.Item value={rule.id} key={rule.id} id={`rule-${rule.id}`} className={isActive ? 'active-rule' : ''}>
@@ -479,7 +503,7 @@ export default function RulesPage() {
 				<Accordion.Panel>{rule.content}</Accordion.Panel>
 			</Accordion.Item>
 		);
-	};
+	});
 
 	return (
 		<MainLayout requireAuth={false}>
@@ -574,7 +598,7 @@ export default function RulesPage() {
 
 						<Box mb='xl'>
 							<Group justify='space-between' mb='md'>
-								<TextInput leftSection={<MagnifyingGlass size={18} />} placeholder='Søg efter regler...' value={searchQuery} onChange={(event) => setSearchQuery(event.currentTarget.value)} style={{ flexGrow: 1 }} rightSection={searchQuery ? <X size={16} style={{ cursor: 'pointer' }} onClick={() => setSearchQuery('')} /> : null} />
+								<TextInput leftSection={<MagnifyingGlass size={18} />} placeholder='Søg efter regler...' value={searchQuery} onChange={(event) => debouncedSearch(event.currentTarget.value)} style={{ flexGrow: 1 }} rightSection={searchQuery ? <X size={16} style={{ cursor: 'pointer' }} onClick={() => debouncedSearch('')} /> : null} />
 							</Group>
 
 							<Tabs value={activeTab} onChange={setActiveTab}>
@@ -649,7 +673,7 @@ export default function RulesPage() {
 
 										<Accordion value={activeCommunityRule} onChange={setActiveCommunityRule} radius='md' variant='filled'>
 											{filteredCommunityRules.length > 0 ? (
-												filteredCommunityRules.map((rule) => <RuleItem key={rule.id} rule={rule} />)
+												filteredCommunityRules.map((rule) => <RuleItem key={rule.id} rule={rule} isActive={activeCommunityRule === rule.id} onEdit={openEditModal} onPin={togglePinnedRule} onHistory={openHistoryModal} onBadgeClick={scrollToRule} />)
 											) : (
 												<Text ta='center' fs='italic' py='md'>
 													Ingen regler matcher din søgning
@@ -694,7 +718,7 @@ export default function RulesPage() {
 
 										<Accordion value={activeRoleplayRule} onChange={setActiveRoleplayRule} radius='md' variant='filled'>
 											{filteredRoleplayRules.length > 0 ? (
-												filteredRoleplayRules.map((rule) => <RuleItem key={rule.id} rule={rule} />)
+												filteredRoleplayRules.map((rule) => <RuleItem key={rule.id} rule={rule} isActive={activeRoleplayRule === rule.id} onEdit={openEditModal} onPin={togglePinnedRule} onHistory={openHistoryModal} onBadgeClick={scrollToRule} />)
 											) : (
 												<Text ta='center' fs='italic' py='md'>
 													Ingen regler matcher din søgning

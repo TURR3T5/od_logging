@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo, useMemo, useCallback } from 'react';
 import { Box, ScrollArea, Text, Collapse, Group } from '@mantine/core';
 import { CaretRight } from '@phosphor-icons/react';
 import { useNavigate, useRouter } from '@tanstack/react-router';
@@ -218,16 +218,16 @@ const useActiveState = () => {
 	return { activeSectionIndex, activeItemIndex, activeCategory, activeType };
 };
 
-const SidebarSection = ({ sectionIndex, item, expanded, toggle, hasActiveChild, onNavigate }: { sectionIndex: number; item: SidebarItem; expanded: boolean; toggle: () => void; hasActiveChild: boolean; onNavigate: (path: string) => void }) => {
+const SidebarSection = memo(({ sectionIndex, item, expanded, toggle, hasActiveChild, onNavigate }: { sectionIndex: number; item: SidebarItem; expanded: boolean; toggle: () => void; hasActiveChild: boolean; onNavigate: (path: string) => void }) => {
 	const hasChildren = !!item.children && item.children.length > 0;
 
-	const handleClick = () => {
+	const handleClick = useCallback(() => {
 		if (hasChildren) {
 			toggle();
 		} else if (item.path) {
 			onNavigate(item.path);
 		}
-	};
+	}, [hasChildren, item.path, onNavigate, toggle]);
 
 	return (
 		<>
@@ -284,17 +284,17 @@ const SidebarSection = ({ sectionIndex, item, expanded, toggle, hasActiveChild, 
 			)}
 		</>
 	);
-};
+});
 
-const SubItem = ({ item, sectionIndex, itemIndex, onNavigate }: { item: SidebarItem; sectionIndex: number; itemIndex: number; onNavigate: (path: string) => void }) => {
+const SubItem = memo(({ item, sectionIndex, itemIndex, onNavigate }: { item: SidebarItem; sectionIndex: number; itemIndex: number; onNavigate: (path: string) => void }) => {
 	const { activeSectionIndex, activeItemIndex } = useActiveState();
 	const isActive = sectionIndex === activeSectionIndex && itemIndex === activeItemIndex;
 
-	const handleClick = () => {
+	const handleClick = useCallback(() => {
 		if (item.path) {
 			onNavigate(item.path);
 		}
-	};
+	}, [item.path, onNavigate]);
 
 	return (
 		<Box
@@ -319,7 +319,7 @@ const SubItem = ({ item, sectionIndex, itemIndex, onNavigate }: { item: SidebarI
 			{item.label}
 		</Box>
 	);
-};
+});
 
 export default function Sidebar() {
 	const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
@@ -327,46 +327,56 @@ export default function Sidebar() {
 	const navigate = useNavigate();
 	const [isNavigating, setIsNavigating] = useState(false);
 
-	const toggleSection = (label: string) => {
+	const toggleSection = useCallback((label: string) => {
 		setExpandedSections((prev) => ({
 			...prev,
 			[label]: !prev[label],
 		}));
-	};
+	}, []);
 
-	const handleNavigate = (path: string) => {
-		if (isNavigating) return;
+	const handleNavigate = useCallback(
+		(path: string) => {
+			if (isNavigating) return;
 
-		setIsNavigating(true);
+			setIsNavigating(true);
 
-		setTimeout(() => {
-			navigate({ to: path });
-			setIsNavigating(false);
-		}, 50);
-	};
+			setTimeout(() => {
+				navigate({ to: path });
+				setIsNavigating(false);
+			}, 50);
+		},
+		[isNavigating, navigate]
+	);
 
 	useEffect(() => {
 		if (activeCategory && activeSectionIndex !== -1) {
 			const activeSection = sidebarSections[activeSectionIndex];
 			if (activeSection) {
-				setExpandedSections((prev) => ({
-					...prev,
-					[activeSection.label]: true,
-				}));
+				setExpandedSections((prev) => {
+					if (!prev[activeSection.label]) {
+						return {
+							...prev,
+							[activeSection.label]: true,
+						};
+					}
+					return prev;
+				});
 			}
 		}
 	}, [activeCategory, activeSectionIndex]);
 
+	const renderedSections = useMemo(() => {
+		return sidebarSections.map((section, index) => (
+			<Box key={index} mb='sm'>
+				<SidebarSection sectionIndex={index} item={section} expanded={!!expandedSections[section.label]} toggle={() => toggleSection(section.label)} hasActiveChild={index === activeSectionIndex} onNavigate={handleNavigate} />
+			</Box>
+		));
+	}, [expandedSections, activeSectionIndex, toggleSection, handleNavigate]);
+
 	return (
 		<Box component='nav' h='100%' bg='#111'>
 			<Box p='md' h='100%'>
-				<ScrollArea h='100%'>
-					{sidebarSections.map((section, index) => (
-						<Box key={index} mb='sm'>
-							<SidebarSection sectionIndex={index} item={section} expanded={!!expandedSections[section.label]} toggle={() => toggleSection(section.label)} hasActiveChild={index === activeSectionIndex} onNavigate={handleNavigate} />
-						</Box>
-					))}
-				</ScrollArea>
+				<ScrollArea h='100%'>{renderedSections}</ScrollArea>
 			</Box>
 		</Box>
 	);
