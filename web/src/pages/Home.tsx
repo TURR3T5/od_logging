@@ -4,13 +4,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '../components/AuthProvider';
 import MainLayout from '../layouts/MainLayout';
 import { Users, Car, Buildings, Calendar, ShieldCheck, GameController, ArrowRight, DiscordLogo, Bell, ArrowSquareOut, Star } from '@phosphor-icons/react';
-
-interface ServerStats {
-	onlinePlayers: number;
-	totalPlayers: number;
-	whitelist: number;
-	uptime: string;
-}
+import axios from 'axios';
 
 interface NewsItem {
 	id: number;
@@ -33,11 +27,12 @@ export default function HomePage() {
 	const navigate = useNavigate();
 	const [currentSlide, setCurrentSlide] = useState(0);
 	const [isLoaded, setIsLoaded] = useState(false);
-	const [serverStats, setServerStats] = useState<ServerStats>({
+	const [serverStats, setServerStats] = useState({
 		onlinePlayers: 0,
-		totalPlayers: 0,
-		whitelist: 0,
-		uptime: '',
+		maxPlayers: 0,
+		timeOnline: 0,
+		uptime: '0%',
+		uptimeDetails: 0,
 	});
 
 	const newsItems: NewsItem[] = [
@@ -90,14 +85,21 @@ export default function HomePage() {
 
 	useEffect(() => {
 		const fetchServerStats = async () => {
-			setTimeout(() => {
+			try {
+				const response = await axios.get('/api/server-stats');
+				setServerStats(response.data);
+				console.log('Server stats:', response.data);
+			} catch (error) {
+				console.error('Failed to fetch server stats:', error);
+
 				setServerStats({
-					onlinePlayers: 185,
-					totalPlayers: 5240,
-					whitelist: 4950,
-					uptime: '98.7%',
+					onlinePlayers: 0,
+					maxPlayers: 0,
+					timeOnline: 0,
+					uptime: '0.0%',
+					uptimeDetails: 0,
 				});
-			}, 1000);
+			}
 		};
 
 		fetchServerStats();
@@ -325,10 +327,10 @@ export default function HomePage() {
 						<Grid.Col span={{ base: 6, md: 3 }}>
 							<Box style={{ textAlign: 'center' }}>
 								<Text size='sm' c='dimmed'>
-									REGISTREREDE SPILLERE
+									MAX SPILLERE
 								</Text>
 								<Text size='xl' fw={700} variant='gradient' gradient={{ from: 'blue', to: 'cyan' }}>
-									{serverStats.totalPlayers}
+									{serverStats.maxPlayers}
 								</Text>
 							</Box>
 						</Grid.Col>
@@ -338,7 +340,7 @@ export default function HomePage() {
 									WHITELIST MEDLEMMER
 								</Text>
 								<Text size='xl' fw={700} variant='gradient' gradient={{ from: 'blue', to: 'cyan' }}>
-									{serverStats.whitelist}
+									{serverStats.uptimeDetails}
 								</Text>
 							</Box>
 						</Grid.Col>
