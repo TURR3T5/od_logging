@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
-import { Container, Title, Text, Box, Paper, Group, Badge, Divider, TextInput, Tabs, List, Alert, Chip, Button, ActionIcon, Loader, Center } from '@mantine/core';
+import { Container, Title, Text, Box, Paper, Group, Badge, Divider, TextInput, Tabs, List, Alert, Chip, Button, ActionIcon, Loader, Center, Grid } from '@mantine/core';
 import { MagnifyingGlass, X, Info, Plus, FileArrowDown, Lightbulb } from '@phosphor-icons/react';
 import { notifications } from '@mantine/notifications';
 import { debounce, throttle } from 'lodash';
@@ -249,7 +249,7 @@ export default function RulesPage() {
 					}}
 				/>
 
-				<Container size='lg' py='xl' style={{ position: 'relative', zIndex: 1 }}>
+				<Container size={1600} py='xl' style={{ position: 'relative', zIndex: 1 }}>
 					<Paper
 						withBorder
 						p='xl'
@@ -325,33 +325,48 @@ export default function RulesPage() {
 								/>
 							</Group>
 
-							<Tabs value={activeTab} onChange={setActiveTab}>
+{/* 							<Tabs value={activeTab} onChange={setActiveTab}>
 								<Tabs.List>
 									<Tabs.Tab value='all'>Alle Regler</Tabs.Tab>
 									<Tabs.Tab value='community'>Discord & Community Regler</Tabs.Tab>
 									<Tabs.Tab value='roleplay'>Rollespils Regler</Tabs.Tab>
 								</Tabs.List>
-							</Tabs>
+							</Tabs> */}
 						</Box>
 
-						<Paper withBorder p='md' radius='md' mb='xl' style={{ backgroundColor: 'rgba(30, 30, 30, 0.6)' }}>
-							<Group mb='sm'>
-								<Lightbulb size={24} color='#FFD700' />
-								<Title order={4}>Hurtigt Overblik - Vigtigste Regler</Title>
-							</Group>
-							<List spacing='xs' size='sm'>
-								{renderPinnedRules()}
-							</List>
-						</Paper>
+						{/* Important information sections side by side */}
+						<Grid mb='xl' gutter='md'>
+							<Grid.Col span={{ base: 12, md: 6 }}>
+								<Paper withBorder p='md' radius='md' style={{ backgroundColor: 'rgba(30, 30, 30, 0.6)', height: '100%' }}>
+									<Group mb='sm'>
+										<Lightbulb size={24} color='#FFD700' />
+										<Title order={4}>Hurtigt Overblik - Vigtigste Regler</Title>
+									</Group>
+									<List spacing='xs' size='sm'>
+										{renderPinnedRules()}
+									</List>
+								</Paper>
+							</Grid.Col>
 
-						{rules.recentlyUpdated.length > 0 && (
-							<Alert icon={<Info size={24} />} title='Nyligt Opdaterede Regler' color='blue' mb='xl' variant='outline'>
-								<Text size='sm' mb='xs'>
-									Følgende regler er blevet opdateret inden for de sidste 14 dage:
-								</Text>
-								<Group>{renderRecentlyUpdatedRules()}</Group>
-							</Alert>
-						)}
+							<Grid.Col span={{ base: 12, md: 6 }}>
+								{rules.recentlyUpdated.length > 0 ? (
+									<Alert icon={<Info size={24} />} title='Nyligt Opdaterede Regler' color='blue' style={{ height: '100%' }} variant='outline'>
+										<Text size='sm' mb='xs'>
+											Følgende regler er blevet opdateret inden for de sidste 14 dage:
+										</Text>
+										<Group>{renderRecentlyUpdatedRules()}</Group>
+									</Alert>
+								) : (
+									<Paper withBorder p='md' radius='md' style={{ backgroundColor: 'rgba(30, 30, 30, 0.6)', height: '100%' }}>
+										<Group mb='sm'>
+											<Info size={24} color='#3b82f6' />
+											<Title order={4}>Nyligt Opdaterede Regler</Title>
+										</Group>
+										<Text c='dimmed'>Ingen regler er blevet opdateret inden for de sidste 14 dage.</Text>
+									</Paper>
+								)}
+							</Grid.Col>
+						</Grid>
 
 						{isLoading ? (
 							<Center p='xl'>
@@ -359,61 +374,94 @@ export default function RulesPage() {
 							</Center>
 						) : (
 							<>
-								{displayCommunityRules && (
-									<Box mb='xl' ref={rulesRef}>
-										<Title
-											order={3}
-											mb='md'
-											style={{
-												display: 'inline-block',
-												padding: '10px 20px',
-												background: 'linear-gradient(to right, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.05))',
-												borderRadius: '8px',
-												borderLeft: '4px solid #3b82f6',
-												fontWeight: 700,
-											}}
-										>
-											DISCORD & COMMUNITY GUIDELINES
-										</Title>
+								{activeTab === 'all' && displayCommunityRules && displayRoleplayRules ? (
+									<Box style={{ display: 'flex', flexDirection: 'row', gap: '20px', position: 'relative' }}>
+										{/* Community Rules Section */}
+										<Box style={{ flex: 1 }} ref={rulesRef}>
+											<Title
+												order={3}
+												mb='md'
+												style={{
+													display: 'inline-block',
+													padding: '10px 20px',
+													background: 'linear-gradient(to right, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.05))',
+													borderRadius: '8px',
+													borderLeft: '4px solid #3b82f6',
+													fontWeight: 700,
+												}}
+											>
+												DISCORD & COMMUNITY GUIDELINES
+											</Title>
 
-										<VirtualizedRulesList rules={filteredRules.community} activeRuleId={activeCommunityRule} isLoading={isLoading} onRuleExpanded={setActiveCommunityRule} onEditRule={openEditModal} onPinRule={togglePinnedRule} onViewHistory={openHistoryModal} onBadgeClick={scrollToRule} isAuthorized={isAuthorized} />
+											<VirtualizedRulesList rules={filteredRules.community} activeRuleId={activeCommunityRule} isLoading={isLoading} onRuleExpanded={setActiveCommunityRule} onEditRule={openEditModal} onPinRule={togglePinnedRule} onViewHistory={openHistoryModal} onBadgeClick={scrollToRule} isAuthorized={isAuthorized} />
+										</Box>
+
+										<Divider orientation="vertical" />
+
+										{/* Roleplay Rules Section */}
+										<Box style={{ flex: 1 }}>
+											<Title
+												order={3}
+												mb='md'
+												style={{
+													display: 'inline-block',
+													padding: '10px 20px',
+													background: 'linear-gradient(to right, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.05))',
+													borderRadius: '8px',
+													borderLeft: '4px solid #22c55e',
+													fontWeight: 700,
+												}}
+											>
+												ROLLESPILS REGLER
+											</Title>
+
+											<VirtualizedRulesList rules={filteredRules.roleplay} activeRuleId={activeRoleplayRule} isLoading={isLoading} onRuleExpanded={setActiveRoleplayRule} onEditRule={openEditModal} onPinRule={togglePinnedRule} onViewHistory={openHistoryModal} onBadgeClick={scrollToRule} isAuthorized={isAuthorized} />
+										</Box>
 									</Box>
-								)}
-
-								{displayCommunityRules && displayRoleplayRules && (
-									<Divider
-										my='xl'
-										style={{
-											position: 'relative',
-											overflow: 'visible',
-										}}
-										label={
-											<Badge size='lg' radius='sm' variant='light'>
-												OdessaRP
-											</Badge>
-										}
-										labelPosition='center'
-									/>
-								)}
-
-								{displayRoleplayRules && (
+								) : (
+									// Individual rule category display for when a specific tab is selected
 									<Box>
-										<Title
-											order={3}
-											mb='md'
-											style={{
-												display: 'inline-block',
-												padding: '10px 20px',
-												background: 'linear-gradient(to right, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.05))',
-												borderRadius: '8px',
-												borderLeft: '4px solid #22c55e',
-												fontWeight: 700,
-											}}
-										>
-											ROLLESPILS REGLER
-										</Title>
+										{displayCommunityRules && (
+											<Box mb='xl' ref={rulesRef}>
+												<Title
+													order={3}
+													mb='md'
+													style={{
+														display: 'inline-block',
+														padding: '10px 20px',
+														background: 'linear-gradient(to right, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.05))',
+														borderRadius: '8px',
+														borderLeft: '4px solid #3b82f6',
+														fontWeight: 700,
+													}}
+												>
+													DISCORD & COMMUNITY GUIDELINES
+												</Title>
 
-										<VirtualizedRulesList rules={filteredRules.roleplay} activeRuleId={activeRoleplayRule} isLoading={isLoading} onRuleExpanded={setActiveRoleplayRule} onEditRule={openEditModal} onPinRule={togglePinnedRule} onViewHistory={openHistoryModal} onBadgeClick={scrollToRule} isAuthorized={isAuthorized} />
+												<VirtualizedRulesList rules={filteredRules.community} activeRuleId={activeCommunityRule} isLoading={isLoading} onRuleExpanded={setActiveCommunityRule} onEditRule={openEditModal} onPinRule={togglePinnedRule} onViewHistory={openHistoryModal} onBadgeClick={scrollToRule} isAuthorized={isAuthorized} />
+											</Box>
+										)}
+
+										{displayRoleplayRules && (
+											<Box>
+												<Title
+													order={3}
+													mb='md'
+													style={{
+														display: 'inline-block',
+														padding: '10px 20px',
+														background: 'linear-gradient(to right, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.05))',
+														borderRadius: '8px',
+														borderLeft: '4px solid #22c55e',
+														fontWeight: 700,
+													}}
+												>
+													ROLLESPILS REGLER
+												</Title>
+
+												<VirtualizedRulesList rules={filteredRules.roleplay} activeRuleId={activeRoleplayRule} isLoading={isLoading} onRuleExpanded={setActiveRoleplayRule} onEditRule={openEditModal} onPinRule={togglePinnedRule} onViewHistory={openHistoryModal} onBadgeClick={scrollToRule} isAuthorized={isAuthorized} />
+											</Box>
+										)}
 									</Box>
 								)}
 							</>

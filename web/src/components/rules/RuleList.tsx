@@ -128,6 +128,9 @@ const RuleItem = memo(
 								borderTop: `1px solid ${theme.colors.dark[5]}`,
 								whiteSpace: 'pre-line',
 								lineHeight: 1.6,
+								wordWrap: 'break-word',
+								overflow: 'auto',
+								maxWidth: '100%',
 							})}
 						>
 							{isLoading ? (
@@ -138,7 +141,7 @@ const RuleItem = memo(
 									</Text>
 								</Group>
 							) : (
-								content || 'Indhold kunne ikke indlæses.'
+								<Text style={{ whiteSpace: 'pre-wrap', maxWidth: '100%' }}>{content || 'Indhold kunne ikke indlæses.'}</Text>
 							)}
 						</Box>
 					)}
