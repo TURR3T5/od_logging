@@ -1,14 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { Container, Title, Text, Box, Paper, Accordion, Group, Badge, Divider, TextInput, Tabs, List, Alert, Chip, Button, Modal, ActionIcon, MultiSelect, Switch, Textarea, Timeline, Loader, Center, Card, Tooltip, SegmentedControl } from '@mantine/core';
-import { MagnifyingGlass, Lightbulb, X, Info, Pencil, PushPin, ClockCounterClockwise, ArrowRight, Eye, Check, Plus, GithubLogo, FileArrowDown } from '@phosphor-icons/react';
+import { MagnifyingGlass, Lightbulb, X, Info, Pencil, PushPin, ClockCounterClockwise, ArrowRight, Eye, Check, Plus, FileArrowDown } from '@phosphor-icons/react';
 import { notifications } from '@mantine/notifications';
-import { useDisclosure } from '@mantine/hooks';
 import MainLayout from '../layouts/MainLayout';
 import { useAuth } from '../components/AuthProvider';
 import { supabase } from '../lib/supabase';
-import './RulesPage.css'; // We'll create this file for the highlight animation
+import './RulesPage.css';
 
-// Define interfaces
 interface Rule {
 	id: string;
 	badge: string;
@@ -42,7 +40,6 @@ interface RuleChange {
 }
 
 export default function RulesPage() {
-	// State variables
 	const [activeCommunityRule, setActiveCommunityRule] = useState<string | null>(null);
 	const [activeRoleplayRule, setActiveRoleplayRule] = useState<string | null>(null);
 	const [scrollY, setScrollY] = useState(0);
@@ -56,8 +53,6 @@ export default function RulesPage() {
 	const [activeTab, setActiveTab] = useState<string | null>('all');
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-
-	// Edit rule state
 	const [editModalOpen, setEditModalOpen] = useState(false);
 	const [currentRule, setCurrentRule] = useState<Rule | null>(null);
 	const [editedContent, setEditedContent] = useState('');
@@ -67,8 +62,6 @@ export default function RulesPage() {
 	const [editedBadge, setEditedBadge] = useState('');
 	const [changeNotes, setChangeNotes] = useState('');
 	const [isSaving, setIsSaving] = useState(false);
-
-	// Create rule state
 	const [createModalOpen, setCreateModalOpen] = useState(false);
 	const [newRule, setNewRule] = useState({
 		badge: '',
@@ -78,12 +71,9 @@ export default function RulesPage() {
 		tags: [] as string[],
 		is_pinned: false,
 	});
-
-	// History state
 	const [historyModalOpen, setHistoryModalOpen] = useState(false);
 	const [ruleHistory, setRuleHistory] = useState<RuleChange[]>([]);
 	const [historyLoading, setHistoryLoading] = useState(false);
-
 	const { isAuthorized, user } = useAuth();
 	const rulesRef = useRef<HTMLDivElement>(null);
 
@@ -227,7 +217,6 @@ export default function RulesPage() {
 		}
 	};
 
-	// Toggle pinned status
 	const togglePinnedRule = async (rule: Rule) => {
 		try {
 			await updateRule(
@@ -239,7 +228,6 @@ export default function RulesPage() {
 				`Regel blev ${rule.is_pinned ? 'fjernet fra' : 'tilføjet til'} hurtig oversigt af ${user?.username || 'Unknown'}`
 			);
 
-			// Refresh rules
 			fetchRules();
 
 			notifications.show({
@@ -257,32 +245,23 @@ export default function RulesPage() {
 		}
 	};
 
-	// UI Handlers
-
-	// Scroll to specific rule
 	const scrollToRule = (ruleId: string) => {
 		const element = document.getElementById(`rule-${ruleId}`);
 		if (element) {
-			// Check which category the rule belongs to
 			const rule = [...communityRules, ...roleplayRules].find((r) => r.id === ruleId);
 
 			if (rule) {
-				// Set active tab
 				setActiveTab(rule.category === 'community' ? 'community' : 'roleplay');
 
-				// Set active accordion item
 				if (rule.category === 'community') {
 					setActiveCommunityRule(ruleId);
 				} else {
 					setActiveRoleplayRule(ruleId);
 				}
 
-				// Wait for tab switch and accordion to open
 				setTimeout(() => {
-					// Scroll to the element
 					element.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-					// Add highlighting effect
 					element.classList.add('highlight-rule');
 					setTimeout(() => {
 						element.classList.remove('highlight-rule');
@@ -292,7 +271,6 @@ export default function RulesPage() {
 		}
 	};
 
-	// Open edit modal
 	const openEditModal = (rule: Rule) => {
 		setCurrentRule(rule);
 		setEditedTitle(rule.title);
@@ -304,7 +282,6 @@ export default function RulesPage() {
 		setEditModalOpen(true);
 	};
 
-	// Save edited rule
 	const handleSaveRule = async () => {
 		if (!currentRule) return;
 
@@ -323,7 +300,6 @@ export default function RulesPage() {
 				changeNotes
 			);
 
-			// Refresh rules
 			fetchRules();
 
 			notifications.show({
@@ -345,7 +321,6 @@ export default function RulesPage() {
 		}
 	};
 
-	// Create new rule
 	const handleCreateRule = async () => {
 		if (!newRule.badge || !newRule.title || !newRule.content) {
 			notifications.show({
@@ -366,7 +341,6 @@ export default function RulesPage() {
 				is_pinned: newRule.is_pinned,
 			});
 
-			// Reset form
 			setNewRule({
 				badge: '',
 				title: '',
@@ -376,7 +350,6 @@ export default function RulesPage() {
 				is_pinned: false,
 			});
 
-			// Refresh rules
 			fetchRules();
 
 			notifications.show({
@@ -396,7 +369,6 @@ export default function RulesPage() {
 		}
 	};
 
-	// Open history modal
 	const openHistoryModal = async (ruleId: string) => {
 		setHistoryLoading(true);
 		setHistoryModalOpen(true);
@@ -415,7 +387,6 @@ export default function RulesPage() {
 		}
 	};
 
-	// Export rules to JSON
 	const exportRules = () => {
 		const data = {
 			community: communityRules,
@@ -487,32 +458,17 @@ export default function RulesPage() {
 						{isAuthorized && (
 							<Group onClick={(e) => e.stopPropagation()}>
 								<Tooltip label='Rediger'>
-									<ActionIcon
-										size='sm'
-										color='blue'
-										onClick={handleEditClick}
-										component='div'
-									>
+									<ActionIcon size='sm' color='blue' onClick={handleEditClick} component='div'>
 										<Pencil size={16} />
 									</ActionIcon>
 								</Tooltip>
 								<Tooltip label={rule.is_pinned ? 'Fjern fra oversigt' : 'Fastgør til oversigt'}>
-									<ActionIcon
-										size='sm'
-										color={rule.is_pinned ? 'yellow' : 'gray'}
-										onClick={handlePinClick}
-										component='div'
-									>
+									<ActionIcon size='sm' color={rule.is_pinned ? 'yellow' : 'gray'} onClick={handlePinClick} component='div'>
 										<PushPin size={16} weight={rule.is_pinned ? 'fill' : 'regular'} />
 									</ActionIcon>
 								</Tooltip>
 								<Tooltip label='Vis historie'>
-									<ActionIcon
-										size='sm'
-										color='gray'
-										onClick={handleHistoryClick}
-										component='div'
-									>
+									<ActionIcon size='sm' color='gray' onClick={handleHistoryClick} component='div'>
 										<ClockCounterClockwise size={16} />
 									</ActionIcon>
 								</Tooltip>

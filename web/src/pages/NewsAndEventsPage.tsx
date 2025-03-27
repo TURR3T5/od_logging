@@ -151,19 +151,16 @@ export default function NewsAndEventsPage() {
 	const filterItems = (itemsList: ContentItem[] = items) => {
 		let filtered = [...itemsList];
 
-		// First filter by tab
 		if (activeTab === 'news') {
 			filtered = filtered.filter((item) => item.type === 'news');
 		} else if (activeTab === 'events') {
 			filtered = filtered.filter((item) => item.type === 'event');
 		}
 
-		// Then filter by pinned status if needed
 		if (showPinnedOnly) {
 			filtered = filtered.filter((item) => item.isPinned);
 		}
 
-		// Filter events by date if in calendar view
 		if (activeTab === 'events' && selectedDate && viewMode === 'calendar') {
 			filtered = filtered.filter((item) => {
 				if (item.type === 'event') {
@@ -173,7 +170,6 @@ export default function NewsAndEventsPage() {
 			});
 		}
 
-		// Sort by date
 		filtered = filtered.sort((a, b) => {
 			const dateA = a.type === 'event' ? a.eventDate : a.createdAt;
 			const dateB = b.type === 'event' ? b.eventDate : b.createdAt;

@@ -510,7 +510,6 @@ export default function HomePage() {
 										mt='auto'
 										onClick={() => {
 											navigate({ to: '/events' });
-											// We would ideally pass state here to open the specific item
 										}}
 									>
 										Læs mere
