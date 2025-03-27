@@ -1,7 +1,7 @@
-import { Group, Text, Button, Box, Container } from '@mantine/core';
+import { Group, Text, Button, Box, Container, Menu } from '@mantine/core';
 import { useAuth } from '../components/AuthProvider';
 import { useNavigate } from '@tanstack/react-router';
-import { SignOut, House, ListBullets, Book } from '@phosphor-icons/react';
+import { SignOut, House, ListBullets, Book, MapPin, ChartLine, Calendar, User, CaretDown } from '@phosphor-icons/react';
 
 export default function Header() {
 	const { isAuthorized, isLoading, user, signInWithDiscord, signOut } = useAuth();
@@ -10,10 +10,17 @@ export default function Header() {
 	const menuItems = [
 		{ label: 'Home', icon: House, onClick: () => navigate({ to: '/' }) },
 		{ label: 'Regler', icon: Book, onClick: () => navigate({ to: '/rules' }) },
-		{ label: 'Server Logs', icon: ListBullets, onClick: () => navigate({ to: '/logs' }), requireAuth: true, },
+		{ label: 'By Kort', icon: MapPin, onClick: () => navigate({ to: '/map' }) },
+		{ label: 'Server Status', icon: ChartLine, onClick: () => navigate({ to: '/server-status' }) },
+		{ label: 'Begivenheder', icon: Calendar, onClick: () => navigate({ to: '/events' }) },
+		{ label: 'Whitelist', icon: User, onClick: () => navigate({ to: '/whitelist' }) },
+		{ label: 'Server Logs', icon: ListBullets, onClick: () => navigate({ to: '/logs' }), requireAuth: true },
 	];
 
 	const filteredMenuItems = menuItems.filter((item) => !item.requireAuth || (item.requireAuth && isAuthorized));
+
+	const displayItems = filteredMenuItems.slice(0, 3);
+	const dropdownItems = filteredMenuItems.slice(3);
 
 	return (
 		<Box
@@ -45,7 +52,7 @@ export default function Header() {
 						</Text>
 
 						<Group ml='xl' gap='xl'>
-							{filteredMenuItems.map((item, index) => (
+							{displayItems.map((item, index) => (
 								<Group
 									key={index}
 									gap='xs'
@@ -65,6 +72,36 @@ export default function Header() {
 									</Text>
 								</Group>
 							))}
+
+							{dropdownItems.length > 0 && (
+								<Menu shadow='md' width={200}>
+									<Menu.Target>
+										<Group
+											gap='xs'
+											style={(theme) => ({
+												cursor: 'pointer',
+												transition: 'color 200ms ease',
+												'&:hover': {
+													color: theme.colors.blue[4],
+												},
+												alignItems: 'center',
+											})}
+										>
+											<Text c='gray.0' style={{ display: 'flex', alignItems: 'center' }}>
+												Mere
+											</Text>
+											<CaretDown size={14} />
+										</Group>
+									</Menu.Target>
+									<Menu.Dropdown>
+										{dropdownItems.map((item, index) => (
+											<Menu.Item key={index} leftSection={<item.icon size={16} />} onClick={item.onClick}>
+												{item.label}
+											</Menu.Item>
+										))}
+									</Menu.Dropdown>
+								</Menu>
+							)}
 						</Group>
 					</Group>
 

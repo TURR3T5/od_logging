@@ -1,15 +1,112 @@
 import { useState, useEffect } from 'react';
-import { Container, Box, Title, Text, Button, Group, Paper, Grid, Card, Badge, Center } from '@mantine/core';
+import { Container, Box, Title, Text, Button, Group, Grid, Card, Badge, Center, Avatar, Timeline } from '@mantine/core';
 import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '../components/AuthProvider';
 import MainLayout from '../layouts/MainLayout';
-import { Users, Car, Buildings, Calendar, ShieldCheck, GameController, ArrowRight, DiscordLogo } from '@phosphor-icons/react';
+import { Users, Car, Buildings, Calendar, ShieldCheck, GameController, ArrowRight, DiscordLogo, Bell, ArrowSquareOut, Star } from '@phosphor-icons/react';
+
+interface ServerStats {
+	onlinePlayers: number;
+	totalPlayers: number;
+	whitelist: number;
+	uptime: string;
+}
+
+interface NewsItem {
+	id: number;
+	title: string;
+	content: string;
+	date: string;
+	type: 'update' | 'event' | 'announcement';
+}
+
+interface FeaturedPlayer {
+	id: number;
+	name: string;
+	avatarUrl: string;
+	role: string;
+	description: string;
+}
 
 export default function HomePage() {
 	const { isAuthorized } = useAuth();
 	const navigate = useNavigate();
 	const [currentSlide, setCurrentSlide] = useState(0);
 	const [isLoaded, setIsLoaded] = useState(false);
+	const [serverStats, setServerStats] = useState<ServerStats>({
+		onlinePlayers: 0,
+		totalPlayers: 0,
+		whitelist: 0,
+		uptime: '',
+	});
+
+	// Demo news items - would come from backend in production
+	const newsItems: NewsItem[] = [
+		{
+			id: 1,
+			title: 'Server Update 3.5',
+			content: 'New vehicles, weapons, and optimizations have been added to the server.',
+			date: '2025-03-25',
+			type: 'update',
+		},
+		{
+			id: 2,
+			title: 'Weekend Event: Car Show',
+			content: 'Join us at the Vinewood Bowl for a car show this weekend. Cash prizes for best vehicles!',
+			date: '2025-03-24',
+			type: 'event',
+		},
+		{
+			id: 3,
+			title: 'New Police Chief Appointed',
+			content: 'Congratulations to Officer Johnson on being appointed as the new Police Chief!',
+			date: '2025-03-22',
+			type: 'announcement',
+		},
+	];
+
+	// Demo featured players - would come from backend in production
+	const featuredPlayers: FeaturedPlayer[] = [
+		{
+			id: 1,
+			name: 'Michael Stone',
+			avatarUrl: '/api/placeholder/100/100',
+			role: 'Gang Leader',
+			description: 'Leader of the Yellow Jack Gang, known for strategic territory control.',
+		},
+		{
+			id: 2,
+			name: 'Sarah Johnson',
+			avatarUrl: '/api/placeholder/100/100',
+			role: 'Police Chief',
+			description: 'Respected Police Chief dedicated to keeping Odessa safe.',
+		},
+		{
+			id: 3,
+			name: 'Alex Martinez',
+			avatarUrl: '/api/placeholder/100/100',
+			role: 'Business Owner',
+			description: 'Owner of multiple successful businesses in the city center.',
+		},
+	];
+
+	// Fetch server stats (simulated here)
+	useEffect(() => {
+		const fetchServerStats = async () => {
+			// In production, this would be a real API call
+			// Simulating API call for demo
+			setTimeout(() => {
+				setServerStats({
+					onlinePlayers: 185,
+					totalPlayers: 5240,
+					whitelist: 4950,
+					uptime: '98.7%',
+				});
+			}, 1000);
+		};
+
+		fetchServerStats();
+	}, []);
 
 	useEffect(() => {
 		setIsLoaded(true);
@@ -78,13 +175,6 @@ export default function HomePage() {
 			title: 'Tilpassede Scripts',
 			description: 'Nyd unikke gameplay-funktioner med vores specialudviklede server scripts.',
 		},
-	];
-
-	const serverStats = [
-		{ value: '5000+', label: 'Registrerede Spillere' },
-		{ value: '100+', label: 'Tilpassede Køretøjer' },
-		{ value: '50+', label: 'Virksomhedsmuligheder' },
-		{ value: '24/7', label: 'Mulighed for support' },
 	];
 
 	return (
@@ -219,6 +309,146 @@ export default function HomePage() {
 						/>
 					))}
 				</Box>
+			</Box>
+
+			{/* Latest Server Stats */}
+			<Box
+				style={{
+					backgroundColor: '#0a0a0a',
+					padding: '20px 0',
+					borderBottom: '1px solid #222',
+				}}
+			>
+				<Container size='xl'>
+					<Grid>
+						<Grid.Col span={{ base: 6, md: 3 }}>
+							<Box style={{ textAlign: 'center' }}>
+								<Text size='sm' c='dimmed'>
+									ONLINE SPILLERE
+								</Text>
+								<Text size='xl' fw={700} variant='gradient' gradient={{ from: 'blue', to: 'cyan' }}>
+									{serverStats.onlinePlayers}
+								</Text>
+							</Box>
+						</Grid.Col>
+						<Grid.Col span={{ base: 6, md: 3 }}>
+							<Box style={{ textAlign: 'center' }}>
+								<Text size='sm' c='dimmed'>
+									REGISTREREDE SPILLERE
+								</Text>
+								<Text size='xl' fw={700} variant='gradient' gradient={{ from: 'blue', to: 'cyan' }}>
+									{serverStats.totalPlayers}
+								</Text>
+							</Box>
+						</Grid.Col>
+						<Grid.Col span={{ base: 6, md: 3 }}>
+							<Box style={{ textAlign: 'center' }}>
+								<Text size='sm' c='dimmed'>
+									WHITELIST MEDLEMMER
+								</Text>
+								<Text size='xl' fw={700} variant='gradient' gradient={{ from: 'blue', to: 'cyan' }}>
+									{serverStats.whitelist}
+								</Text>
+							</Box>
+						</Grid.Col>
+						<Grid.Col span={{ base: 6, md: 3 }}>
+							<Box style={{ textAlign: 'center' }}>
+								<Text size='sm' c='dimmed'>
+									SERVER UPTIME
+								</Text>
+								<Text size='xl' fw={700} variant='gradient' gradient={{ from: 'blue', to: 'cyan' }}>
+									{serverStats.uptime}
+								</Text>
+							</Box>
+						</Grid.Col>
+					</Grid>
+				</Container>
+			</Box>
+
+			{/* News & Announcements Section */}
+			<Box style={{ padding: '60px 0', backgroundColor: '#070707' }}>
+				<Container size='xl'>
+					<Grid>
+						<Grid.Col span={{ base: 12, md: 8 }}>
+							<Box mb='lg'>
+								<Group justify='space-between' mb='md'>
+									<Title order={3}>
+										<Group gap='xs'>
+											<Bell size={24} />
+											Seneste Nyheder & Meddelelser
+										</Group>
+									</Title>
+									<Button size='sm' variant='subtle' rightSection={<ArrowSquareOut size={16} />}>
+										Vis Alle
+									</Button>
+								</Group>
+
+								<Timeline active={1} bulletSize={24} lineWidth={2}>
+									{newsItems.map((item) => (
+										<Timeline.Item
+											key={item.id}
+											bullet={item.type === 'update' ? <Bell size={14} /> : item.type === 'event' ? <Calendar size={14} /> : <Bell size={14} />}
+											title={
+												<Group>
+													<Text fw={600}>{item.title}</Text>
+													<Badge size='sm' variant='light' color={item.type === 'update' ? 'blue' : item.type === 'event' ? 'green' : 'orange'}>
+														{item.type === 'update' ? 'Opdatering' : item.type === 'event' ? 'Begivenhed' : 'Meddelelse'}
+													</Badge>
+												</Group>
+											}
+										>
+											<Text size='sm' c='dimmed' mt={4}>
+												{new Date(item.date).toLocaleDateString('da-DK', {
+													year: 'numeric',
+													month: 'long',
+													day: 'numeric',
+												})}
+											</Text>
+											<Text size='sm' mt='sm'>
+												{item.content}
+											</Text>
+											<Button variant='subtle' size='xs' mt='sm'>
+												Læs mere
+											</Button>
+										</Timeline.Item>
+									))}
+								</Timeline>
+							</Box>
+						</Grid.Col>
+
+						<Grid.Col span={{ base: 12, md: 4 }}>
+							<Box>
+								<Group justify='space-between' mb='md'>
+									<Title order={3}>
+										<Group gap='xs'>
+											<Star size={24} />
+											Fremhævede Spillere
+										</Group>
+									</Title>
+								</Group>
+
+								<Box>
+									{featuredPlayers.map((player) => (
+										<Card key={player.id} withBorder mb='md' padding='sm'>
+											<Group>
+												<Avatar src={player.avatarUrl} size='lg' radius='md' />
+												<Box>
+													<Text fw={600}>{player.name}</Text>
+													<Badge size='sm' variant='light' color='indigo'>
+														{player.role}
+													</Badge>
+													<Text size='xs' c='dimmed' mt={4}>
+														{player.description}
+													</Text>
+												</Box>
+											</Group>
+										</Card>
+									))}
+								</Box>
+							</Box>
+						</Grid.Col>
+					</Grid>
+				</Container>
 			</Box>
 
 			{/* About Server Section */}
@@ -358,100 +588,6 @@ export default function HomePage() {
 										{feature.description}
 									</Text>
 								</Card>
-							</Grid.Col>
-						))}
-					</Grid>
-				</Container>
-			</Box>
-
-			{/* Statistics Section */}
-			<Box
-				style={() => ({
-					padding: '80px 0',
-					position: 'relative',
-					overflow: 'hidden',
-					backgroundColor: '#090909',
-				})}
-			>
-				<Box
-					style={{
-						position: 'absolute',
-						inset: 0,
-						backgroundImage: 'url("./1.webp")',
-						backgroundSize: 'cover',
-						backgroundPosition: 'center',
-						opacity: 0.2,
-						filter: 'blur(8px)',
-					}}
-				/>
-
-				<Container size='xl' style={{ position: 'relative', zIndex: 10 }}>
-					<Box style={{ textAlign: 'center', marginBottom: '64px' }}>
-						<Badge size='lg' radius='sm' color='blue' variant='light' style={{ marginBottom: '8px' }}>
-							Server Statistikker
-						</Badge>
-						<Title
-							order={2}
-							style={{
-								fontSize: '1.875rem',
-								fontWeight: 'bold',
-								marginBottom: '16px',
-								textAlign: 'center',
-							}}
-						>
-							Bliv en Del af Vores Voksende Fællesskab
-						</Title>
-						<Text
-							size='lg'
-							style={{
-								maxWidth: '48rem',
-								margin: '0 auto',
-								color: '#d1d5db',
-								textAlign: 'center',
-							}}
-						>
-							OdessaRP fortsætter med at udvide med nye spillere, funktioner og oplevelser. Bliv en del af vores historie i dag.
-						</Text>
-					</Box>
-
-					<Grid>
-						{serverStats.map((stat, index) => (
-							<Grid.Col span={{ base: 6, md: 3 }} key={index}>
-								<Paper
-									p='xl'
-									radius='md'
-									withBorder
-									style={(theme) => ({
-										backgroundColor: 'rgba(26, 26, 26, 0.7)',
-										backdropFilter: 'blur(10px)',
-										borderColor: theme.colors.dark[5],
-										height: '100%',
-										display: 'flex',
-										flexDirection: 'column',
-										alignItems: 'center',
-										justifyContent: 'center',
-										transition: 'transform 0.3s',
-										'&:hover': {
-											transform: 'scale(1.05)',
-										},
-									})}
-								>
-									<Text
-										style={{
-											fontSize: '3rem',
-											fontWeight: 800,
-											marginBottom: '8px',
-											textAlign: 'center',
-										}}
-										variant='gradient'
-										gradient={{ from: 'blue', to: 'cyan' }}
-									>
-										{stat.value}
-									</Text>
-									<Text size='lg' c='dimmed' style={{ textAlign: 'center' }}>
-										{stat.label}
-									</Text>
-								</Paper>
 							</Grid.Col>
 						))}
 					</Grid>

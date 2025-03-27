@@ -5,6 +5,10 @@ import LoginPage from '../pages/Login';
 import LogsPage from '../pages/Logs';
 import AuthCallbackPage from '../pages/AuthCallback';
 import RulesPage from '../pages/Rules';
+import CityMapPage from '../pages/CityMapPage';
+import ServerStatusPage from '../pages/ServerStatus';
+import EventsCalendarPage from '../pages/EventsCalendar';
+import WhitelistApplicationPage from '../pages/WhitelistPortal';
 
 const rootRoute = createRootRoute({
 	component: App,
@@ -26,7 +30,7 @@ const rulesRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: '/rules',
 	component: RulesPage,
-})
+});
 
 const authCallbackRoute = createRoute({
 	getParentRoute: () => rootRoute,
@@ -40,7 +44,31 @@ const logsRoute = createRoute({
 	component: LogsPage,
 });
 
-const routeTree = rootRoute.addChildren([homeRoute, loginRoute, authCallbackRoute, logsRoute, rulesRoute]);
+const cityMapRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: '/map',
+	component: CityMapPage,
+});
+
+const serverStatusRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: '/server-status',
+	component: ServerStatusPage,
+});
+
+const eventsCalendarRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: '/events',
+	component: EventsCalendarPage,
+});
+
+const whitelistApplicationRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: '/whitelist',
+	component: WhitelistApplicationPage,
+});
+
+const routeTree = rootRoute.addChildren([homeRoute, loginRoute, authCallbackRoute, logsRoute, rulesRoute, cityMapRoute, serverStatusRoute, eventsCalendarRoute, whitelistApplicationRoute]);
 
 export const router = createRouter({ routeTree });
 
