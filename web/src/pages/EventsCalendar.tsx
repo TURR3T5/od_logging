@@ -5,9 +5,9 @@ import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useAuth } from '../components/AuthProvider';
 import MainLayout from '../layouts/MainLayout';
-import { Plus, DotsThree, CalendarCheck, ArrowRight, Trash, CheckCircle } from '@phosphor-icons/react';
+import { Plus, DotsThree, CalendarCheck, ArrowRight, Trash, CheckCircle, Calendar as CalendarIcon, Star, Bell, CaretRight } from '@phosphor-icons/react';
 import 'dayjs/locale/da';
-import { format, isSameDay } from 'date-fns';
+import { format, isSameDay, isAfter, addDays } from 'date-fns';
 import { da } from 'date-fns/locale';
 
 interface EventType {
@@ -56,6 +56,27 @@ export default function EventsCalendarPage() {
 				title: 'Paleto Bay Festival',
 				description: 'Årlig festival i Paleto Bay med musik, mad og underholdning. Der vil være livemusik fra lokale bands, madstande fra byens bedste restauranter, og forskellige aktiviteter for både børn og voksne. Festivalen varer hele dagen, så kom forbi når det passer dig!',
 				date: new Date(2025, 3, 5, 10, 0),
+				type: 'special',
+			},
+			{
+				id: '4',
+				title: 'Street Race Tournament',
+				description: 'Underground street race gennem hele Los Santos. Mød op med din hurtigste bil og deltag i dette uofficielle og totalt ulovlige racerløb! Høj risiko, høj gevinst - vinderen tager det hele. OBS: Politiet er ikke inviteret, så hold øje med dine omgivelser!',
+				date: new Date(2025, 2, 27, 22, 0),
+				type: 'community',
+			},
+			{
+				id: '5',
+				title: 'Skattejagt i Byen',
+				description: 'Byrådet har organiseret en skattejagt rundt i hele byen. Find ledetråde, løs gåder og vær den første til at finde den endelige skat. Åben for alle borgere, og der vil være værdifulde præmier til vinderne.',
+				date: addDays(new Date(), 1),
+				type: 'official',
+			},
+			{
+				id: '6',
+				title: 'Åbning af Ny Restaurant',
+				description: 'Kom til den store åbning af byens nye gourmetrestaurant "Le Bistro". Der vil være gratis smagsprøver, drinks og live underholdning. En perfekt aften for mad-entusiaster og socialites.',
+				date: addDays(new Date(), 3),
 				type: 'special',
 			},
 		];
@@ -156,6 +177,19 @@ export default function EventsCalendarPage() {
 		}
 	};
 
+	const getEventTypeIcon = (type: string) => {
+		switch (type) {
+			case 'official':
+				return <Bell size={16} weight='fill' />;
+			case 'community':
+				return <CalendarCheck size={16} weight='fill' />;
+			case 'special':
+				return <Star size={16} weight='fill' />;
+			default:
+				return <CalendarIcon size={16} weight='fill' />;
+		}
+	};
+
 	const renderDayContent = (date: Date) => {
 		const dayEvents = events.filter((event) => isSameDay(new Date(event.date), date));
 
@@ -170,11 +204,27 @@ export default function EventsCalendarPage() {
 		);
 	};
 
+	const upcomingEvents = events
+		.filter((event) => isAfter(new Date(event.date), new Date()) || isSameDay(new Date(event.date), new Date()))
+		.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+		.slice(0, 4);
+
 	return (
 		<MainLayout requireAuth={false}>
-			<Container size='xl' py='xl'>
-				<Group justify='space-between' mb='xl'>
-					<Title order={1}>Begivenheder Kalender</Title>
+			<Container size='xl' py='xs'>
+				<Group justify='space-between' mb='lg'>
+					<Group align='center'>
+						<Title order={1}>Begivenheder Kalender</Title>
+
+						<Button.Group>
+							<Button variant={viewMode === 'month' ? 'filled' : 'outline'} onClick={() => setViewMode('month')}>
+								Måned
+							</Button>
+							<Button variant={viewMode === 'list' ? 'filled' : 'outline'} onClick={() => setViewMode('list')}>
+								Liste
+							</Button>
+						</Button.Group>
+					</Group>
 					{isAuthorized && (
 						<Button onClick={open} variant='gradient' gradient={{ from: 'blue', to: 'cyan' }} leftSection={<Plus size={16} />}>
 							Opret Begivenhed
@@ -182,50 +232,31 @@ export default function EventsCalendarPage() {
 					)}
 				</Group>
 
-				<Group mb='md' align='center'>
-					<Button.Group>
-						<Button variant={viewMode === 'month' ? 'filled' : 'outline'} onClick={() => setViewMode('month')}>
-							Måned
-						</Button>
-						<Button variant={viewMode === 'list' ? 'filled' : 'outline'} onClick={() => setViewMode('list')}>
-							Liste
-						</Button>
-					</Button.Group>
-				</Group>
-
 				{viewMode === 'month' && (
-					<Grid gutter='md'>
-						<Grid.Col span={{ base: 12, md: 7 }}>
-							<Paper shadow='md' radius='md' withBorder mb='xl'>
-								<Box p='md'>
-									<Calendar
-										date={selectedDate || undefined}
-										onDateChange={handleDateChange}
-										locale='da'
-										size='xl'
-										styles={(theme) => ({
-											day: {
-												borderRadius: theme.radius.sm,
-												'&[data-selected]': {
-													backgroundColor: theme.colors.blue[6],
-												},
-												'&[data-in-range]': {
-													backgroundColor: theme.colors.blue[5],
-													color: theme.white,
-												},
-											},
-										})}
-										getDayProps={(date) => ({
-											onClick: () => handleDateChange(date),
-										})}
-										renderDay={(date) => renderDayContent(date)}
-									/>
-								</Box>
-							</Paper>
+					<Grid gutter='md' align='stretch'>
+						<Grid.Col span={{ base: 12, md: 5 }}>
+							<Calendar
+								date={selectedDate || undefined}
+								onDateChange={handleDateChange}
+								locale='da'
+								size='xl'
+								styles={(theme) => ({
+									calendarHeader: {
+										minWidth: '100%',
+									},
+									monthCell: {
+										padding: theme.spacing.xs,
+									},
+								})}
+								getDayProps={(date) => ({
+									onClick: () => handleDateChange(date),
+								})}
+								renderDay={(date) => renderDayContent(date)}
+							/>
 						</Grid.Col>
 
-						<Grid.Col span={{ base: 12, md: 5 }}>
-							<Paper shadow='md' radius='md' withBorder mb='xl' p='md'>
+						<Grid.Col span={{ base: 12, md: 7 }}>
+							<Paper shadow='md' radius='md' withBorder p='md' h='100%'>
 								<Title order={3} mb='md'>
 									<Group gap='xs'>
 										<CalendarCheck size={22} />
@@ -233,20 +264,22 @@ export default function EventsCalendarPage() {
 									</Group>
 								</Title>
 
-								<Timeline active={0} bulletSize={24} lineWidth={2}>
-									{events
-										.filter((event) => new Date(event.date) >= new Date())
-										.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-										.slice(0, 5)
-										.map((event, _index) => (
+								<Timeline active={0} bulletSize={30} lineWidth={2}>
+									{upcomingEvents.length > 0 ? (
+										upcomingEvents.map((event) => (
 											<Timeline.Item
 												key={event.id}
+												bullet={getEventTypeIcon(event.type)}
+												color={getEventBadgeColor(event.type)}
 												title={
 													<Group gap='xs'>
 														<Text fw={600}>{event.title}</Text>
-														<Badge size='sm' color={getEventBadgeColor(event.type)}>
+														<Badge size='sm' variant='light' color={getEventBadgeColor(event.type)}>
 															{event.type === 'official' ? 'Officiel' : event.type === 'community' ? 'Fællesskab' : 'Special'}
 														</Badge>
+														<Button variant='subtle' size='xs' rightSection={<CaretRight size={14} />} onClick={() => handleEventClick(event)} style={{ position: 'absolute', right: 0, top: 0 }}>
+															Læs mere
+														</Button>
 													</Group>
 												}
 											>
@@ -256,13 +289,9 @@ export default function EventsCalendarPage() {
 												<Text size='sm' lineClamp={2}>
 													{event.description}
 												</Text>
-												<Button variant='subtle' size='xs' mt='xs' onClick={() => handleEventClick(event)}>
-													Læs mere
-												</Button>
 											</Timeline.Item>
-										))}
-
-									{events.filter((event) => new Date(event.date) >= new Date()).length === 0 && (
+										))
+									) : (
 										<Box py='md' ta='center'>
 											<Text c='dimmed' fz='sm'>
 												Ingen kommende begivenheder
@@ -280,7 +309,7 @@ export default function EventsCalendarPage() {
 				)}
 
 				{selectedDate && filteredEvents.length > 0 && viewMode === 'month' && (
-					<Paper shadow='md' radius='md' p='md' withBorder>
+					<Paper shadow='md' radius='md' p='md' withBorder mt='xl'>
 						<Group mb='md'>
 							<CalendarCheck size={22} />
 							<Title order={3}>Begivenheder d. {format(selectedDate, 'd. MMMM yyyy', { locale: da })}</Title>
@@ -291,7 +320,9 @@ export default function EventsCalendarPage() {
 								<Card key={event.id} mb='md' padding='md' radius='md' withBorder>
 									<Group justify='space-between' mb='xs'>
 										<Group>
-											<Badge color={getEventBadgeColor(event.type)}>{event.type === 'official' ? 'Officiel' : event.type === 'community' ? 'Fællesskab' : 'Special'}</Badge>
+											<Badge color={getEventBadgeColor(event.type)} leftSection={getEventTypeIcon(event.type)}>
+												{event.type === 'official' ? 'Officiel' : event.type === 'community' ? 'Fællesskab' : 'Special'}
+											</Badge>
 											<Text fw={700}>{event.title}</Text>
 										</Group>
 										<Menu shadow='md' width={200} position='bottom-end'>
@@ -353,12 +384,28 @@ export default function EventsCalendarPage() {
 
 									return (
 										<Box key={event.id}>
-											{showMonthDivider && <Divider label={currentMonth} labelPosition='center' mb='md' mt={index > 0 ? 'xl' : 0} />}
+											{showMonthDivider && (
+												<Divider
+													label={
+														<Group gap='xs'>
+															<CalendarIcon size={16} />
+															<Text tt='uppercase' fw={500}>
+																{currentMonth}
+															</Text>
+														</Group>
+													}
+													labelPosition='center'
+													mb='md'
+													mt={index > 0 ? 'xl' : 0}
+												/>
+											)}
 
 											<Card mb='md' padding='md' radius='md' withBorder>
 												<Group justify='space-between' mb='xs'>
 													<Group>
-														<Badge color={getEventBadgeColor(event.type)}>{event.type === 'official' ? 'Officiel' : event.type === 'community' ? 'Fællesskab' : 'Special'}</Badge>
+														<Badge color={getEventBadgeColor(event.type)} leftSection={getEventTypeIcon(event.type)}>
+															{event.type === 'official' ? 'Officiel' : event.type === 'community' ? 'Fællesskab' : 'Special'}
+														</Badge>
 														<Text fw={700}>{event.title}</Text>
 													</Group>
 													<Group>
@@ -418,13 +465,13 @@ export default function EventsCalendarPage() {
 								Type
 							</Text>
 							<Button.Group>
-								<Button variant={newEvent.type === 'community' ? 'filled' : 'outline'} onClick={() => setNewEvent({ ...newEvent, type: 'community' })} color='green'>
+								<Button variant={newEvent.type === 'community' ? 'filled' : 'outline'} onClick={() => setNewEvent({ ...newEvent, type: 'community' })} color='green' leftSection={<CalendarCheck size={16} />}>
 									Fællesskab
 								</Button>
-								<Button variant={newEvent.type === 'official' ? 'filled' : 'outline'} onClick={() => setNewEvent({ ...newEvent, type: 'official' })} color='blue'>
+								<Button variant={newEvent.type === 'official' ? 'filled' : 'outline'} onClick={() => setNewEvent({ ...newEvent, type: 'official' })} color='blue' leftSection={<Bell size={16} />}>
 									Officiel
 								</Button>
-								<Button variant={newEvent.type === 'special' ? 'filled' : 'outline'} onClick={() => setNewEvent({ ...newEvent, type: 'special' })} color='purple'>
+								<Button variant={newEvent.type === 'special' ? 'filled' : 'outline'} onClick={() => setNewEvent({ ...newEvent, type: 'special' })} color='purple' leftSection={<Star size={16} />}>
 									Special
 								</Button>
 							</Button.Group>
@@ -447,7 +494,7 @@ export default function EventsCalendarPage() {
 					onClose={closeEventModal}
 					title={
 						<Group>
-							<Badge color={selectedEvent ? getEventBadgeColor(selectedEvent.type) : 'gray'} size='lg'>
+							<Badge color={selectedEvent ? getEventBadgeColor(selectedEvent.type) : 'gray'} size='lg' leftSection={selectedEvent ? getEventTypeIcon(selectedEvent.type) : undefined}>
 								{selectedEvent?.type === 'official' ? 'Officiel' : selectedEvent?.type === 'community' ? 'Fællesskab' : 'Special'}
 							</Badge>
 							<Text fw={700}>{selectedEvent?.title}</Text>
