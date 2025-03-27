@@ -84,7 +84,7 @@ export default function HomePage() {
 		{ value: '5000+', label: 'Registrerede Spillere' },
 		{ value: '100+', label: 'Tilpassede Køretøjer' },
 		{ value: '50+', label: 'Virksomhedsmuligheder' },
-		{ value: '24/7', label: 'Personalestøtte' },
+		{ value: '24/7', label: 'Mulighed for support' },
 	];
 
 	return (

@@ -4,6 +4,7 @@ import HomePage from '../pages/Home';
 import LoginPage from '../pages/Login';
 import LogsPage from '../pages/Logs';
 import AuthCallbackPage from '../pages/AuthCallback';
+import RulesPage from '../pages/Rules';
 
 const rootRoute = createRootRoute({
 	component: App,
@@ -21,6 +22,12 @@ const loginRoute = createRoute({
 	component: LoginPage,
 });
 
+const rulesRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: '/rules',
+	component: RulesPage,
+})
+
 const authCallbackRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: '/auth/callback',
@@ -33,7 +40,7 @@ const logsRoute = createRoute({
 	component: LogsPage,
 });
 
-const routeTree = rootRoute.addChildren([homeRoute, loginRoute, authCallbackRoute, logsRoute]);
+const routeTree = rootRoute.addChildren([homeRoute, loginRoute, authCallbackRoute, logsRoute, rulesRoute]);
 
 export const router = createRouter({ routeTree });
 

@@ -1,7 +1,7 @@
 import { Group, Text, Button, Box, Container } from '@mantine/core';
 import { useAuth } from '../components/AuthProvider';
 import { useNavigate } from '@tanstack/react-router';
-import { SignOut, House, ListBullets } from '@phosphor-icons/react';
+import { SignOut, House, ListBullets, Book } from '@phosphor-icons/react';
 
 export default function Header() {
 	const { isAuthorized, isLoading, user, signInWithDiscord, signOut } = useAuth();
@@ -9,12 +9,8 @@ export default function Header() {
 
 	const menuItems = [
 		{ label: 'Home', icon: House, onClick: () => navigate({ to: '/' }) },
-		{
-			label: 'Server Logs',
-			icon: ListBullets,
-			onClick: () => navigate({ to: '/logs' }),
-			requireAuth: true,
-		},
+		{ label: 'Regler', icon: Book, onClick: () => navigate({ to: '/rules' }) },
+		{ label: 'Server Logs', icon: ListBullets, onClick: () => navigate({ to: '/logs' }), requireAuth: true, },
 	];
 
 	const filteredMenuItems = menuItems.filter((item) => !item.requireAuth || (item.requireAuth && isAuthorized));
