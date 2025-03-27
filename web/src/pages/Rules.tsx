@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback, useRef, memo } from 'react';
+import { useState, useEffect, useCallback, useRef, memo, useMemo } from 'react';
 import { Container, Title, Text, Box, Paper, Accordion, Group, Badge, Divider, TextInput, Tabs, List, Alert, Chip, Button, Modal, ActionIcon, MultiSelect, Switch, Textarea, Timeline, Loader, Center, Card, Tooltip, SegmentedControl } from '@mantine/core';
 import { MagnifyingGlass, Lightbulb, X, Info, Pencil, PushPin, ClockCounterClockwise, ArrowRight, Eye, Check, Plus, FileArrowDown } from '@phosphor-icons/react';
 import { notifications } from '@mantine/notifications';
 import MainLayout from '../layouts/MainLayout';
 import { useAuth } from '../components/AuthProvider';
 import { supabase } from '../lib/supabase';
-import { debounce } from 'lodash';
+import { debounce, throttle } from 'lodash';
 import './RulesPage.css';
 
 interface Rule {
@@ -43,14 +43,27 @@ interface RuleChange {
 export default function RulesPage() {
 	const [activeCommunityRule, setActiveCommunityRule] = useState<string | null>(null);
 	const [activeRoleplayRule, setActiveRoleplayRule] = useState<string | null>(null);
-	const [scrollY, setScrollY] = useState(0);
+	// Use useRef for scroll position to avoid rerenders
+	const scrollYRef = useRef(0);
 	const [searchQuery, setSearchQuery] = useState('');
-	const [communityRules, setCommunityRules] = useState<Rule[]>([]);
-	const [roleplayRules, setRoleplayRules] = useState<Rule[]>([]);
-	const [filteredCommunityRules, setFilteredCommunityRules] = useState<Rule[]>([]);
-	const [filteredRoleplayRules, setFilteredRoleplayRules] = useState<Rule[]>([]);
-	const [pinnedRules, setPinnedRules] = useState<Rule[]>([]);
-	const [recentlyUpdatedRules, setRecentlyUpdatedRules] = useState<Rule[]>([]);
+	const [rules, setRules] = useState<{
+		community: Rule[];
+		roleplay: Rule[];
+		pinned: Rule[];
+		recentlyUpdated: Rule[];
+	}>({
+		community: [],
+		roleplay: [],
+		pinned: [],
+		recentlyUpdated: [],
+	});
+	const [filteredRules, setFilteredRules] = useState<{
+		community: Rule[];
+		roleplay: Rule[];
+	}>({
+		community: [],
+		roleplay: [],
+	});
 	const [activeTab, setActiveTab] = useState<string | null>('all');
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -78,44 +91,54 @@ export default function RulesPage() {
 	const { isAuthorized, user } = useAuth();
 	const rulesRef = useRef<HTMLDivElement>(null);
 
+	// Throttled scroll handler to avoid excessive updates
 	useEffect(() => {
-		fetchRules();
-	}, []);
-
-	useEffect(() => {
-		const handleScroll = () => {
-			setScrollY(window.scrollY);
-		};
+		const handleScroll = throttle(() => {
+			scrollYRef.current = window.scrollY;
+			// Only force update if we need the scroll position for rendering
+			// Don't set state on every scroll - this was a major performance issue
+		}, 100);
 
 		window.addEventListener('scroll', handleScroll);
 		return () => {
+			handleScroll.cancel();
 			window.removeEventListener('scroll', handleScroll);
 		};
 	}, []);
 
+	// Fetch rules once on component mount
 	useEffect(() => {
-		if (searchQuery.trim() === '') {
-			setFilteredCommunityRules(communityRules);
-			setFilteredRoleplayRules(roleplayRules);
-		} else {
-			const lowerCaseQuery = searchQuery.toLowerCase();
+		fetchRules();
+	}, []);
 
-			setFilteredCommunityRules(communityRules.filter((rule) => rule.title.toLowerCase().includes(lowerCaseQuery) || rule.content.toLowerCase().includes(lowerCaseQuery) || rule.tags.some((tag) => tag.toLowerCase().includes(lowerCaseQuery)) || rule.badge.toLowerCase().includes(lowerCaseQuery)));
+	// Memoized search filtering to prevent unnecessary recalculations
+	useEffect(() => {
+		const filterRulesByQuery = (rulesArray: Rule[], query: string) => {
+			if (query.trim() === '') return rulesArray;
 
-			setFilteredRoleplayRules(roleplayRules.filter((rule) => rule.title.toLowerCase().includes(lowerCaseQuery) || rule.content.toLowerCase().includes(lowerCaseQuery) || rule.tags.some((tag) => tag.toLowerCase().includes(lowerCaseQuery)) || rule.badge.toLowerCase().includes(lowerCaseQuery)));
-		}
-	}, [searchQuery, communityRules, roleplayRules]);
+			const lowerCaseQuery = query.toLowerCase();
+			return rulesArray.filter((rule) => rule.title.toLowerCase().includes(lowerCaseQuery) || rule.content.toLowerCase().includes(lowerCaseQuery) || rule.tags.some((tag) => tag.toLowerCase().includes(lowerCaseQuery)) || rule.badge.toLowerCase().includes(lowerCaseQuery));
+		};
+
+		setFilteredRules({
+			community: filterRulesByQuery(rules.community, searchQuery),
+			roleplay: filterRulesByQuery(rules.roleplay, searchQuery),
+		});
+	}, [searchQuery, rules.community, rules.roleplay]);
 
 	const displayCommunityRules = activeTab === 'all' || activeTab === 'community';
 	const displayRoleplayRules = activeTab === 'all' || activeTab === 'roleplay';
 
-	const debouncedSearch = useCallback(
-		debounce((value: string) => {
-			setSearchQuery(value);
-		}, 300),
+	// Debounced search to avoid excessive filtering operations
+	const debouncedSearch = useMemo(
+		() =>
+			debounce((value: string) => {
+				setSearchQuery(value);
+			}, 300),
 		[]
 	);
 
+	// Optimized fetch rules function
 	const fetchRules = async () => {
 		setIsLoading(true);
 		try {
@@ -124,16 +147,26 @@ export default function RulesPage() {
 			if (error) throw error;
 
 			if (data) {
-				setCommunityRules(data.filter((rule) => rule.category === 'community'));
-				setRoleplayRules(data.filter((rule) => rule.category === 'roleplay'));
-				setFilteredCommunityRules(data.filter((rule) => rule.category === 'community'));
-				setFilteredRoleplayRules(data.filter((rule) => rule.category === 'roleplay'));
-				setPinnedRules(data.filter((rule) => rule.is_pinned));
+				const communityRules = data.filter((rule) => rule.category === 'community');
+				const roleplayRules = data.filter((rule) => rule.category === 'roleplay');
+				const pinnedRules = data.filter((rule) => rule.is_pinned);
 
 				const thirtyDaysAgo = new Date();
 				thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 14);
 
-				setRecentlyUpdatedRules(data.filter((rule) => new Date(rule.updated_at) > thirtyDaysAgo).sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()));
+				const recentlyUpdated = data.filter((rule) => new Date(rule.updated_at) > thirtyDaysAgo).sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+
+				setRules({
+					community: communityRules,
+					roleplay: roleplayRules,
+					pinned: pinnedRules,
+					recentlyUpdated,
+				});
+
+				setFilteredRules({
+					community: communityRules,
+					roleplay: roleplayRules,
+				});
 			}
 
 			setError(null);
@@ -145,7 +178,7 @@ export default function RulesPage() {
 		}
 	};
 
-	const updateRule = async (ruleId: string, updates: any, notes: string = '') => {
+	const updateRule = useCallback(async (ruleId: string, updates: any, notes: string = '') => {
 		try {
 			const { data: currentRule, error: fetchError } = await supabase.from('rules').select('*').eq('id', ruleId).single();
 
@@ -186,33 +219,36 @@ export default function RulesPage() {
 			console.error('Error updating rule:', error);
 			throw error;
 		}
-	};
+	}, []);
 
-	const createRule = async (rule: Omit<Rule, 'id' | 'created_at' | 'updated_at' | 'version' | 'updated_by' | 'order_index'>) => {
-		try {
-			const { data: maxOrderData, error: maxOrderError } = await supabase.from('rules').select('order_index').eq('category', rule.category).order('order_index', { ascending: false }).limit(1);
+	const createRule = useCallback(
+		async (rule: Omit<Rule, 'id' | 'created_at' | 'updated_at' | 'version' | 'updated_by' | 'order_index'>) => {
+			try {
+				const { data: maxOrderData, error: maxOrderError } = await supabase.from('rules').select('order_index').eq('category', rule.category).order('order_index', { ascending: false }).limit(1);
 
-			if (maxOrderError) throw maxOrderError;
+				if (maxOrderError) throw maxOrderError;
 
-			const nextOrder = maxOrderData && maxOrderData.length > 0 ? maxOrderData[0].order_index + 1 : 0;
+				const nextOrder = maxOrderData && maxOrderData.length > 0 ? maxOrderData[0].order_index + 1 : 0;
 
-			const { data, error } = await supabase.from('rules').insert({
-				...rule,
-				order_index: nextOrder,
-				updated_by: user?.username || 'Unknown',
-				version: 1,
-			});
+				const { data, error } = await supabase.from('rules').insert({
+					...rule,
+					order_index: nextOrder,
+					updated_by: user?.username || 'Unknown',
+					version: 1,
+				});
 
-			if (error) throw error;
+				if (error) throw error;
 
-			return data;
-		} catch (error) {
-			console.error('Error creating rule:', error);
-			throw error;
-		}
-	};
+				return data;
+			} catch (error) {
+				console.error('Error creating rule:', error);
+				throw error;
+			}
+		},
+		[user?.username]
+	);
 
-	const fetchRuleHistory = async (ruleId: string) => {
+	const fetchRuleHistory = useCallback(async (ruleId: string) => {
 		try {
 			const { data, error } = await supabase.from('rule_changes').select('*').eq('rule_id', ruleId).order('version', { ascending: false });
 
@@ -223,41 +259,45 @@ export default function RulesPage() {
 			console.error('Error fetching rule history:', error);
 			throw error;
 		}
-	};
+	}, []);
 
-	const togglePinnedRule = async (rule: Rule) => {
-		try {
-			await updateRule(
-				rule.id,
-				{
-					is_pinned: !rule.is_pinned,
-					updated_by: user?.username || 'Unknown',
-				},
-				`Regel blev ${rule.is_pinned ? 'fjernet fra' : 'tilføjet til'} hurtig oversigt af ${user?.username || 'Unknown'}`
-			);
+	const togglePinnedRule = useCallback(
+		async (rule: Rule) => {
+			try {
+				await updateRule(
+					rule.id,
+					{
+						is_pinned: !rule.is_pinned,
+						updated_by: user?.username || 'Unknown',
+					},
+					`Regel blev ${rule.is_pinned ? 'fjernet fra' : 'tilføjet til'} hurtig oversigt af ${user?.username || 'Unknown'}`
+				);
 
-			fetchRules();
+				fetchRules();
 
-			notifications.show({
-				title: rule.is_pinned ? 'Regel fjernet fra hurtig oversigt' : 'Regel tilføjet til hurtig oversigt',
-				message: rule.is_pinned ? 'Reglen vises ikke længere i det hurtige overblik' : 'Reglen vises nu i det hurtige overblik',
-				color: 'blue',
-			});
-		} catch (error) {
-			console.error('Error toggling pin status:', error);
-			notifications.show({
-				title: 'Fejl',
-				message: 'Der opstod en fejl ved ændring af pin-status',
-				color: 'red',
-			});
-		}
-	};
+				notifications.show({
+					title: rule.is_pinned ? 'Regel fjernet fra hurtig oversigt' : 'Regel tilføjet til hurtig oversigt',
+					message: rule.is_pinned ? 'Reglen vises ikke længere i det hurtige overblik' : 'Reglen vises nu i det hurtige overblik',
+					color: 'blue',
+				});
+			} catch (error) {
+				console.error('Error toggling pin status:', error);
+				notifications.show({
+					title: 'Fejl',
+					message: 'Der opstod en fejl ved ændring af pin-status',
+					color: 'red',
+				});
+			}
+		},
+		[updateRule, user?.username]
+	);
 
 	const scrollToRule = useCallback(
 		(ruleId: string) => {
 			const element = document.getElementById(`rule-${ruleId}`);
 			if (element) {
-				const rule = [...communityRules, ...roleplayRules].find((r) => r.id === ruleId);
+				const allRules = [...rules.community, ...rules.roleplay];
+				const rule = allRules.find((r) => r.id === ruleId);
 
 				if (rule) {
 					setActiveTab(rule.category === 'community' ? 'community' : 'roleplay');
@@ -268,18 +308,19 @@ export default function RulesPage() {
 						setActiveRoleplayRule(ruleId);
 					}
 
-					setTimeout(() => {
+					// Use requestAnimationFrame for smoother scrolling
+					requestAnimationFrame(() => {
 						element.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
 						element.classList.add('highlight-rule');
 						setTimeout(() => {
 							element.classList.remove('highlight-rule');
 						}, 2000);
-					}, 100);
+					});
 				}
 			}
 		},
-		[communityRules, roleplayRules]
+		[rules.community, rules.roleplay]
 	);
 
 	const openEditModal = useCallback((rule: Rule) => {
@@ -330,7 +371,7 @@ export default function RulesPage() {
 		} finally {
 			setIsSaving(false);
 		}
-	}, [currentRule, editedTitle, editedContent, editedTags, isPinned, editedBadge, changeNotes, user]);
+	}, [currentRule, editedTitle, editedContent, editedTags, isPinned, editedBadge, changeNotes, user?.username, updateRule]);
 
 	const handleCreateRule = useCallback(async () => {
 		if (!newRule.badge || !newRule.title || !newRule.content) {
@@ -378,7 +419,7 @@ export default function RulesPage() {
 				color: 'red',
 			});
 		}
-	}, [newRule]);
+	}, [newRule, createRule]);
 
 	const openHistoryModal = useCallback(
 		async (ruleId: string) => {
@@ -401,10 +442,10 @@ export default function RulesPage() {
 		[fetchRuleHistory]
 	);
 
-	const exportRules = () => {
+	const exportRules = useCallback(() => {
 		const data = {
-			community: communityRules,
-			roleplay: roleplayRules,
+			community: rules.community,
+			roleplay: rules.roleplay,
 		};
 
 		const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -423,87 +464,144 @@ export default function RulesPage() {
 			message: 'Reglerne er blevet eksporteret til en JSON-fil',
 			color: 'blue',
 		});
-	};
+	}, [rules.community, rules.roleplay]);
 
-	const RuleItem = memo(({ rule, isActive, onEdit, onPin, onHistory, onBadgeClick }: { rule: Rule; isActive: boolean; onEdit: (rule: Rule) => void; onPin: (rule: Rule) => void; onHistory: (ruleId: string) => void; onBadgeClick: (ruleId: string) => void }) => {
-		const handleEditClick = useCallback(
-			(e: React.MouseEvent<HTMLDivElement>) => {
-				e.stopPropagation();
-				onEdit(rule);
-			},
-			[rule, onEdit]
-		);
+	// Highly optimized, memoized RuleItem component that only renders when necessary
+	const RuleItem = memo(
+		({ rule, isActive, onEdit, onPin, onHistory, onBadgeClick }: { rule: Rule; isActive: boolean; onEdit: (rule: Rule) => void; onPin: (rule: Rule) => void; onHistory: (ruleId: string) => void; onBadgeClick: (ruleId: string) => void }) => {
+			// Event handlers are properly memoized with useCallback
+			const handleEditClick = useCallback(
+				(e: React.MouseEvent<HTMLDivElement>) => {
+					e.stopPropagation();
+					onEdit(rule);
+				},
+				[rule, onEdit]
+			);
 
-		const handlePinClick = useCallback(
-			(e: React.MouseEvent<HTMLDivElement>) => {
-				e.stopPropagation();
-				onPin(rule);
-			},
-			[rule, onPin]
-		);
+			const handlePinClick = useCallback(
+				(e: React.MouseEvent<HTMLDivElement>) => {
+					e.stopPropagation();
+					onPin(rule);
+				},
+				[rule, onPin]
+			);
 
-		const handleHistoryClick = useCallback(
-			(e: React.MouseEvent<HTMLDivElement>) => {
-				e.stopPropagation();
-				onHistory(rule.id);
-			},
-			[rule.id, onHistory]
-		);
+			const handleHistoryClick = useCallback(
+				(e: React.MouseEvent<HTMLDivElement>) => {
+					e.stopPropagation();
+					onHistory(rule.id);
+				},
+				[rule.id, onHistory]
+			);
 
-		const handleBadgeClick = useCallback(
-			(e: React.MouseEvent<HTMLDivElement>) => {
-				e.stopPropagation();
-				onBadgeClick(rule.id);
-			},
-			[rule.id, onBadgeClick]
-		);
+			const handleBadgeClick = useCallback(
+				(e: React.MouseEvent<HTMLDivElement>) => {
+					e.stopPropagation();
+					onBadgeClick(rule.id);
+				},
+				[rule.id, onBadgeClick]
+			);
 
-		return (
-			<Accordion.Item value={rule.id} key={rule.id} id={`rule-${rule.id}`} className={isActive ? 'active-rule' : ''}>
-				<Accordion.Control>
-					<Group justify='space-between'>
-						<Group>
-							<Badge color={rule.category === 'community' ? 'blue' : 'green'} size='lg' style={{ cursor: 'pointer' }} onClick={handleBadgeClick}>
-								{rule.badge}
-							</Badge>
-							<Text fw={500}>{rule.title}</Text>
-							{rule.is_pinned && (
-								<Badge color='yellow' size='sm' variant='light'>
-									Fastgjort
+			return (
+				<Accordion.Item value={rule.id} key={rule.id} id={`rule-${rule.id}`} className={isActive ? 'active-rule' : ''}>
+					<Accordion.Control>
+						<Group justify='space-between'>
+							<Group>
+								<Badge color={rule.category === 'community' ? 'blue' : 'green'} size='lg' style={{ cursor: 'pointer' }} onClick={handleBadgeClick}>
+									{rule.badge}
 								</Badge>
-							)}
-							{new Date(rule.updated_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) && (
-								<Badge color='cyan' size='sm' variant='light'>
-									Opdateret
-								</Badge>
+								<Text fw={500}>{rule.title}</Text>
+								{rule.is_pinned && (
+									<Badge color='yellow' size='sm' variant='light'>
+										Fastgjort
+									</Badge>
+								)}
+								{new Date(rule.updated_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) && (
+									<Badge color='cyan' size='sm' variant='light'>
+										Opdateret
+									</Badge>
+								)}
+							</Group>
+
+							{isAuthorized && (
+								<Group onClick={(e) => e.stopPropagation()}>
+									<Tooltip label='Rediger'>
+										<ActionIcon size='sm' color='blue' onClick={handleEditClick} component='div'>
+											<Pencil size={16} />
+										</ActionIcon>
+									</Tooltip>
+									<Tooltip label={rule.is_pinned ? 'Fjern fra oversigt' : 'Fastgør til oversigt'}>
+										<ActionIcon size='sm' color={rule.is_pinned ? 'yellow' : 'gray'} onClick={handlePinClick} component='div'>
+											<PushPin size={16} weight={rule.is_pinned ? 'fill' : 'regular'} />
+										</ActionIcon>
+									</Tooltip>
+									<Tooltip label='Vis historie'>
+										<ActionIcon size='sm' color='gray' onClick={handleHistoryClick} component='div'>
+											<ClockCounterClockwise size={16} />
+										</ActionIcon>
+									</Tooltip>
+								</Group>
 							)}
 						</Group>
+					</Accordion.Control>
+					<Accordion.Panel>{rule.content}</Accordion.Panel>
+				</Accordion.Item>
+			);
+		},
+		(prevProps, nextProps) => {
+			// Custom comparison for memoization to prevent unnecessary rerenders
+			return prevProps.rule.id === nextProps.rule.id && prevProps.rule.title === nextProps.rule.title && prevProps.rule.badge === nextProps.rule.badge && prevProps.rule.content === nextProps.rule.content && prevProps.rule.is_pinned === nextProps.rule.is_pinned && prevProps.rule.updated_at === nextProps.rule.updated_at && prevProps.isActive === nextProps.isActive && prevProps.onEdit === nextProps.onEdit && prevProps.onPin === nextProps.onPin && prevProps.onHistory === nextProps.onHistory && prevProps.onBadgeClick === nextProps.onBadgeClick;
+		}
+	);
 
-						{isAuthorized && (
-							<Group onClick={(e) => e.stopPropagation()}>
-								<Tooltip label='Rediger'>
-									<ActionIcon size='sm' color='blue' onClick={handleEditClick} component='div'>
-										<Pencil size={16} />
-									</ActionIcon>
-								</Tooltip>
-								<Tooltip label={rule.is_pinned ? 'Fjern fra oversigt' : 'Fastgør til oversigt'}>
-									<ActionIcon size='sm' color={rule.is_pinned ? 'yellow' : 'gray'} onClick={handlePinClick} component='div'>
-										<PushPin size={16} weight={rule.is_pinned ? 'fill' : 'regular'} />
-									</ActionIcon>
-								</Tooltip>
-								<Tooltip label='Vis historie'>
-									<ActionIcon size='sm' color='gray' onClick={handleHistoryClick} component='div'>
-										<ClockCounterClockwise size={16} />
-									</ActionIcon>
-								</Tooltip>
-							</Group>
-						)}
+	// Memoize the pinned rule list items to prevent rerenders
+	const renderPinnedRules = useMemo(() => {
+		return rules.pinned.length > 0 ? (
+			rules.pinned.map((rule) => (
+				<List.Item key={rule.id}>
+					<Group gap='xs'>
+						<Badge size='sm' color={rule.category === 'community' ? 'blue' : 'green'} style={{ cursor: 'pointer' }} onClick={() => scrollToRule(rule.id)}>
+							{rule.badge}
+						</Badge>
+						<Text>{rule.title}</Text>
 					</Group>
-				</Accordion.Control>
-				<Accordion.Panel>{rule.content}</Accordion.Panel>
-			</Accordion.Item>
+				</List.Item>
+			))
+		) : (
+			<Text c='dimmed'>Ingen fastgjorte regler endnu. Admin kan fastgøre regler for at vise dem her.</Text>
 		);
-	});
+	}, [rules.pinned, scrollToRule]);
+
+	// Memoize the recently updated rules
+	const renderRecentlyUpdatedRules = useMemo(() => {
+		return rules.recentlyUpdated.map((rule) => (
+			<Chip key={rule.id} checked={false} onClick={() => scrollToRule(rule.id)}>
+				{rule.badge}: {rule.title}
+			</Chip>
+		));
+	}, [rules.recentlyUpdated, scrollToRule]);
+
+	// Memoize community rules
+	const renderCommunityRules = useMemo(() => {
+		return filteredRules.community.length > 0 ? (
+			filteredRules.community.map((rule) => <RuleItem key={rule.id} rule={rule} isActive={activeCommunityRule === rule.id} onEdit={openEditModal} onPin={togglePinnedRule} onHistory={openHistoryModal} onBadgeClick={scrollToRule} />)
+		) : (
+			<Text ta='center' fs='italic' py='md'>
+				Ingen regler matcher din søgning
+			</Text>
+		);
+	}, [filteredRules.community, activeCommunityRule, openEditModal, togglePinnedRule, openHistoryModal, scrollToRule]);
+
+	// Memoize roleplay rules
+	const renderRoleplayRules = useMemo(() => {
+		return filteredRules.roleplay.length > 0 ? (
+			filteredRules.roleplay.map((rule) => <RuleItem key={rule.id} rule={rule} isActive={activeRoleplayRule === rule.id} onEdit={openEditModal} onPin={togglePinnedRule} onHistory={openHistoryModal} onBadgeClick={scrollToRule} />)
+		) : (
+			<Text ta='center' fs='italic' py='md'>
+				Ingen regler matcher din søgning
+			</Text>
+		);
+	}, [filteredRules.roleplay, activeRoleplayRule, openEditModal, togglePinnedRule, openHistoryModal, scrollToRule]);
 
 	return (
 		<MainLayout requireAuth={false}>
@@ -514,35 +612,6 @@ export default function RulesPage() {
 					overflow: 'hidden',
 				}}
 			>
-				<Box
-					style={{
-						position: 'absolute',
-						top: 0,
-						left: 0,
-						right: 0,
-						bottom: 0,
-						backgroundImage: 'linear-gradient(135deg, #111111 25%, #1a1a1a 25%, #1a1a1a 50%, #111111 50%, #111111 75%, #1a1a1a 75%, #1a1a1a 100%)',
-						backgroundSize: '40px 40px',
-						opacity: 0.5,
-						transform: `translateY(${scrollY * 0.1}px)`,
-						pointerEvents: 'none',
-						zIndex: 0,
-					}}
-				/>
-
-				<Box
-					style={{
-						position: 'absolute',
-						top: 0,
-						left: 0,
-						right: 0,
-						bottom: 0,
-						background: 'radial-gradient(circle at 50% 50%, rgba(13, 13, 13, 0.7) 0%, rgba(10, 10, 10, 0.9) 70%, rgba(8, 8, 8, 0.95) 100%)',
-						pointerEvents: 'none',
-						zIndex: 0,
-					}}
-				/>
-
 				<Container size='lg' py='xl' style={{ position: 'relative', zIndex: 1 }}>
 					<Paper
 						withBorder
@@ -598,7 +667,25 @@ export default function RulesPage() {
 
 						<Box mb='xl'>
 							<Group justify='space-between' mb='md'>
-								<TextInput leftSection={<MagnifyingGlass size={18} />} placeholder='Søg efter regler...' value={searchQuery} onChange={(event) => debouncedSearch(event.currentTarget.value)} style={{ flexGrow: 1 }} rightSection={searchQuery ? <X size={16} style={{ cursor: 'pointer' }} onClick={() => debouncedSearch('')} /> : null} />
+								<TextInput
+									leftSection={<MagnifyingGlass size={18} />}
+									placeholder='Søg efter regler...'
+									value={searchQuery}
+									onChange={(event) => debouncedSearch(event.currentTarget.value)}
+									style={{ flexGrow: 1 }}
+									rightSection={
+										searchQuery ? (
+											<X
+												size={16}
+												style={{ cursor: 'pointer' }}
+												onClick={() => {
+													setSearchQuery('');
+													debouncedSearch('');
+												}}
+											/>
+										) : null
+									}
+								/>
 							</Group>
 
 							<Tabs value={activeTab} onChange={setActiveTab}>
@@ -616,35 +703,16 @@ export default function RulesPage() {
 								<Title order={4}>Hurtigt Overblik - Vigtigste Regler</Title>
 							</Group>
 							<List spacing='xs' size='sm'>
-								{pinnedRules.length > 0 ? (
-									pinnedRules.map((rule) => (
-										<List.Item key={rule.id}>
-											<Group gap='xs'>
-												<Badge size='sm' color={rule.category === 'community' ? 'blue' : 'green'} style={{ cursor: 'pointer' }} onClick={() => scrollToRule(rule.id)}>
-													{rule.badge}
-												</Badge>
-												<Text>{rule.title}</Text>
-											</Group>
-										</List.Item>
-									))
-								) : (
-									<Text c='dimmed'>Ingen fastgjorte regler endnu. Admin kan fastgøre regler for at vise dem her.</Text>
-								)}
+								{renderPinnedRules}
 							</List>
 						</Paper>
 
-						{recentlyUpdatedRules.length > 0 && (
+						{rules.recentlyUpdated.length > 0 && (
 							<Alert icon={<Info size={24} />} title='Nyligt Opdaterede Regler' color='blue' mb='xl' variant='outline'>
 								<Text size='sm' mb='xs'>
 									Følgende regler er blevet opdateret inden for de sidste 14 dage:
 								</Text>
-								<Group>
-									{recentlyUpdatedRules.map((rule) => (
-										<Chip key={rule.id} checked={false} onClick={() => scrollToRule(rule.id)}>
-											{rule.badge}: {rule.title}
-										</Chip>
-									))}
-								</Group>
+								<Group>{renderRecentlyUpdatedRules}</Group>
 							</Alert>
 						)}
 
@@ -672,13 +740,7 @@ export default function RulesPage() {
 										</Title>
 
 										<Accordion value={activeCommunityRule} onChange={setActiveCommunityRule} radius='md' variant='filled'>
-											{filteredCommunityRules.length > 0 ? (
-												filteredCommunityRules.map((rule) => <RuleItem key={rule.id} rule={rule} isActive={activeCommunityRule === rule.id} onEdit={openEditModal} onPin={togglePinnedRule} onHistory={openHistoryModal} onBadgeClick={scrollToRule} />)
-											) : (
-												<Text ta='center' fs='italic' py='md'>
-													Ingen regler matcher din søgning
-												</Text>
-											)}
+											{renderCommunityRules}
 										</Accordion>
 									</Box>
 								)}
@@ -717,13 +779,7 @@ export default function RulesPage() {
 										</Title>
 
 										<Accordion value={activeRoleplayRule} onChange={setActiveRoleplayRule} radius='md' variant='filled'>
-											{filteredRoleplayRules.length > 0 ? (
-												filteredRoleplayRules.map((rule) => <RuleItem key={rule.id} rule={rule} isActive={activeRoleplayRule === rule.id} onEdit={openEditModal} onPin={togglePinnedRule} onHistory={openHistoryModal} onBadgeClick={scrollToRule} />)
-											) : (
-												<Text ta='center' fs='italic' py='md'>
-													Ingen regler matcher din søgning
-												</Text>
-											)}
+											{renderRoleplayRules}
 										</Accordion>
 									</Box>
 								)}
