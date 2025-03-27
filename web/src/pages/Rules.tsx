@@ -530,10 +530,8 @@ export default function RulesPage() {
 		},
 	];
 
-	// Quick Rules Summary
 	const quickRulesSummary = ['Kontakt staff KUN via support kanaler, aldrig DMs', 'RDM/VDM er ikke tilladt - vold kræver RP-begrundelse', 'Fear RP skal respekteres - følg våbenrangeringen', 'OOC (Out Of Character) er strengt forbudt', 'Voldtægts-RP er ikke tilladt', 'Hold dine karakterer adskilt - ingen deling af ejendele', 'Handel med rigtige penge er strengt forbudt', 'Kommune udstyr (politi/brandvæsen) må ikke lootes'];
 
-	// Update scroll position for parallax effect
 	useEffect(() => {
 		const handleScroll = () => {
 			setScrollY(window.scrollY);
@@ -545,7 +543,6 @@ export default function RulesPage() {
 		};
 	}, []);
 
-	// Filter rules based on search query
 	useEffect(() => {
 		if (searchQuery.trim() === '') {
 			setFilteredCommunityRules(communityRules);
@@ -559,7 +556,6 @@ export default function RulesPage() {
 		}
 	}, [searchQuery]);
 
-	// Filter by tab
 	const displayCommunityRules = activeTab === 'all' || activeTab === 'community';
 	const displayRoleplayRules = activeTab === 'all' || activeTab === 'roleplay';
 
@@ -572,7 +568,6 @@ export default function RulesPage() {
 					overflow: 'hidden',
 				}}
 			>
-				{/* Animated background */}
 				<Box
 					style={{
 						position: 'absolute',
@@ -589,7 +584,6 @@ export default function RulesPage() {
 					}}
 				/>
 
-				{/* Animated gradient overlay */}
 				<Box
 					style={{
 						position: 'absolute',
@@ -603,7 +597,6 @@ export default function RulesPage() {
 					}}
 				/>
 
-				{/* Content */}
 				<Container size='lg' py='xl' style={{ position: 'relative', zIndex: 1 }}>
 					<Paper
 						withBorder
@@ -638,7 +631,6 @@ export default function RulesPage() {
 							OdessaRP Regelsæt
 						</Title>
 
-						{/* Search and Filter */}
 						<Box mb='xl'>
 							<Group justify='space-between' mb='md'>
 								<TextInput leftSection={<MagnifyingGlass size={18} />} placeholder='Søg efter regler...' value={searchQuery} onChange={(event) => setSearchQuery(event.currentTarget.value)} style={{ flexGrow: 1 }} rightSection={searchQuery ? <X size={16} style={{ cursor: 'pointer' }} onClick={() => setSearchQuery('')} /> : null} />
@@ -653,7 +645,6 @@ export default function RulesPage() {
 							</Tabs>
 						</Box>
 
-						{/* Quick Rules Summary */}
 						<Paper withBorder p='md' radius='md' mb='xl' style={{ backgroundColor: 'rgba(30, 30, 30, 0.6)' }}>
 							<Group mb='sm'>
 								<Lightbulb size={24} color='#FFD700' />
@@ -666,7 +657,6 @@ export default function RulesPage() {
 							</List>
 						</Paper>
 
-						{/* Recently Updated Rules Alert */}
 						<Alert icon={<Info size={24} />} title='Nyligt Opdaterede Regler' color='blue' mb='xl' variant='outline'>
 							<Text size='sm' mb='xs'>
 								Følgende regler er blevet opdateret inden for de sidste 30 dage:
@@ -678,7 +668,6 @@ export default function RulesPage() {
 							</Group>
 						</Alert>
 
-						{/* Community Guidelines Section */}
 						{displayCommunityRules && (
 							<Box mb='xl'>
 								<Title
@@ -741,7 +730,6 @@ export default function RulesPage() {
 							/>
 						)}
 
-						{/* Roleplay Rules Section */}
 						{displayRoleplayRules && (
 							<Box>
 								<Title

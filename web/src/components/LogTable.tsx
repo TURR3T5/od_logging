@@ -354,7 +354,6 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 	return (
 		<Box>
 			<Paper shadow='xs' p={0} style={{ overflow: 'hidden', borderRadius: '8px', border: '1px solid #2C2E33' }}>
-				{/* Search Controls */}
 				<Box p='md' style={{ borderBottom: '1px solid #2C2E33', backgroundColor: '#1a1a1a' }}>
 					<Group justify='space-between' mb='xs'>
 						<Text fw={500}>Search Logs</Text>

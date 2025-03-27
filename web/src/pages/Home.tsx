@@ -40,7 +40,6 @@ export default function HomePage() {
 		uptime: '',
 	});
 
-	// Demo news items - would come from backend in production
 	const newsItems: NewsItem[] = [
 		{
 			id: 1,
@@ -65,7 +64,6 @@ export default function HomePage() {
 		},
 	];
 
-	// Demo featured players - would come from backend in production
 	const featuredPlayers: FeaturedPlayer[] = [
 		{
 			id: 1,
@@ -90,11 +88,8 @@ export default function HomePage() {
 		},
 	];
 
-	// Fetch server stats (simulated here)
 	useEffect(() => {
 		const fetchServerStats = async () => {
-			// In production, this would be a real API call
-			// Simulating API call for demo
 			setTimeout(() => {
 				setServerStats({
 					onlinePlayers: 185,
@@ -112,7 +107,6 @@ export default function HomePage() {
 		setIsLoaded(true);
 	}, []);
 
-	// Slideshow images
 	const slides = [
 		{
 			image: './1.webp',
@@ -179,7 +173,6 @@ export default function HomePage() {
 
 	return (
 		<MainLayout requireAuth={false}>
-			{/* Hero Section with Slideshow */}
 			<Box
 				style={{
 					height: '80vh',
@@ -281,7 +274,6 @@ export default function HomePage() {
 					</Box>
 				))}
 
-				{/* Slide Indicators */}
 				<Box
 					style={{
 						position: 'absolute',
@@ -311,7 +303,6 @@ export default function HomePage() {
 				</Box>
 			</Box>
 
-			{/* Latest Server Stats */}
 			<Box
 				style={{
 					backgroundColor: '#0a0a0a',
@@ -365,7 +356,6 @@ export default function HomePage() {
 				</Container>
 			</Box>
 
-			{/* News & Announcements Section */}
 			<Box style={{ padding: '60px 0', backgroundColor: '#070707' }}>
 				<Container size='xl'>
 					<Grid>
@@ -451,7 +441,6 @@ export default function HomePage() {
 				</Container>
 			</Box>
 
-			{/* About Server Section */}
 			<Box
 				style={{
 					padding: '80px 0',
@@ -512,7 +501,6 @@ export default function HomePage() {
 				</Container>
 			</Box>
 
-			{/* Server Features Section */}
 			<Box style={{ padding: '80px 0' }}>
 				<Container size='xl'>
 					<Box style={{ textAlign: 'center', marginBottom: '64px' }}>
@@ -594,7 +582,6 @@ export default function HomePage() {
 				</Container>
 			</Box>
 
-			{/* Call to Action Section */}
 			<Box
 				style={{
 					padding: '80px 0',
