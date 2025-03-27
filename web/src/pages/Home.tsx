@@ -3,7 +3,7 @@ import { Container, Box, Title, Text, Button, Group, Grid, Card, Badge, Center, 
 import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '../components/AuthProvider';
 import MainLayout from '../layouts/MainLayout';
-import { Users, Car, Buildings, Calendar, ShieldCheck, GameController, ArrowRight, DiscordLogo, Bell, ArrowSquareOut, Star } from '@phosphor-icons/react';
+import { Users, Car, Buildings, Calendar, ShieldCheck, GameController, ArrowRight, DiscordLogo, Bell, Star } from '@phosphor-icons/react';
 import axios from 'axios';
 
 interface NewsItem {
@@ -368,9 +368,6 @@ export default function HomePage() {
 											Seneste Nyheder & Meddelelser
 										</Group>
 									</Title>
-									<Button size='sm' variant='subtle' rightSection={<ArrowSquareOut size={16} />}>
-										Vis Alle
-									</Button>
 								</Group>
 
 								<Timeline active={1} bulletSize={24} lineWidth={2}>
