@@ -30,9 +30,8 @@ export default function HomePage() {
 	const [serverStats, setServerStats] = useState({
 		onlinePlayers: 0,
 		maxPlayers: 0,
-		timeOnline: 0,
-		uptime: '0%',
-		uptimeDetails: 0,
+		whitelistCount: 0,
+		status: 'offline',
 	});
 
 	const newsItems: NewsItem[] = [
@@ -95,9 +94,8 @@ export default function HomePage() {
 				setServerStats({
 					onlinePlayers: 0,
 					maxPlayers: 0,
-					timeOnline: 0,
-					uptime: '0.0%',
-					uptimeDetails: 0,
+					whitelistCount: 0,
+					status: 'offline',
 				});
 			}
 		};
@@ -340,18 +338,18 @@ export default function HomePage() {
 									WHITELIST MEDLEMMER
 								</Text>
 								<Text size='xl' fw={700} variant='gradient' gradient={{ from: 'blue', to: 'cyan' }}>
-									{serverStats.uptimeDetails}
+									{serverStats.whitelistCount}
 								</Text>
 							</Box>
 						</Grid.Col>
 						<Grid.Col span={{ base: 6, md: 3 }}>
 							<Box style={{ textAlign: 'center' }}>
 								<Text size='sm' c='dimmed'>
-									SERVER UPTIME
+									SERVER STATUS
 								</Text>
-								<Text size='xl' fw={700} variant='gradient' gradient={{ from: 'blue', to: 'cyan' }}>
-									{serverStats.uptime}
-								</Text>
+								<Badge color={serverStats.status === 'online' ? 'green' : 'red'} variant='light'>
+									{serverStats.status === 'online' ? 'Online' : 'Offline'}
+								</Badge>
 							</Box>
 						</Grid.Col>
 					</Grid>

@@ -61,28 +61,34 @@ class FiveMStats {
 		try {
 			const response = await fetch(`http://${this.ip}/info.json`);
 			const serverInfo = await response.json();
-			console.log('Full Server Info:', JSON.stringify(serverInfo, null, 2));
 			return serverInfo;
 		} catch (error) {
 			console.error('Error fetching server info:', error);
 			return null;
 		}
 	}
+  async isServerOnline() {
+    try {
+      await fetch(`http://${this.ip}/info.json`, { timeout: 5000 });
+      return 'online';
+    } catch (error) {
+      console.error('Error fetching server info:', error);
+      return 'offline';
+    }
+  }
 }
 
 app.get('/server-stats', async (req, res) => {
 	try {
 		const statsTracker = new FiveMStats(FIVEM_SERVER_IP);
 
-		const [onlinePlayers, serverInfo] = await Promise.all([statsTracker.getPlayers(), statsTracker.getServerInfo()]);
-
-		const serverStartTime = serverInfo?.vars?.sv_serverStartTime ? new Date(parseInt(serverInfo.vars.sv_serverStartTime)) : process.env.SERVER_START_TIME ? new Date(process.env.SERVER_START_TIME) : new Date();
+		const [onlinePlayers, serverInfo, status] = await Promise.all([statsTracker.getPlayers(), statsTracker.getServerInfo(), statsTracker.isServerOnline()]);
 
 		const serverStats = {
 			onlinePlayers,
 			maxPlayers: serverInfo?.vars?.sv_maxClients || 64,
-			uptime: serverInfo?.uptime || 0,
-			uptimeDetails: serverInfo?.vars?.sv_serverStartTime || 0,
+			whitelistCount: 0,
+      status: status || 'offline',
 		};
 
 		res.json(serverStats);
@@ -91,14 +97,6 @@ app.get('/server-stats', async (req, res) => {
 		res.status(500).json({ error: 'Failed to fetch server statistics' });
 	}
 });
-
-function formatUptime(seconds) {
-	const days = Math.floor(seconds / (24 * 3600));
-	const hours = Math.floor((seconds % (24 * 3600)) / 3600);
-	const minutes = Math.floor((seconds % 3600) / 60);
-
-	return `${days}d ${hours}h ${minutes}m`;
-}
 
 const verifyApiKey = (req, res, next) => {
 	const apiKey = req.headers['x-api-key'];
