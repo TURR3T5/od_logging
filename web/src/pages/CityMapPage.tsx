@@ -318,7 +318,7 @@ export default function CityMapPage() {
 		if (mapContainer.current) {
 			setMapLoading(true);
 
-			const tileServerUrl = 'https://your-tile-server.com/gta-tiles/{z}/{x}/{y}.png';
+			const tileServerUrl = '/satellite/{z}/{x}/{y}.png';
 
 			map.current = new maplibregl.Map({
 				container: mapContainer.current,
