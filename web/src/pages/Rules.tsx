@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { Container, Title, Text, Box, Paper, Accordion, Group, Badge, Divider, TextInput, Tabs, List, Alert, Chip, Button, Modal, ActionIcon, MultiSelect, Switch, Textarea, Timeline, Loader, Center, Card, Tooltip, SegmentedControl } from '@mantine/core';
-import { MagnifyingGlass, Lightbulb, X, Info, Pencil, PushPin, ClockCounterClockwise, ArrowRight, Eye, Check, Plus, FileArrowDown } from '@phosphor-icons/react';
+import { MagnifyingGlass, Lightbulb, X, Info, Pencil, PushPin, ClockCounterClockwise, ArrowRight, Eye, Check, Plus, GithubLogo, FileArrowDown } from '@phosphor-icons/react';
 import { notifications } from '@mantine/notifications';
+import { useDisclosure } from '@mantine/hooks';
 import MainLayout from '../layouts/MainLayout';
 import { useAuth } from '../components/AuthProvider';
 import { supabase } from '../lib/supabase';
-import './RulesPage.css';
+import './RulesPage.css'; // We'll create this file for the highlight animation
 
+// Define interfaces
 interface Rule {
 	id: string;
 	badge: string;
@@ -40,6 +42,7 @@ interface RuleChange {
 }
 
 export default function RulesPage() {
+	// State variables
 	const [activeCommunityRule, setActiveCommunityRule] = useState<string | null>(null);
 	const [activeRoleplayRule, setActiveRoleplayRule] = useState<string | null>(null);
 	const [scrollY, setScrollY] = useState(0);
@@ -53,6 +56,8 @@ export default function RulesPage() {
 	const [activeTab, setActiveTab] = useState<string | null>('all');
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+
+	// Edit rule state
 	const [editModalOpen, setEditModalOpen] = useState(false);
 	const [currentRule, setCurrentRule] = useState<Rule | null>(null);
 	const [editedContent, setEditedContent] = useState('');
@@ -62,6 +67,8 @@ export default function RulesPage() {
 	const [editedBadge, setEditedBadge] = useState('');
 	const [changeNotes, setChangeNotes] = useState('');
 	const [isSaving, setIsSaving] = useState(false);
+
+	// Create rule state
 	const [createModalOpen, setCreateModalOpen] = useState(false);
 	const [newRule, setNewRule] = useState({
 		badge: '',
@@ -72,6 +79,7 @@ export default function RulesPage() {
 		is_pinned: false,
 	});
 
+	// History state
 	const [historyModalOpen, setHistoryModalOpen] = useState(false);
 	const [ruleHistory, setRuleHistory] = useState<RuleChange[]>([]);
 	const [historyLoading, setHistoryLoading] = useState(false);
@@ -125,7 +133,7 @@ export default function RulesPage() {
 				setPinnedRules(data.filter((rule) => rule.is_pinned));
 
 				const thirtyDaysAgo = new Date();
-				thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+				thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 14);
 
 				setRecentlyUpdatedRules(data.filter((rule) => new Date(rule.updated_at) > thirtyDaysAgo).sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()));
 			}
@@ -139,18 +147,14 @@ export default function RulesPage() {
 		}
 	};
 
-	// Update a rule
 	const updateRule = async (ruleId: string, updates: any, notes: string = '') => {
 		try {
-			// First get the current rule to record the changes
 			const { data: currentRule, error: fetchError } = await supabase.from('rules').select('*').eq('id', ruleId).single();
 
 			if (fetchError) throw fetchError;
 
-			// Calculate the new version
 			const newVersion = currentRule.version + 1;
 
-			// Record the change in rule_changes table
 			const { error: changeError } = await supabase.from('rule_changes').insert({
 				rule_id: ruleId,
 				previous_content: currentRule.content,
@@ -168,7 +172,6 @@ export default function RulesPage() {
 
 			if (changeError) throw changeError;
 
-			// Now update the rule itself
 			const { data, error } = await supabase
 				.from('rules')
 				.update({
@@ -187,17 +190,14 @@ export default function RulesPage() {
 		}
 	};
 
-	// Create a new rule
 	const createRule = async (rule: Omit<Rule, 'id' | 'created_at' | 'updated_at' | 'version' | 'updated_by' | 'order_index'>) => {
 		try {
-			// Get the max order_index for the category
 			const { data: maxOrderData, error: maxOrderError } = await supabase.from('rules').select('order_index').eq('category', rule.category).order('order_index', { ascending: false }).limit(1);
 
 			if (maxOrderError) throw maxOrderError;
 
 			const nextOrder = maxOrderData && maxOrderData.length > 0 ? maxOrderData[0].order_index + 1 : 0;
 
-			// Create the rule
 			const { data, error } = await supabase.from('rules').insert({
 				...rule,
 				order_index: nextOrder,
@@ -214,7 +214,6 @@ export default function RulesPage() {
 		}
 	};
 
-	// Fetch rule history
 	const fetchRuleHistory = async (ruleId: string) => {
 		try {
 			const { data, error } = await supabase.from('rule_changes').select('*').eq('rule_id', ruleId).order('version', { ascending: false });
@@ -488,17 +487,32 @@ export default function RulesPage() {
 						{isAuthorized && (
 							<Group onClick={(e) => e.stopPropagation()}>
 								<Tooltip label='Rediger'>
-									<ActionIcon size='sm' color='blue' onClick={handleEditClick} component='div'>
+									<ActionIcon
+										size='sm'
+										color='blue'
+										onClick={handleEditClick}
+										component='div'
+									>
 										<Pencil size={16} />
 									</ActionIcon>
 								</Tooltip>
 								<Tooltip label={rule.is_pinned ? 'Fjern fra oversigt' : 'Fastgør til oversigt'}>
-									<ActionIcon size='sm' color={rule.is_pinned ? 'yellow' : 'gray'} onClick={handlePinClick} component='div'>
+									<ActionIcon
+										size='sm'
+										color={rule.is_pinned ? 'yellow' : 'gray'}
+										onClick={handlePinClick}
+										component='div'
+									>
 										<PushPin size={16} weight={rule.is_pinned ? 'fill' : 'regular'} />
 									</ActionIcon>
 								</Tooltip>
 								<Tooltip label='Vis historie'>
-									<ActionIcon size='sm' color='gray' onClick={handleHistoryClick} component='div'>
+									<ActionIcon
+										size='sm'
+										color='gray'
+										onClick={handleHistoryClick}
+										component='div'
+									>
 										<ClockCounterClockwise size={16} />
 									</ActionIcon>
 								</Tooltip>
@@ -642,7 +656,7 @@ export default function RulesPage() {
 						{recentlyUpdatedRules.length > 0 && (
 							<Alert icon={<Info size={24} />} title='Nyligt Opdaterede Regler' color='blue' mb='xl' variant='outline'>
 								<Text size='sm' mb='xs'>
-									Følgende regler er blevet opdateret inden for de sidste 30 dage:
+									Følgende regler er blevet opdateret inden for de sidste 14 dage:
 								</Text>
 								<Group>
 									{recentlyUpdatedRules.map((rule) => (
@@ -820,7 +834,7 @@ export default function RulesPage() {
 						mb='md'
 						fullWidth
 						value={newRule.category}
-						onChange={(value) => setNewRule({ ...newRule, category: value as 'community' | 'roleplay' })}
+						onChange={(value: string) => setNewRule({ ...newRule, category: value as 'community' | 'roleplay' })}
 						data={[
 							{ label: 'Community Regel', value: 'community' },
 							{ label: 'Rollespils Regel', value: 'roleplay' },
@@ -964,7 +978,7 @@ export default function RulesPage() {
 																			<Text fw={500} size='sm'>
 																				Gammel version:
 																			</Text>
-																			<Paper withBorder p='sm' style={{ backgroundColor: '#ffeeee' }}>
+																			<Paper withBorder p='sm' style={{ backgroundColor: '#ffeeee' }} c='dark.5'>
 																				{change.previous_content}
 																			</Paper>
 																		</Box>
@@ -972,7 +986,7 @@ export default function RulesPage() {
 																			<Text fw={500} size='sm'>
 																				Ny version:
 																			</Text>
-																			<Paper withBorder p='sm' style={{ backgroundColor: '#eeffee' }}>
+																			<Paper withBorder p='sm' style={{ backgroundColor: '#eeffee' }} c='dark.5'>
 																				{change.new_content}
 																			</Paper>
 																		</Box>
