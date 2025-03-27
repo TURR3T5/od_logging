@@ -5,7 +5,7 @@ import LoginPage from '../pages/Login';
 import LogsPage from '../pages/Logs';
 import AuthCallbackPage from '../pages/AuthCallback';
 import RulesPage from '../pages/Rules';
-import EventsCalendarPage from '../pages/EventsCalendar';
+import NewsAndEventsPage from '../pages/NewsAndEventsPage';
 import WhitelistApplicationPage from '../pages/WhitelistPortal';
 
 const rootRoute = createRootRoute({
@@ -45,7 +45,7 @@ const logsRoute = createRoute({
 const eventsCalendarRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: '/events',
-	component: EventsCalendarPage,
+	component: NewsAndEventsPage,
 });
 
 const whitelistApplicationRoute = createRoute({

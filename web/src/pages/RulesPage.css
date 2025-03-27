@@ -1,0 +1,50 @@
+.highlight-rule {
+    animation: highlightAnimation 2s ease-in-out;
+}
+
+@keyframes highlightAnimation {
+  0% { background-color: rgba(59, 130, 246, 0.1); }
+  50% { background-color: rgba(59, 130, 246, 0.3); }
+  100% { background-color: transparent; }
+}
+
+.mantine-Accordion-item {
+  transition: background-color 0.3s ease;
+}
+
+.mantine-Accordion-control:hover {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.active-rule .mantine-Accordion-control {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.pinned-badge {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.8; }
+  50% { opacity: 1; }
+  100% { opacity: 0.8; }
+}
+.mantine-Accordion-content {
+  white-space: pre-line;
+  line-height: 1.6;
+}
+
+.mantine-Accordion-content p {
+  margin-bottom: 0.75rem;
+}
+
+.mantine-Accordion-content ul, 
+.mantine-Accordion-content ol {
+  margin-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.mantine-Accordion-content li {
+  margin-bottom: 0.25rem;
+}

@@ -21,6 +21,8 @@ if (!supabaseUrl || !supabaseServiceKey || !fivemApiKey) {
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+/*  */
+
 app.use(
 	cors({
 		origin: '*',
@@ -29,6 +31,8 @@ app.use(
 	})
 );
 app.use(bodyParser.json());
+
+/* Server Stats */
 
 class FiveMStats {
 	constructor(ip) {
@@ -105,6 +109,8 @@ const verifyApiKey = (req, res, next) => {
 	}
 	next();
 };
+
+/* Logging system */
 
 app.get('/', (req, res) => {
 	res.json({

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Container, Box, Title, Text, Button, Group, Grid, Card, Badge, Center, Avatar, Timeline, Modal, Divider } from '@mantine/core';
+import { Container, Box, Title, Text, Button, Group, Grid, Card, Badge, Center, Avatar, Timeline, Modal, Divider, SimpleGrid, ActionIcon } from '@mantine/core';
 import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '../components/AuthProvider';
 import MainLayout from '../layouts/MainLayout';
-import { Users, Car, Buildings, Calendar, ShieldCheck, GameController, ArrowRight, DiscordLogo, Bell, Star, CalendarCheck } from '@phosphor-icons/react';
+import { Users, Car, Buildings, Calendar, ShieldCheck, GameController, ArrowRight, DiscordLogo, Bell, Star, CalendarCheck, PushPin, Megaphone } from '@phosphor-icons/react';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { da } from 'date-fns/locale';
@@ -29,6 +29,18 @@ interface FeaturedPlayer {
 	description: string;
 }
 
+interface PinnedItem {
+	id: string;
+	type: 'news' | 'event';
+	title: string;
+	description: string;
+	date: Date;
+	newsType?: 'update' | 'announcement' | 'changelog';
+	eventType?: 'community' | 'official' | 'special';
+	eventDate?: Date;
+	location?: string;
+}
+
 export default function HomePage() {
 	const { isAuthorized } = useAuth();
 	const navigate = useNavigate();
@@ -42,6 +54,34 @@ export default function HomePage() {
 	});
 	const [newsModalOpen, setNewsModalOpen] = useState(false);
 	const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
+	const [pinnedItems, setPinnedItems] = useState<PinnedItem[]>([
+		{
+			id: '1',
+			type: 'news',
+			title: 'Server Update 3.5',
+			description: 'New vehicles, weapons, and optimizations have been added to the server.',
+			date: new Date('2025-03-25'),
+			newsType: 'update',
+		},
+		{
+			id: '3',
+			type: 'news',
+			title: 'New Police Chief Appointed',
+			description: 'Congratulations to Officer Johnson on being appointed as the new Police Chief!',
+			date: new Date('2025-03-22'),
+			newsType: 'announcement',
+		},
+		{
+			id: '4',
+			type: 'event',
+			title: 'Bilshow i Vinewood',
+			description: 'Det årlige vinewood bilshow hvor du kan vise dine bedste biler frem.',
+			date: new Date('2025-03-20'),
+			eventType: 'official',
+			eventDate: new Date('2025-03-29T18:00:00'),
+			location: 'Vinewood Bowl',
+		},
+	]);
 
 	const newsItems: NewsItem[] = [
 		{
@@ -409,6 +449,78 @@ export default function HomePage() {
 					</Grid>
 				</Container>
 			</Box>
+
+			{pinnedItems.length > 0 && (
+				<Box
+					style={{
+						backgroundColor: '#070707',
+						padding: '40px 0',
+						borderBottom: '1px solid #222',
+					}}
+				>
+					<Container size='xl'>
+						<Group justify='space-between' mb='md'>
+							<Group>
+								<PushPin size={24} />
+								<Title order={3}>Vigtige Meddelelser</Title>
+							</Group>
+							<Button variant='subtle' rightSection={<ArrowRight size={16} />} onClick={() => navigate({ to: '/events' })}>
+								Se alle nyheder og events
+							</Button>
+						</Group>
+
+						<SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing='md'>
+							{pinnedItems.map((item) => (
+								<Card key={item.id} withBorder shadow='sm' padding='md' radius='md'>
+									<Card.Section withBorder inheritPadding py='xs'>
+										<Group justify='space-between'>
+											<Badge color={item.type === 'news' ? (item.newsType === 'update' ? 'blue' : item.newsType === 'changelog' ? 'green' : 'orange') : item.eventType === 'official' ? 'blue' : item.eventType === 'community' ? 'green' : 'purple'} leftSection={item.type === 'news' ? <Megaphone size={14} /> : <CalendarCheck size={14} />}>
+												{item.type === 'news' ? (item.newsType === 'update' ? 'Opdatering' : item.newsType === 'changelog' ? 'Changelog' : 'Meddelelse') : item.eventType === 'official' ? 'Officiel Begivenhed' : item.eventType === 'community' ? 'Fællesskab' : 'Special Event'}
+											</Badge>
+											<ActionIcon color='blue' variant='subtle'>
+												<PushPin size={16} weight='fill' />
+											</ActionIcon>
+										</Group>
+									</Card.Section>
+
+									<Text fw={700} size='lg' mt='md' mb='xs' lineClamp={1}>
+										{item.title}
+									</Text>
+
+									{item.type === 'event' && item.eventDate && (
+										<Text size='sm' c='dimmed' mb='xs'>
+											{format(item.eventDate, 'd. MMMM yyyy, HH:mm', { locale: da })}
+											{item.location && ` • ${item.location}`}
+										</Text>
+									)}
+
+									{item.type === 'news' && (
+										<Text size='sm' c='dimmed' mb='xs'>
+											{format(item.date, 'd. MMMM yyyy', { locale: da })}
+										</Text>
+									)}
+
+									<Text size='sm' lineClamp={2} mb='md'>
+										{item.description}
+									</Text>
+
+									<Button
+										variant='light'
+										fullWidth
+										mt='auto'
+										onClick={() => {
+											navigate({ to: '/events' });
+											// We would ideally pass state here to open the specific item
+										}}
+									>
+										Læs mere
+									</Button>
+								</Card>
+							))}
+						</SimpleGrid>
+					</Container>
+				</Box>
+			)}
 
 			<Box style={{ padding: '60px 0', backgroundColor: '#070707' }}>
 				<Container size='xl'>

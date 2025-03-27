@@ -10,7 +10,7 @@ export default function Header() {
 	const menuItems = [
 		{ label: 'Home', icon: House, onClick: () => navigate({ to: '/' }) },
 		{ label: 'Regler', icon: Book, onClick: () => navigate({ to: '/rules' }) },
-		{ label: 'Begivenheder', icon: Calendar, onClick: () => navigate({ to: '/events' }) },
+		{ label: 'Nyheder og Events', icon: Calendar, onClick: () => navigate({ to: '/events' }) },
 		{ label: 'Whitelist', icon: User, onClick: () => navigate({ to: '/whitelist' }) },
 		{ label: 'Server Logs', icon: ListBullets, onClick: () => navigate({ to: '/logs' }), requireAuth: true },
 	];
