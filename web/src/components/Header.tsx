@@ -1,7 +1,7 @@
 import { Group, Text, Button, Box, Container, Menu } from '@mantine/core';
 import { useAuth } from '../components/AuthProvider';
 import { useNavigate } from '@tanstack/react-router';
-import { SignOut, House, ListBullets, Book, MapPin, ChartLine, Calendar, User, CaretDown } from '@phosphor-icons/react';
+import { SignOut, House, ListBullets, Book, MapPin, Calendar, User, CaretDown } from '@phosphor-icons/react';
 
 export default function Header() {
 	const { isAuthorized, isLoading, user, signInWithDiscord, signOut } = useAuth();
@@ -11,7 +11,6 @@ export default function Header() {
 		{ label: 'Home', icon: House, onClick: () => navigate({ to: '/' }) },
 		{ label: 'Regler', icon: Book, onClick: () => navigate({ to: '/rules' }) },
 		{ label: 'By Kort', icon: MapPin, onClick: () => navigate({ to: '/map' }) },
-		{ label: 'Server Status', icon: ChartLine, onClick: () => navigate({ to: '/server-status' }) },
 		{ label: 'Begivenheder', icon: Calendar, onClick: () => navigate({ to: '/events' }) },
 		{ label: 'Whitelist', icon: User, onClick: () => navigate({ to: '/whitelist' }) },
 		{ label: 'Server Logs', icon: ListBullets, onClick: () => navigate({ to: '/logs' }), requireAuth: true },

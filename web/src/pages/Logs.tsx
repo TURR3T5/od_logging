@@ -49,7 +49,6 @@ export default function LogsPage() {
 	const [eventTypeStats, setEventTypeStats] = useState<any[]>([]);
 	const [timeSeriesData, setTimeSeriesData] = useState<any[]>([]);
 
-	// Filter presets
 	const filterPresets: FilterPreset[] = [
 		{
 			id: 'recent-logins',
@@ -87,7 +86,6 @@ export default function LogsPage() {
 	];
 
 	const LOGS_PER_PAGE = 8;
-	const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FF6B6B', '#6B66FF'];
 
 	const getQueryFilters = useCallback(() => {
 		const params = new URLSearchParams(window.location.search);
@@ -102,6 +100,75 @@ export default function LogsPage() {
 
 	const filters = getQueryFilters();
 	const pageTitle = filters.type ? `${filters.type.charAt(0).toUpperCase() + filters.type.slice(1)} Logs` : 'Server Logs';
+
+	const fetchDashboardStats = async () => {
+		try {
+			const { data: logs, error } = await supabase.from('logs').select('category, event_type, created_at').order('created_at', { ascending: false }).limit(1000);
+
+			if (error) {
+				console.error('Error fetching logs for stats:', error);
+				return;
+			}
+
+			if (!logs || logs.length === 0) {
+				return;
+			}
+
+			const categoryCount: Record<string, number> = {};
+			logs.forEach((log) => {
+				const category = log.category || 'Unknown';
+				categoryCount[category] = (categoryCount[category] || 0) + 1;
+			});
+
+			const formattedCategoryData = Object.entries(categoryCount)
+				.map(([name, value]) => ({ name, value }))
+				.sort((a, b) => (b.value as number) - (a.value as number));
+
+			setCategoryStats(formattedCategoryData);
+
+			const eventTypeCount: Record<string, number> = {};
+			logs.forEach((log) => {
+				const eventType = log.event_type || 'Unknown';
+				eventTypeCount[eventType] = (eventTypeCount[eventType] || 0) + 1;
+			});
+
+			const formattedEventTypeData = Object.entries(eventTypeCount)
+				.map(([name, value]) => ({ name, value }))
+				.sort((a, b) => (b.value as number) - (a.value as number));
+
+			setEventTypeStats(formattedEventTypeData);
+
+			const today = new Date();
+			const sevenDaysAgo = new Date();
+			sevenDaysAgo.setDate(today.getDate() - 7);
+
+			const dailyCounts: Record<string, number> = {};
+			for (let i = 0; i < 7; i++) {
+				const date = new Date();
+				date.setDate(today.getDate() - i);
+				const dateString = date.toISOString().split('T')[0];
+				dailyCounts[dateString] = 0;
+			}
+
+			logs.forEach((log) => {
+				const dateString = new Date(log.created_at).toISOString().split('T')[0];
+				if (dailyCounts[dateString] !== undefined) {
+					dailyCounts[dateString]++;
+				}
+			});
+
+			const formattedTimeData = Object.entries(dailyCounts)
+				.map(([date, count]) => ({
+					date,
+					count: count as number,
+				}))
+				.sort((a, b) => a.date.localeCompare(b.date));
+
+			setTimeSeriesData(formattedTimeData);
+		} catch (err) {
+			console.error('Failed to fetch dashboard stats:', err);
+		}
+	};
 
 	const fetchLogs = useCallback(async () => {
 		setLoading(true);
@@ -146,21 +213,17 @@ export default function LogsPage() {
 				}
 			}
 
-			// Build filter for player search
 			if (searchFilters.playerSearch) {
 				const searchTerm = searchFilters.playerSearch.trim();
 				if (searchTerm) {
 					appliedFilters.push(`Player search: ${searchTerm}`);
 
-					// Use a different approach for OR conditions that works with PostgREST
 					const filterConditions = [`player_name.ilike.%${searchTerm}%`, `server_id.ilike.%${searchTerm}%`, `discord_id.ilike.%${searchTerm}%`];
 
-					// For player_id, only include it if the search term could be a number
 					if (!isNaN(Number(searchTerm))) {
 						filterConditions.push(`player_id.ilike.%${searchTerm}%`);
 					}
 
-					// Join the conditions and apply them
 					query = query.or(filterConditions.join(','));
 				}
 			}
@@ -172,7 +235,6 @@ export default function LogsPage() {
 				appliedFilters.push(`Date range: ${startDate} - ${endDate}`);
 			}
 
-			// Count query with same filters
 			const countQuery = supabase.from('logs').select('*', { count: 'exact' });
 
 			if (currentFilters.category) {
@@ -198,18 +260,15 @@ export default function LogsPage() {
 				}
 			}
 
-			// Apply same player search to count query
 			if (searchFilters.playerSearch) {
 				const searchTerm = searchFilters.playerSearch.trim();
 				if (searchTerm) {
 					const filterConditions = [`player_name.ilike.%${searchTerm}%`, `server_id.ilike.%${searchTerm}%`, `discord_id.ilike.%${searchTerm}%`];
 
-					// For player_id, only include it if the search term could be a number
 					if (!isNaN(Number(searchTerm))) {
 						filterConditions.push(`player_id.ilike.%${searchTerm}%`);
 					}
 
-					// Join the conditions and apply them
 					countQuery.or(filterConditions.join(','));
 				}
 			}
@@ -250,6 +309,7 @@ export default function LogsPage() {
 
 	useEffect(() => {
 		fetchLogs();
+		fetchDashboardStats();
 
 		const handlePopState = () => {
 			handleUrlChange();
@@ -282,7 +342,6 @@ export default function LogsPage() {
 		setSearchFilters(preset.filters);
 		setPage(1);
 
-		// Build the navigate URL
 		let navigateUrl = '/logs';
 		const params = new URLSearchParams();
 
@@ -296,7 +355,6 @@ export default function LogsPage() {
 	};
 
 	const exportLogs = () => {
-		// Format logs for export
 		const exportData = logs.map((log) => ({
 			ID: log.id,
 			Timestamp: new Date(log.created_at).toLocaleString(),
@@ -310,12 +368,10 @@ export default function LogsPage() {
 			Details: JSON.stringify(log.details),
 		}));
 
-		// Convert to CSV
 		const headers = Object.keys(exportData[0]).join(',');
 		const rows = exportData.map((row) => Object.values(row).join(','));
 		const csv = [headers, ...rows].join('\n');
 
-		// Create download
 		const blob = new Blob([csv], { type: 'text/csv' });
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement('a');
@@ -327,7 +383,6 @@ export default function LogsPage() {
 		URL.revokeObjectURL(url);
 	};
 
-	// Analytics overview calculations
 	const totalLogs = useMemo(() => {
 		return categoryStats.reduce((total, category) => total + category.value, 0);
 	}, [categoryStats]);
@@ -350,28 +405,14 @@ export default function LogsPage() {
 		const last = timeSeriesData[timeSeriesData.length - 1].count;
 		const secondLast = timeSeriesData[timeSeriesData.length - 2].count;
 
-		if (secondLast === 0) return 100; // Avoid division by zero
+		if (secondLast === 0) return 100;
 
 		return ((last - secondLast) / secondLast) * 100;
 	}, [timeSeriesData]);
 
-	// Format data for Mantine charts
-	const formattedTimeSeriesData = useMemo(() => {
-		return timeSeriesData.map((item) => ({
-			date: item.date,
-			Aktivitet: item.count,
-		}));
-	}, [timeSeriesData]);
-
 	return (
 		<MainLayout>
-			<Box
-				style={{
-					width: '100%',
-					display: 'flex',
-					justifyContent: 'center',
-				}}
-			>
+			<Box style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
 				<Container size='xl' style={{ maxWidth: '1600px', width: '100%' }}>
 					<Paper p='md' mb='md' bg='dark.8' style={{ backgroundColor: '', width: '100%' }}>
 						<Group justify='space-between' mb='md'>
@@ -384,7 +425,6 @@ export default function LogsPage() {
 								)}
 							</Box>
 
-							{/* Action buttons */}
 							<Group>
 								<Menu shadow='md' width={200}>
 									<Menu.Target>
@@ -411,7 +451,6 @@ export default function LogsPage() {
 							</Group>
 						</Group>
 
-						{/* View type tabs */}
 						<Tabs value={activeTab} onChange={setActiveTab} mb='md'>
 							<Tabs.List>
 								<Tabs.Tab value='table' leftSection={<ListBullets size={16} />}>
@@ -423,7 +462,6 @@ export default function LogsPage() {
 							</Tabs.List>
 						</Tabs>
 
-						{/* Table View */}
 						{activeTab === 'table' && (
 							<LogTable
 								data={logs}
@@ -437,11 +475,9 @@ export default function LogsPage() {
 							/>
 						)}
 
-						{/* Dashboard View */}
 						{activeTab === 'dashboard' && (
 							<Box>
 								<SimpleGrid cols={{ base: 1, xs: 2, sm: 2, md: 4 }} spacing='md' mb='md'>
-									{/* Total Logs Card */}
 									<Card withBorder p='md' radius='md'>
 										<Text size='xs' tt='uppercase' fw={700} c='dimmed'>
 											Total Logs
@@ -454,7 +490,6 @@ export default function LogsPage() {
 										</Text>
 									</Card>
 
-									{/* Top Category Card */}
 									<Card withBorder p='md' radius='md'>
 										<Text size='xs' tt='uppercase' fw={700} c='dimmed'>
 											Top Kategori
@@ -470,7 +505,6 @@ export default function LogsPage() {
 										</Text>
 									</Card>
 
-									{/* Top Event Type Card */}
 									<Card withBorder p='md' radius='md'>
 										<Text size='xs' tt='uppercase' fw={700} c='dimmed'>
 											Top Hændelse
@@ -486,7 +520,6 @@ export default function LogsPage() {
 										</Text>
 									</Card>
 
-									{/* Recent Activity Card */}
 									<Card withBorder p='md' radius='md'>
 										<Text size='xs' tt='uppercase' fw={700} c='dimmed'>
 											Seneste Aktivitet
