@@ -5,7 +5,6 @@ import LoginPage from '../pages/Login';
 import LogsPage from '../pages/Logs';
 import AuthCallbackPage from '../pages/AuthCallback';
 import RulesPage from '../pages/Rules';
-import CityMapPage from '../pages/CityMapPage';
 import EventsCalendarPage from '../pages/EventsCalendar';
 import WhitelistApplicationPage from '../pages/WhitelistPortal';
 
@@ -43,12 +42,6 @@ const logsRoute = createRoute({
 	component: LogsPage,
 });
 
-const cityMapRoute = createRoute({
-	getParentRoute: () => rootRoute,
-	path: '/map',
-	component: CityMapPage,
-});
-
 const eventsCalendarRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: '/events',
@@ -61,7 +54,7 @@ const whitelistApplicationRoute = createRoute({
 	component: WhitelistApplicationPage,
 });
 
-const routeTree = rootRoute.addChildren([homeRoute, loginRoute, authCallbackRoute, logsRoute, rulesRoute, cityMapRoute, eventsCalendarRoute, whitelistApplicationRoute]);
+const routeTree = rootRoute.addChildren([homeRoute, loginRoute, authCallbackRoute, logsRoute, rulesRoute, eventsCalendarRoute, whitelistApplicationRoute]);
 
 export const router = createRouter({ routeTree });
 

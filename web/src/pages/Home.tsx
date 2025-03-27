@@ -72,7 +72,7 @@ export default function HomePage() {
 			name: 'Michael Stone',
 			avatarUrl: '/api/placeholder/100/100',
 			role: 'Gang Leader',
-			description: 'Leader of the Yellow Jack Gang, known for strategic territory control.',
+			description: 'Leader of the Yellow Jack Gang, known for strategic territory.',
 		},
 		{
 			id: 2,

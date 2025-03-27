@@ -10,7 +10,6 @@ export default function Header() {
 	const menuItems = [
 		{ label: 'Home', icon: House, onClick: () => navigate({ to: '/' }) },
 		{ label: 'Regler', icon: Book, onClick: () => navigate({ to: '/rules' }) },
-		{ label: 'By Kort', icon: MapPin, onClick: () => navigate({ to: '/map' }) },
 		{ label: 'Begivenheder', icon: Calendar, onClick: () => navigate({ to: '/events' }) },
 		{ label: 'Whitelist', icon: User, onClick: () => navigate({ to: '/whitelist' }) },
 		{ label: 'Server Logs', icon: ListBullets, onClick: () => navigate({ to: '/logs' }), requireAuth: true },
@@ -18,8 +17,8 @@ export default function Header() {
 
 	const filteredMenuItems = menuItems.filter((item) => !item.requireAuth || (item.requireAuth && isAuthorized));
 
-	const displayItems = filteredMenuItems.slice(0, 3);
-	const dropdownItems = filteredMenuItems.slice(3);
+	const displayItems = filteredMenuItems.slice(0, 6);
+	const dropdownItems = filteredMenuItems.slice(6);
 
 	return (
 		<Box
