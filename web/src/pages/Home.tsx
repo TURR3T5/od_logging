@@ -1,17 +1,24 @@
 import { useState, useEffect } from 'react';
-import { Container, Box, Title, Text, Button, Group, Grid, Card, Badge, Center, Avatar, Timeline } from '@mantine/core';
+import { Container, Box, Title, Text, Button, Group, Grid, Card, Badge, Center, Avatar, Timeline, Modal, Divider } from '@mantine/core';
 import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '../components/AuthProvider';
 import MainLayout from '../layouts/MainLayout';
-import { Users, Car, Buildings, Calendar, ShieldCheck, GameController, ArrowRight, DiscordLogo, Bell, Star } from '@phosphor-icons/react';
+import { Users, Car, Buildings, Calendar, ShieldCheck, GameController, ArrowRight, DiscordLogo, Bell, Star, CalendarCheck } from '@phosphor-icons/react';
 import axios from 'axios';
+import { format } from 'date-fns';
+import { da } from 'date-fns/locale';
 
 interface NewsItem {
 	id: number;
 	title: string;
 	content: string;
+	fullContent?: string;
 	date: string;
 	type: 'update' | 'event' | 'announcement';
+	locationName?: string;
+	locationAddress?: string;
+	organizer?: string;
+	imageUrl?: string;
 }
 
 interface FeaturedPlayer {
@@ -33,28 +40,39 @@ export default function HomePage() {
 		whitelistCount: 0,
 		status: 'offline',
 	});
+	const [newsModalOpen, setNewsModalOpen] = useState(false);
+	const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
 
 	const newsItems: NewsItem[] = [
 		{
 			id: 1,
 			title: 'Server Update 3.5',
 			content: 'New vehicles, weapons, and optimizations have been added to the server.',
+			fullContent: 'Vi er glade for at annoncere den nyeste opdatering til OdessaRP, version 3.5! Denne opdatering bringer en række spændende forbedringer til serveren. \n\nNye køretøjer inkluderer Übermacht Cypher, Pfister Comet S2 og Dinka Jester RR. Alle køretøjer kommer med komplette tuningmuligheder og unikke handlinger. \n\nVi har også tilføjet nye våben, herunder Heavy Rifle og Combat Shotgun, som kan købes lovligt med de rette licenser. Våbenmodifikationer er også blevet opdateret, så du kan tilpasse dine våben endnu mere. \n\nServeroptimeringer omfatter forbedret performance i Downtown-området, reduceret ressourceforbrug, og forbedrede NPC-rutiner der giver en mere realistisk oplevelse. \n\nHusk at melde eventuelle bugs i vores Discord under #bug-rapport kanalen.',
 			date: '2025-03-25',
 			type: 'update',
+			organizer: 'OdessaRP Admin Team',
 		},
 		{
 			id: 2,
 			title: 'Weekend Event: Car Show',
 			content: 'Join us at the Vinewood Bowl for a car show this weekend. Cash prizes for best vehicles!',
-			date: '2025-03-24',
+			fullContent: 'Vinewood Bowl Car Show - den mest ventede bilbegivenhed i byen! \n\nKom og vis din bedste bil frem og deltag i konkurrencen om store pengepræmier! Vi har flere kategorier: Bedste Muscle Car, Bedste Sport/Super, Bedste Import, Bedste Klassiker, og Bedste Modification. \n\nHovedpræmien er $50.000 i spilpenge til vinderne, plus ekstra bonuspræmier fra vores sponsorer. Alle deltagende køretøjer vil blive bedømt af et panel af erfarne bilentusiaster fra serveren. \n\nUd over konkurrencen vil der være livemusik, mad og drikkevarer, plus mulighed for at netværke med andre bilentusiaster og forhandlere i byen. \n\nTilmelding starter en time før showet begynder, så kom i god tid for at sikre dig en plads!',
+			date: '2025-03-30',
 			type: 'event',
+			locationName: 'Vinewood Bowl',
+			locationAddress: 'Vinewood Hills, Los Santos',
+			organizer: 'Los Santos Car Club',
+			imageUrl: '/api/placeholder/400/200',
 		},
 		{
 			id: 3,
 			title: 'New Police Chief Appointed',
 			content: 'Congratulations to Officer Johnson on being appointed as the new Police Chief!',
+			fullContent: 'Det er med stor glæde at OdessaRP kan annoncere udnævnelsen af Sarah Johnson som vores nye politichef! \n\nEfter flere års dedikeret tjeneste på serveren, har Sarah bevist sit værd gennem eksemplarisk lederskab, retfærdig håndhævelse af loven, og en stærk forpligtelse til samfundet. \n\nUnder hendes ledelse planlægger politistyrken at implementere flere community-orienterede initiativer, herunder regelmæssige "Mød din betjent"-begivenheder, udvidede patruljeringer i højrisikoområder, og nye rekrutteringsprogrammer. \n\nVi ønsker Sarah tillykke med denne velfortjente udnævnelse, og ser frem til at opleve hendes vision for byens sikkerhed og retfærdighed udfolde sig.',
 			date: '2025-03-22',
 			type: 'announcement',
+			organizer: 'Byrådet',
 		},
 	];
 
@@ -170,6 +188,42 @@ export default function HomePage() {
 			description: 'Nyd unikke gameplay-funktioner med vores specialudviklede server scripts.',
 		},
 	];
+
+	const openNewsModal = (news: NewsItem) => {
+		setSelectedNews(news);
+		setNewsModalOpen(true);
+	};
+
+	const closeNewsModal = () => {
+		setNewsModalOpen(false);
+		setTimeout(() => setSelectedNews(null), 300);
+	};
+
+	const getNewsTypeColor = (type: string) => {
+		switch (type) {
+			case 'update':
+				return 'blue';
+			case 'event':
+				return 'green';
+			case 'announcement':
+				return 'orange';
+			default:
+				return 'gray';
+		}
+	};
+
+	const getNewsTypeLabel = (type: string) => {
+		switch (type) {
+			case 'update':
+				return 'Opdatering';
+			case 'event':
+				return 'Begivenhed';
+			case 'announcement':
+				return 'Meddelelse';
+			default:
+				return 'Info';
+		}
+	};
 
 	return (
 		<MainLayout requireAuth={false}>
@@ -368,6 +422,9 @@ export default function HomePage() {
 											Seneste Nyheder & Meddelelser
 										</Group>
 									</Title>
+									<Button variant='subtle' rightSection={<ArrowRight size={16} />} onClick={() => navigate({ to: '/events' })}>
+										Se alle begivenheder
+									</Button>
 								</Group>
 
 								<Timeline active={1} bulletSize={24} lineWidth={2}>
@@ -378,8 +435,8 @@ export default function HomePage() {
 											title={
 												<Group>
 													<Text fw={600}>{item.title}</Text>
-													<Badge size='sm' variant='light' color={item.type === 'update' ? 'blue' : item.type === 'event' ? 'green' : 'orange'}>
-														{item.type === 'update' ? 'Opdatering' : item.type === 'event' ? 'Begivenhed' : 'Meddelelse'}
+													<Badge size='sm' variant='light' color={getNewsTypeColor(item.type)}>
+														{getNewsTypeLabel(item.type)}
 													</Badge>
 												</Group>
 											}
@@ -394,7 +451,7 @@ export default function HomePage() {
 											<Text size='sm' mt='sm'>
 												{item.content}
 											</Text>
-											<Button variant='subtle' size='xs' mt='sm'>
+											<Button variant='subtle' size='xs' mt='sm' onClick={() => openNewsModal(item)}>
 												Læs mere
 											</Button>
 										</Timeline.Item>
@@ -620,6 +677,79 @@ export default function HomePage() {
 					</Group>
 				</Container>
 			</Box>
+
+			<Modal
+				opened={newsModalOpen}
+				onClose={closeNewsModal}
+				title={
+					<Group>
+						<Badge color={selectedNews ? getNewsTypeColor(selectedNews.type) : 'gray'} size='lg'>
+							{selectedNews ? getNewsTypeLabel(selectedNews.type) : ''}
+						</Badge>
+						<Text fw={700}>{selectedNews?.title}</Text>
+					</Group>
+				}
+				size='lg'
+				centered
+			>
+				{selectedNews && (
+					<Box>
+						<Group mb='md'>
+							<CalendarCheck size={18} />
+							<Text>{format(new Date(selectedNews.date), 'd. MMMM yyyy', { locale: da })}</Text>
+						</Group>
+
+						{selectedNews.organizer && (
+							<Text size='sm' c='dimmed' mb='md'>
+								Arrangør: {selectedNews.organizer}
+							</Text>
+						)}
+
+						{selectedNews.locationName && (
+							<Group mb='md'>
+								<Text fw={500}>Sted:</Text>
+								<Text>
+									{selectedNews.locationName}
+									{selectedNews.locationAddress && `, ${selectedNews.locationAddress}`}
+								</Text>
+							</Group>
+						)}
+
+						{selectedNews.imageUrl && (
+							<Box mb='md'>
+								<img
+									src={selectedNews.imageUrl}
+									alt={selectedNews.title}
+									style={{
+										width: '100%',
+										borderRadius: '8px',
+										marginBottom: '16px',
+									}}
+								/>
+							</Box>
+						)}
+
+						<Divider my='md' />
+
+						<Text style={{ whiteSpace: 'pre-line' }}>{selectedNews.fullContent || selectedNews.content}</Text>
+
+						{selectedNews.type === 'event' && (
+							<Button
+								fullWidth
+								variant='gradient'
+								gradient={{ from: 'blue', to: 'cyan' }}
+								mt='xl'
+								onClick={() => {
+									closeNewsModal();
+									navigate({ to: '/events' });
+								}}
+							>
+								Se alle begivenheder
+							</Button>
+						)}
+					</Box>
+				)}
+			</Modal>
 		</MainLayout>
 	);
 }
