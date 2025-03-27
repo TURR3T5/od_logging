@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Container, Title, Text, Box, Group, Button, Modal, TextInput, Textarea, Paper, Badge, ActionIcon, Card, Menu, Indicator, Divider } from '@mantine/core';
+import { Container, Title, Text, Box, Group, Button, Modal, TextInput, Textarea, Paper, Badge, ActionIcon, Card, Menu, Indicator, Divider, Timeline, Grid } from '@mantine/core';
 import { DatePickerInput, Calendar } from '@mantine/dates';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useAuth } from '../components/AuthProvider';
 import MainLayout from '../layouts/MainLayout';
-import { CaretLeft, CaretRight, Plus, DotsThree, CalendarCheck, Trash, Pencil, CheckCircle } from '@phosphor-icons/react';
+import { Plus, DotsThree, CalendarCheck, ArrowRight, Trash, CheckCircle } from '@phosphor-icons/react';
 import 'dayjs/locale/da';
-import { format, isSameDay, parseISO } from 'date-fns';
+import { format, isSameDay } from 'date-fns';
 import { da } from 'date-fns/locale';
 
 interface EventType {
@@ -34,7 +34,6 @@ export default function EventsCalendarPage() {
 		type: 'community',
 	});
 	const [viewMode, setViewMode] = useState<'month' | 'list'>('month');
-	const [currentMonth, setCurrentMonth] = useState(new Date());
 
 	useEffect(() => {
 		const mockEvents: EventType[] = [
@@ -157,20 +156,6 @@ export default function EventsCalendarPage() {
 		}
 	};
 
-	const handleMonthChange = (direction: 'prev' | 'next') => {
-		const newDate = new Date(currentMonth);
-		if (direction === 'prev') {
-			newDate.setMonth(newDate.getMonth() - 1);
-		} else {
-			newDate.setMonth(newDate.getMonth() + 1);
-		}
-		setCurrentMonth(newDate);
-	};
-
-	const getDaysWithEvents = () => {
-		return events.map((event) => new Date(event.date));
-	};
-
 	const renderDayContent = (date: Date) => {
 		const dayEvents = events.filter((event) => isSameDay(new Date(event.date), date));
 
@@ -209,31 +194,89 @@ export default function EventsCalendarPage() {
 				</Group>
 
 				{viewMode === 'month' && (
-					<Paper shadow='md' radius='md' p='md' withBorder mb='xl'>
-						<Calendar
-							date={selectedDate || undefined}
-							onDateChange={handleDateChange}
-							locale='da'
-							size='xl'
-							styles={(theme) => ({
-								day: {
-									height: '60px',
-									borderRadius: theme.radius.sm,
-									'&[dataSelected]': {
-										backgroundColor: theme.colors.blue[6],
-									},
-									'&[dataInRange]': {
-										backgroundColor: theme.colors.blue[5],
-										color: theme.white,
-									},
-								},
-							})}
-							getDayProps={(date) => ({
-								onClick: () => handleDateChange(date),
-							})}
-							renderDay={(date) => renderDayContent(date)}
-						/>
-					</Paper>
+					<Grid gutter='md'>
+						<Grid.Col span={{ base: 12, md: 7 }}>
+							<Paper shadow='md' radius='md' withBorder mb='xl'>
+								<Box p='md'>
+									<Calendar
+										date={selectedDate || undefined}
+										onDateChange={handleDateChange}
+										locale='da'
+										size='xl'
+										styles={(theme) => ({
+											day: {
+												borderRadius: theme.radius.sm,
+												'&[data-selected]': {
+													backgroundColor: theme.colors.blue[6],
+												},
+												'&[data-in-range]': {
+													backgroundColor: theme.colors.blue[5],
+													color: theme.white,
+												},
+											},
+										})}
+										getDayProps={(date) => ({
+											onClick: () => handleDateChange(date),
+										})}
+										renderDay={(date) => renderDayContent(date)}
+									/>
+								</Box>
+							</Paper>
+						</Grid.Col>
+
+						<Grid.Col span={{ base: 12, md: 5 }}>
+							<Paper shadow='md' radius='md' withBorder mb='xl' p='md'>
+								<Title order={3} mb='md'>
+									<Group gap='xs'>
+										<CalendarCheck size={22} />
+										Kommende Begivenheder
+									</Group>
+								</Title>
+
+								<Timeline active={0} bulletSize={24} lineWidth={2}>
+									{events
+										.filter((event) => new Date(event.date) >= new Date())
+										.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+										.slice(0, 5)
+										.map((event, _index) => (
+											<Timeline.Item
+												key={event.id}
+												title={
+													<Group gap='xs'>
+														<Text fw={600}>{event.title}</Text>
+														<Badge size='sm' color={getEventBadgeColor(event.type)}>
+															{event.type === 'official' ? 'Officiel' : event.type === 'community' ? 'Fællesskab' : 'Special'}
+														</Badge>
+													</Group>
+												}
+											>
+												<Text size='sm' c='dimmed' mb={4}>
+													{format(new Date(event.date), 'd. MMMM yyyy, HH:mm', { locale: da })}
+												</Text>
+												<Text size='sm' lineClamp={2}>
+													{event.description}
+												</Text>
+												<Button variant='subtle' size='xs' mt='xs' onClick={() => handleEventClick(event)}>
+													Læs mere
+												</Button>
+											</Timeline.Item>
+										))}
+
+									{events.filter((event) => new Date(event.date) >= new Date()).length === 0 && (
+										<Box py='md' ta='center'>
+											<Text c='dimmed' fz='sm'>
+												Ingen kommende begivenheder
+											</Text>
+										</Box>
+									)}
+								</Timeline>
+
+								<Button variant='light' fullWidth mt='md' onClick={() => setViewMode('list')} rightSection={<ArrowRight size={16} />}>
+									Vis alle begivenheder
+								</Button>
+							</Paper>
+						</Grid.Col>
+					</Grid>
 				)}
 
 				{selectedDate && filteredEvents.length > 0 && viewMode === 'month' && (
