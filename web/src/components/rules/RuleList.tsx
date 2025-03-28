@@ -101,17 +101,17 @@ const RuleItem = memo(
 							{isAuthorized && (
 								<Group>
 									<Tooltip label='Rediger'>
-										<ActionIcon size='sm' color='blue' onClick={handleEditClick}>
+										<ActionIcon variant='light' size='sm' color='blue' onClick={handleEditClick}>
 											<Pencil size={16} />
 										</ActionIcon>
 									</Tooltip>
 									<Tooltip label={rule.is_pinned ? 'Fjern fra oversigt' : 'Fastgør til oversigt'}>
-										<ActionIcon size='sm' color={rule.is_pinned ? 'yellow' : 'gray'} onClick={handlePinClick}>
+										<ActionIcon variant='light' size='sm' color={rule.is_pinned ? 'lime.8' : 'gray.7'} onClick={handlePinClick}>
 											<PushPin size={16} weight={rule.is_pinned ? 'fill' : 'regular'} />
 										</ActionIcon>
 									</Tooltip>
 									<Tooltip label='Vis historie'>
-										<ActionIcon size='sm' color='gray' onClick={handleHistoryClick}>
+										<ActionIcon variant='light' size='sm' color='gray.7' onClick={handleHistoryClick}>
 											<ClockCounterClockwise size={16} />
 										</ActionIcon>
 									</Tooltip>
