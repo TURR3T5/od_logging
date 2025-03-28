@@ -5,36 +5,11 @@ import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useAuth } from '../components/AuthProvider';
 import MainLayout from '../layouts/MainLayout';
-import { Plus, DotsThree, CalendarCheck, Trash, CheckCircle, Calendar as CalendarIcon, Star, Bell, PushPin, Pencil, FileText, Megaphone, ShieldCheck } from '@phosphor-icons/react';
+import { Plus, DotsThree, CalendarCheck, Trash, CheckCircle, Calendar as CalendarIcon, Star, Bell, PushPin, Pencil, FileText, Megaphone } from '@phosphor-icons/react';
 import 'dayjs/locale/da';
-import { format, isSameDay, parseISO } from 'date-fns';
+import { format, isSameDay } from 'date-fns';
 import { da } from 'date-fns/locale';
-
-interface BaseContentItem {
-	id: string;
-	title: string;
-	description: string;
-	content?: string;
-	createdAt: Date;
-	createdBy?: string;
-	isPinned: boolean;
-	lastUpdated?: Date;
-}
-
-interface EventItem extends BaseContentItem {
-	type: 'event';
-	eventType: 'community' | 'official' | 'special';
-	eventDate: Date;
-	location?: string;
-	address?: string;
-}
-
-interface NewsItem extends BaseContentItem {
-	type: 'news';
-	newsType: 'update' | 'announcement' | 'changelog';
-}
-
-type ContentItem = EventItem | NewsItem;
+import { ContentItem, NewsEventsService } from '../lib/NewsEventsService';
 
 export default function NewsAndEventsPage() {
 	const [activeTab, setActiveTab] = useState<string | null>('news');
@@ -47,6 +22,7 @@ export default function NewsAndEventsPage() {
 	const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
 	const [showPinnedOnly, setShowPinnedOnly] = useState(false);
 	const [createType, setCreateType] = useState<'news' | 'event'>('news');
+	const [isLoading, setIsLoading] = useState(true);
 	const { isAuthorized, user } = useAuth();
 
 	const [newItem, setNewItem] = useState<Partial<ContentItem>>({
@@ -54,99 +30,35 @@ export default function NewsAndEventsPage() {
 		description: '',
 		content: '',
 		type: 'news',
-		newsType: 'announcement',
-		isPinned: false,
+		news_type: 'announcement',
+		is_pinned: false,
 	});
 
 	useEffect(() => {
-		const mockItems: ContentItem[] = [
-			{
-				id: '1',
-				title: 'Server Update 3.5',
-				description: 'New vehicles, weapons, and optimizations have been added to the server.',
-				content: 'Vi er glade for at annoncere den nyeste opdatering til OdessaRP, version 3.5! Denne opdatering bringer en række spændende forbedringer til serveren.\n\nNye køretøjer inkluderer Übermacht Cypher, Pfister Comet S2 og Dinka Jester RR. Alle køretøjer kommer med komplette tuningmuligheder og unikke handlinger.\n\nVi har også tilføjet nye våben, herunder Heavy Rifle og Combat Shotgun, som kan købes lovligt med de rette licenser. Våbenmodifikationer er også blevet opdateret, så du kan tilpasse dine våben endnu mere.\n\nServeroptimeringer omfatter forbedret performance i Downtown-området, reduceret ressourceforbrug, og forbedrede NPC-rutiner der giver en mere realistisk oplevelse.\n\nHusk at melde eventuelle bugs i vores Discord under #bug-rapport kanalen.',
-				createdAt: parseISO('2025-03-25'),
-				type: 'news',
-				newsType: 'update',
-				isPinned: true,
-				createdBy: 'Admin Team',
-				lastUpdated: parseISO('2025-03-25'),
-			},
-			{
-				id: '2',
-				title: 'Velkommen til v3.0',
-				description: 'Vi har lanceret version 3.0 af OdessaRP med en helt ny map og mange nye features!',
-				content: 'Vi er stolte af at præsentere version 3.0 af OdessaRP! Efter måneders hårdt arbejde kan vi endelig lancere denne store opdatering.\n\nHvad er nyt i version 3.0?\n\n- Helt ny map med unikke lokationer\n- Omdesignet politi- og hospitalssystem\n- Nye jobs og muligheder\n- Forbedret økonomi og handelssystem\n- Optimeret serverperformance\n- Opgraderet våben- og køretøjssystem\n\nVi håber I vil nyde de mange nye features og forbedringer. Husk at rapportere eventuelle bugs på vores Discord server.',
-				createdAt: parseISO('2025-03-10'),
-				type: 'news',
-				newsType: 'changelog',
-				isPinned: false,
-				createdBy: 'Admin Team',
-				lastUpdated: parseISO('2025-03-10'),
-			},
-			{
-				id: '3',
-				title: 'New Police Chief Appointed',
-				description: 'Congratulations to Officer Johnson on being appointed as the new Police Chief!',
-				content: 'Det er med stor glæde at OdessaRP kan annoncere udnævnelsen af Sarah Johnson som vores nye politichef!\n\nEfter flere års dedikeret tjeneste på serveren, har Sarah bevist sit værd gennem eksemplarisk lederskab, retfærdig håndhævelse af loven, og en stærk forpligtelse til samfundet.\n\nUnder hendes ledelse planlægger politistyrken at implementere flere community-orienterede initiativer, herunder regelmæssige "Mød din betjent"-begivenheder, udvidede patruljeringer i højrisikoområder, og nye rekrutteringsprogrammer.\n\nVi ønsker Sarah tillykke med denne velfortjente udnævnelse, og ser frem til at opleve hendes vision for byens sikkerhed og retfærdighed udfolde sig.',
-				createdAt: parseISO('2025-03-22'),
-				type: 'news',
-				newsType: 'announcement',
-				isPinned: true,
-				createdBy: 'Byrådet',
-				lastUpdated: parseISO('2025-03-22'),
-			},
-			{
-				id: '4',
-				title: 'Bilshow i Vinewood',
-				description: 'Det årlige vinewood bilshow hvor du kan vise dine bedste biler frem.',
-				content: 'Det årlige vinewood bilshow hvor du kan vise dine bedste biler frem, der er præmie for den bedste og mest stilfulde bil. Mød op i din mest imponerende bil og deltag i konkurrencen. Vi har inviteret en række lokale virksomheder som sponsorer, og der vil være forfriskninger og mad til alle deltagere.',
-				createdAt: parseISO('2025-03-20'),
-				type: 'event',
-				eventType: 'official',
-				eventDate: parseISO('2025-03-29T18:00:00'),
-				isPinned: true,
-				location: 'Vinewood Bowl',
-				address: 'Vinewood Hills, Los Santos',
-				createdBy: 'Event Team',
-			},
-			{
-				id: '5',
-				title: 'Politiåben-hus dag',
-				description: 'Kom og mød politistyrken og lær om deres arbejde.',
-				content: 'Kom og mød politistyrken og lær om deres arbejde. Der vil være fremvisning af udstyr, køretøjer og mulighed for at stille spørgsmål til betjentene. Arrangementet er for alle borgere i byen og er en del af politiets arbejde med at forbedre forholdet til lokalsamfundet.',
-				createdAt: parseISO('2025-03-15'),
-				type: 'event',
-				eventType: 'community',
-				eventDate: parseISO('2025-03-21T14:00:00'),
-				isPinned: false,
-				location: 'Politistationen',
-				address: 'Downtown, Los Santos',
-				createdBy: 'Politiet',
-			},
-			{
-				id: '6',
-				title: 'Paleto Bay Festival',
-				description: 'Årlig festival i Paleto Bay med musik, mad og underholdning.',
-				content: 'Årlig festival i Paleto Bay med musik, mad og underholdning. Der vil være livemusik fra lokale bands, madstande fra byens bedste restauranter, og forskellige aktiviteter for både børn og voksne. Festivalen varer hele dagen, så kom forbi når det passer dig!',
-				createdAt: parseISO('2025-03-18'),
-				type: 'event',
-				eventType: 'special',
-				eventDate: parseISO('2025-04-05T10:00:00'),
-				isPinned: false,
-				location: 'Paleto Bay Town Square',
-				address: 'Paleto Bay, Blaine County',
-				createdBy: 'Event Team',
-			},
-		];
-
-		setItems(mockItems);
-		filterItems(mockItems);
+		fetchItems();
 	}, []);
 
 	useEffect(() => {
 		filterItems(items);
 	}, [selectedDate, activeTab, showPinnedOnly]);
+
+	const fetchItems = async () => {
+		setIsLoading(true);
+		try {
+			const allItems = await NewsEventsService.getAllContent();
+			setItems(allItems);
+			filterItems(allItems);
+		} catch (error) {
+			console.error('Error fetching content:', error);
+			notifications.show({
+				title: 'Error fetching content',
+				message: 'There was an error loading the content. Please try again later.',
+				color: 'red',
+			});
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
 	const filterItems = (itemsList: ContentItem[] = items) => {
 		let filtered = [...itemsList];
@@ -158,21 +70,27 @@ export default function NewsAndEventsPage() {
 		}
 
 		if (showPinnedOnly) {
-			filtered = filtered.filter((item) => item.isPinned);
+			filtered = filtered.filter((item) => item.is_pinned);
 		}
 
 		if (activeTab === 'events' && selectedDate && viewMode === 'calendar') {
 			filtered = filtered.filter((item) => {
-				if (item.type === 'event') {
-					return isSameDay(item.eventDate, selectedDate);
+				if (item.type === 'event' && item.event_date) {
+					const eventDate = typeof item.event_date === 'string' ? new Date(item.event_date) : item.event_date;
+					return eventDate && isSameDay(eventDate, selectedDate);
 				}
 				return false;
 			});
 		}
 
 		filtered = filtered.sort((a, b) => {
-			const dateA = a.type === 'event' ? a.eventDate : a.createdAt;
-			const dateB = b.type === 'event' ? b.eventDate : b.createdAt;
+			const dateA = a.type === 'event' && a.event_date ? (typeof a.event_date === 'string' ? new Date(a.event_date) : a.event_date) : new Date(a.created_at);
+			const dateB = b.type === 'event' && b.event_date ? (typeof b.event_date === 'string' ? new Date(b.event_date) : b.event_date) : new Date(b.created_at);
+
+			// Handle null dates
+			if (!dateA) return 1;
+			if (!dateB) return -1;
+
 			return dateB.getTime() - dateA.getTime();
 		});
 
@@ -183,82 +101,111 @@ export default function NewsAndEventsPage() {
 		setSelectedDate(date);
 	};
 
-	const handleCreateItem = () => {
+	const handleCreateItem = async () => {
 		if (!newItem.title || !newItem.description) {
 			notifications.show({
-				title: 'Manglende information',
-				message: 'Venligst udfyld alle felter',
+				title: 'Missing information',
+				message: 'Please fill in all required fields',
 				color: 'red',
 			});
 			return;
 		}
 
-		const currentDate = new Date();
+		try {
+			const contentItem: Omit<ContentItem, 'id' | 'created_at'> = {
+				title: newItem.title || '',
+				description: newItem.description || '',
+				content: newItem.content || newItem.description || '',
+				type: newItem.type || 'news',
+				category: newItem.type === 'news' ? 'announcement' : 'event',
+				created_by: user?.username || 'Unknown',
+				is_pinned: newItem.is_pinned || false,
+			};
 
-		const item: ContentItem =
-			newItem.type === 'event'
-				? {
-						id: Date.now().toString(),
-						title: newItem.title || '',
-						description: newItem.description || '',
-						content: newItem.content || newItem.description || '',
-						createdAt: currentDate,
-						isPinned: newItem.isPinned || false,
-						type: 'event',
-						eventType: (newItem.eventType as 'community' | 'official' | 'special') || 'community',
-						eventDate: (newItem as any).eventDate || currentDate,
-						location: (newItem as any).location,
-						address: (newItem as any).address,
-						createdBy: user?.username || 'Unknown',
-				  }
-				: {
-						id: Date.now().toString(),
-						title: newItem.title || '',
-						description: newItem.description || '',
-						content: newItem.content || newItem.description || '',
-						createdAt: currentDate,
-						isPinned: newItem.isPinned || false,
-						type: 'news',
-						newsType: newItem.type === 'news' ? (newItem.newsType as 'update' | 'announcement' | 'changelog') || 'announcement' : 'announcement',
-						createdBy: user?.username || 'Unknown',
-				  };
+			if (newItem.type === 'news' && newItem.news_type) {
+				contentItem.news_type = newItem.news_type;
+			}
 
-		const updatedItems = [...items, item];
-		setItems(updatedItems);
-		filterItems(updatedItems);
+			if (newItem.type === 'event') {
+				if (!newItem.event_date) {
+					notifications.show({
+						title: 'Missing information',
+						message: 'Please select an event date',
+						color: 'red',
+					});
+					return;
+				}
 
-		setNewItem({
-			title: '',
-			description: '',
-			content: '',
-			type: 'news',
-			newsType: 'announcement',
-			isPinned: false,
-		});
+				contentItem.event_type = newItem.event_type as 'community' | 'official' | 'special';
+				contentItem.event_date = newItem.event_date instanceof Date ? newItem.event_date.toISOString() : typeof newItem.event_date === 'string' ? newItem.event_date : null; // Handle the null case
 
-		close();
+				contentItem.location = newItem.location;
+				contentItem.address = newItem.address;
+			}
 
-		notifications.show({
-			title: newItem.type === 'event' ? 'Begivenhed oprettet' : 'Nyhed oprettet',
-			message: `Dit indhold er blevet tilføjet til ${newItem.type === 'event' ? 'kalenderen' : 'nyheder'}`,
-			color: 'green',
-		});
+			const contentId = await NewsEventsService.createContent(contentItem);
+
+			if (contentId) {
+				notifications.show({
+					title: `${newItem.type === 'event' ? 'Event' : 'News'} created`,
+					message: `Your content has been added to ${newItem.type === 'event' ? 'the calendar' : 'news'}`,
+					color: 'green',
+				});
+
+				fetchItems();
+
+				setNewItem({
+					title: '',
+					description: '',
+					content: '',
+					type: 'news',
+					news_type: 'announcement',
+					is_pinned: false,
+				});
+
+				close();
+			} else {
+				throw new Error('Failed to create content');
+			}
+		} catch (error) {
+			console.error('Error creating content:', error);
+			notifications.show({
+				title: 'Error',
+				message: 'There was an error creating the content. Please try again.',
+				color: 'red',
+			});
+		}
 	};
 
-	const handleDeleteItem = (id: string) => {
-		const updatedItems = items.filter((item) => item.id !== id);
-		setItems(updatedItems);
-		filterItems(updatedItems);
+	const handleDeleteItem = async (id: string) => {
+		try {
+			const success = await NewsEventsService.deleteContent(id);
 
-		if (selectedItem?.id === id) {
-			closeItemModal();
+			if (success) {
+				const updatedItems = items.filter((item) => item.id !== id);
+				setItems(updatedItems);
+				filterItems(updatedItems);
+
+				if (selectedItem?.id === id) {
+					closeItemModal();
+				}
+
+				notifications.show({
+					title: 'Item deleted',
+					message: 'The content has been removed',
+					color: 'red',
+				});
+			} else {
+				throw new Error('Failed to delete content');
+			}
+		} catch (error) {
+			console.error('Error deleting content:', error);
+			notifications.show({
+				title: 'Error',
+				message: 'There was an error deleting the content. Please try again.',
+				color: 'red',
+			});
 		}
-
-		notifications.show({
-			title: 'Element slettet',
-			message: 'Indholdet er blevet fjernet',
-			color: 'red',
-		});
 	};
 
 	const handleOpenItemModal = (item: ContentItem) => {
@@ -266,50 +213,71 @@ export default function NewsAndEventsPage() {
 		openItemModal();
 	};
 
-	const togglePinItem = (id: string) => {
-		const updatedItems = items.map((item) => (item.id === id ? { ...item, isPinned: !item.isPinned } : item));
-		setItems(updatedItems);
-		filterItems(updatedItems);
+	const togglePinItem = async (id: string) => {
+		try {
+			const item = items.find((i) => i.id === id);
+			if (!item) return;
 
-		if (selectedItem?.id === id) {
-			setSelectedItem({ ...selectedItem, isPinned: !selectedItem.isPinned });
+			const success = await NewsEventsService.updateContent(id, {
+				is_pinned: !item.is_pinned,
+				updated_by: user?.username || 'Unknown',
+			});
+
+			if (success) {
+				const updatedItems = items.map((item) => (item.id === id ? { ...item, is_pinned: !item.is_pinned } : item));
+				setItems(updatedItems);
+				filterItems(updatedItems);
+
+				if (selectedItem?.id === id) {
+					setSelectedItem({ ...selectedItem, is_pinned: !selectedItem.is_pinned });
+				}
+
+				notifications.show({
+					title: 'Status updated',
+					message: `The item is now ${updatedItems.find((i) => i.id === id)?.is_pinned ? 'pinned' : 'unpinned'}`,
+					color: 'blue',
+				});
+			} else {
+				throw new Error('Failed to update content');
+			}
+		} catch (error) {
+			console.error('Error updating content:', error);
+			notifications.show({
+				title: 'Error',
+				message: 'There was an error updating the content. Please try again.',
+				color: 'red',
+			});
 		}
-
-		notifications.show({
-			title: 'Status opdateret',
-			message: `Elementet er nu ${updatedItems.find((i) => i.id === id)?.isPinned ? 'fastgjort' : 'løsnet'}`,
-			color: 'blue',
-		});
 	};
 
 	const getTypeDetails = (item: ContentItem) => {
 		if (item.type === 'news') {
-			switch (item.newsType) {
+			switch (item.news_type) {
 				case 'update':
-					return { color: 'blue', label: 'Opdatering', icon: <Bell size={16} weight='fill' /> };
+					return { color: 'blue', label: 'Update', icon: <Bell size={16} weight='fill' /> };
 				case 'announcement':
-					return { color: 'orange', label: 'Meddelelse', icon: <Megaphone size={16} weight='fill' /> };
+					return { color: 'orange', label: 'Announcement', icon: <Megaphone size={16} weight='fill' /> };
 				case 'changelog':
 					return { color: 'green', label: 'Changelog', icon: <FileText size={16} weight='fill' /> };
 				default:
-					return { color: 'gray', label: 'Nyhed', icon: <Bell size={16} weight='fill' /> };
+					return { color: 'gray', label: 'News', icon: <Bell size={16} weight='fill' /> };
 			}
 		} else {
-			switch (item.eventType) {
+			switch (item.event_type) {
 				case 'official':
-					return { color: 'blue', label: 'Officiel', icon: <ShieldCheck size={16} weight='fill' /> };
+					return { color: 'blue', label: 'Official', icon: <CalendarCheck size={16} weight='fill' /> };
 				case 'community':
-					return { color: 'green', label: 'Fællesskab', icon: <CalendarCheck size={16} weight='fill' /> };
+					return { color: 'green', label: 'Community', icon: <CalendarCheck size={16} weight='fill' /> };
 				case 'special':
 					return { color: 'purple', label: 'Special', icon: <Star size={16} weight='fill' /> };
 				default:
-					return { color: 'gray', label: 'Begivenhed', icon: <CalendarIcon size={16} weight='fill' /> };
+					return { color: 'gray', label: 'Event', icon: <CalendarIcon size={16} weight='fill' /> };
 			}
 		}
 	};
 
 	const renderDayContent = (date: Date) => {
-		const dayEvents = items.filter((item) => item.type === 'event' && isSameDay((item as EventItem).eventDate, date));
+		const dayEvents = items.filter((item) => item.type === 'event' && item.event_date && isSameDay(new Date(item.event_date), date));
 
 		if (dayEvents.length === 0) {
 			return null;
@@ -317,7 +285,7 @@ export default function NewsAndEventsPage() {
 
 		const colors = dayEvents.map((item) => {
 			if (item.type === 'event') {
-				switch (item.eventType) {
+				switch (item.event_type) {
 					case 'official':
 						return 'blue';
 					case 'community':
@@ -341,10 +309,10 @@ export default function NewsAndEventsPage() {
 	};
 
 	const pinnedItems = items
-		.filter((item) => item.isPinned)
+		.filter((item) => item.is_pinned)
 		.sort((a, b) => {
-			const dateA = a.type === 'event' ? a.eventDate : a.createdAt;
-			const dateB = b.type === 'event' ? b.eventDate : b.createdAt;
+			const dateA = a.type === 'event' && a.event_date ? new Date(a.event_date) : new Date(a.created_at);
+			const dateB = b.type === 'event' && b.event_date ? new Date(b.event_date) : new Date(b.created_at);
 			return dateA.getTime() - dateB.getTime();
 		})
 		.slice(0, 4);
@@ -434,7 +402,7 @@ export default function NewsAndEventsPage() {
 
 											{item.type === 'event' && (
 												<Text size='sm' c='dimmed' mb='xs'>
-													{format(item.eventDate, 'd. MMMM yyyy, HH:mm', { locale: da })}
+													{item.event_date ? format(new Date(item.event_date || new Date()), 'd. MMMM yyyy, HH:mm', { locale: da }) : 'Dato ikke tilgængelig'}
 												</Text>
 											)}
 
@@ -504,7 +472,7 @@ export default function NewsAndEventsPage() {
 															{isAuthorized && (
 																<>
 																	<Menu.Item onClick={() => togglePinItem(item.id)} leftSection={<PushPin size={14} />}>
-																		{item.isPinned ? 'Fjern fastgørelse' : 'Fastgør'}
+																		{item.is_pinned ? 'Fjern fastgørelse' : 'Fastgør'}
 																	</Menu.Item>
 																	<Menu.Item color='red' leftSection={<Trash size={14} />} onClick={() => handleDeleteItem(item.id)}>
 																		Slet
@@ -517,7 +485,7 @@ export default function NewsAndEventsPage() {
 												{item.type === 'event' && (
 													<Group>
 														<Text c='dimmed' size='sm'>
-															{format(item.eventDate, 'HH:mm')}
+															{item.event_date ? format(new Date(item.event_date || new Date()), 'HH:mm') : ''}
 														</Text>
 														{item.location && (
 															<Text c='dimmed' size='sm'>
@@ -557,7 +525,7 @@ export default function NewsAndEventsPage() {
 															<Badge color={getTypeDetails(item).color} leftSection={getTypeDetails(item).icon}>
 																{getTypeDetails(item).label}
 															</Badge>
-															{item.isPinned && (
+															{item.is_pinned && (
 																<ActionIcon color='blue' variant='subtle'>
 																	<PushPin size={16} weight='fill' />
 																</ActionIcon>
@@ -571,14 +539,14 @@ export default function NewsAndEventsPage() {
 
 													{item.type === 'event' && (
 														<Text size='sm' c='dimmed' mb='xs'>
-															{format(item.eventDate, 'd. MMMM yyyy, HH:mm', { locale: da })}
+															{item.event_date ? format(new Date(item.event_date), 'd. MMMM yyyy, HH:mm', { locale: da }) : 'Dato ikke tilgængelig'}
 														</Text>
 													)}
 
 													{item.type === 'news' && (
 														<Text size='sm' c='dimmed' mb='xs'>
-															{format(item.createdAt, 'd. MMMM yyyy', { locale: da })}
-															{item.lastUpdated && item.lastUpdated > item.createdAt && <> (opdateret {format(item.lastUpdated, 'd. MMMM', { locale: da })})</>}
+															{format(item.created_at, 'd. MMMM yyyy', { locale: da })}
+															{item.last_updated && item.last_updated > item.created_at && <> (opdateret {format(item.last_updated, 'd. MMMM', { locale: da })})</>}
 														</Text>
 													)}
 
@@ -599,7 +567,7 @@ export default function NewsAndEventsPage() {
 																</Menu.Target>
 																<Menu.Dropdown>
 																	<Menu.Item onClick={() => togglePinItem(item.id)} leftSection={<PushPin size={14} />}>
-																		{item.isPinned ? 'Fjern fastgørelse' : 'Fastgør'}
+																		{item.is_pinned ? 'Fjern fastgørelse' : 'Fastgør'}
 																	</Menu.Item>
 																	<Menu.Item leftSection={<Pencil size={14} />}>Rediger</Menu.Item>
 																	<Menu.Item color='red' leftSection={<Trash size={14} />} onClick={() => handleDeleteItem(item.id)}>
@@ -624,9 +592,9 @@ export default function NewsAndEventsPage() {
 								<Box>
 									{filteredItems.length > 0 ? (
 										filteredItems.map((item, index, arr) => {
-											const currentMonth = item.type === 'event' ? format(item.eventDate, 'MMMM yyyy', { locale: da }) : format(item.createdAt, 'MMMM yyyy', { locale: da });
+											const currentMonth = item.type === 'event' ? format(new Date(item.event_date ?? ''), 'MMMM yyyy', { locale: da }) : format(new Date(item.created_at ?? ''), 'MMMM yyyy', { locale: da });
 
-											const previousMonth = index > 0 ? (arr[index - 1].type === 'event' ? format((arr[index - 1] as EventItem).eventDate, 'MMMM yyyy', { locale: da }) : format(arr[index - 1].createdAt, 'MMMM yyyy', { locale: da })) : '';
+											const previousMonth = index > 0 ? (arr[index - 1].type === 'event' ? format(new Date(arr[index - 1].event_date ?? ''), 'MMMM yyyy', { locale: da }) : format(new Date(arr[index - 1].created_at ?? ''), 'MMMM yyyy', { locale: da })) : '';
 
 											const showMonthDivider = index === 0 || currentMonth !== previousMonth;
 
@@ -655,14 +623,14 @@ export default function NewsAndEventsPage() {
 																	{getTypeDetails(item).label}
 																</Badge>
 																<Text fw={700}>{item.title}</Text>
-																{item.isPinned && (
+																{item.is_pinned && (
 																	<ActionIcon color='blue' variant='subtle' onClick={() => togglePinItem(item.id)}>
 																		<PushPin size={16} weight='fill' />
 																	</ActionIcon>
 																)}
 															</Group>
 															<Group>
-																{item.type === 'event' ? <Badge variant='outline'>{format((item as EventItem).eventDate, 'd. MMM, HH:mm', { locale: da })}</Badge> : <Badge variant='outline'>{format(item.createdAt, 'd. MMM', { locale: da })}</Badge>}
+																{item.type === 'event' && item.event_date ? <Badge variant='outline'>{format(typeof item.event_date === 'string' ? new Date(item.event_date) : item.event_date, 'd. MMM, HH:mm', { locale: da })}</Badge> : <Badge variant='outline'>{format(new Date(item.created_at), 'd. MMM', { locale: da })}</Badge>}
 																<Menu shadow='md' width={200} position='bottom-end'>
 																	<Menu.Target>
 																		<ActionIcon>
@@ -676,7 +644,7 @@ export default function NewsAndEventsPage() {
 																		{isAuthorized && (
 																			<>
 																				<Menu.Item onClick={() => togglePinItem(item.id)} leftSection={<PushPin size={14} />}>
-																					{item.isPinned ? 'Fjern fastgørelse' : 'Fastgør'}
+																					{item.is_pinned ? 'Fjern fastgørelse' : 'Fastgør'}
 																				</Menu.Item>
 																				<Menu.Item leftSection={<Pencil size={14} />}>Rediger</Menu.Item>
 																				<Menu.Item color='red' leftSection={<Trash size={14} />} onClick={() => handleDeleteItem(item.id)}>
@@ -694,9 +662,9 @@ export default function NewsAndEventsPage() {
 																	Lokation: {item.location}
 																</Text>
 															)}
-															{item.createdBy && (
+															{item.created_by && (
 																<Text c='dimmed' size='sm'>
-																	Oprettet af: {item.createdBy}
+																	Oprettet af: {item.created_by}
 																</Text>
 															)}
 														</Group>
@@ -745,8 +713,8 @@ export default function NewsAndEventsPage() {
 									Nyhedstype
 								</Text>
 								<SegmentedControl
-									value={newItem.type === 'news' ? newItem.newsType || 'announcement' : 'announcement'}
-									onChange={(value) => setNewItem({ ...newItem, newsType: value as any })}
+									value={newItem.type === 'news' ? newItem.news_type || 'announcement' : 'announcement'}
+									onChange={(value) => setNewItem({ ...newItem, news_type: value as any })}
 									data={[
 										{ label: 'Meddelelse', value: 'announcement' },
 										{ label: 'Opdatering', value: 'update' },
@@ -759,7 +727,7 @@ export default function NewsAndEventsPage() {
 
 						{createType === 'event' && (
 							<>
-								<DatePickerInput label='Dato og tidspunkt' placeholder='Vælg dato og tidspunkt' valueFormat='DD MMM YYYY HH:mm' mb='md' required value={(newItem as any).eventDate || new Date()} onChange={(date) => setNewItem({ ...newItem, eventDate: date || new Date() })} locale='da' clearable={false} />
+								<DatePickerInput label='Dato og tidspunkt' placeholder='Vælg dato og tidspunkt' valueFormat='DD MMM YYYY HH:mm' mb='md' required value={(newItem as any).event_date instanceof Date ? (newItem as any).event_date : (newItem as any).event_date ? new Date((newItem as any).event_date) : new Date()} onChange={(date) => setNewItem({ ...newItem, event_date: date })} locale='da' clearable={false} />
 
 								<Box mb='md'>
 									<Text fw={500} size='sm' mb='xs'>
@@ -767,7 +735,7 @@ export default function NewsAndEventsPage() {
 									</Text>
 									<SegmentedControl
 										value={(newItem as any).eventType || 'community'}
-										onChange={(value) => setNewItem({ ...newItem, eventType: value as any })}
+										onChange={(value) => setNewItem({ ...newItem, event_type: value as any })}
 										data={[
 											{ label: 'Fællesskab', value: 'community' },
 											{ label: 'Officiel', value: 'official' },
@@ -785,7 +753,7 @@ export default function NewsAndEventsPage() {
 
 						<Textarea label='Indhold' placeholder='Detaljeret beskrivelse af indholdet' minRows={6} mb='md' value={newItem.content || ''} onChange={(e) => setNewItem({ ...newItem, content: e.target.value })} />
 
-						<Checkbox label='Fastgør dette indhold (vises i toppen og på forsiden)' checked={newItem.isPinned} onChange={(e) => setNewItem({ ...newItem, isPinned: e.currentTarget.checked })} mb='lg' />
+						<Checkbox label='Fastgør dette indhold (vises i toppen og på forsiden)' checked={newItem.is_pinned} onChange={(e) => setNewItem({ ...newItem, is_pinned: e.currentTarget.checked })} mb='lg' />
 
 						<Group justify='flex-end'>
 							<Button variant='outline' onClick={close}>
@@ -808,7 +776,7 @@ export default function NewsAndEventsPage() {
 										{selectedItem ? getTypeDetails(selectedItem).label : ''}
 									</Badge>
 									<Text fw={700}>{selectedItem?.title}</Text>
-									{selectedItem.isPinned && (
+									{selectedItem.is_pinned && (
 										<ActionIcon color='blue' variant='subtle'>
 											<PushPin size={16} weight='fill' />
 										</ActionIcon>
@@ -825,15 +793,15 @@ export default function NewsAndEventsPage() {
 							{selectedItem.type === 'event' ? (
 								<Group mb='md'>
 									<CalendarCheck size={18} />
-									<Text fw={500}>{format(selectedItem.eventDate, 'd. MMMM yyyy', { locale: da })}</Text>
-									<Text>kl. {format(selectedItem.eventDate, 'HH:mm')}</Text>
+									<Text fw={500}>{selectedItem.event_date ? format(new Date(selectedItem.event_date), 'd. MMMM yyyy', { locale: da }) : 'Dato ikke tilgængelig'}</Text>
+									<Text>kl. {selectedItem.event_date ? format(new Date(selectedItem.event_date), 'HH:mm') : 'N/A'}</Text>
 								</Group>
 							) : (
 								<Group mb='md'>
 									<CalendarIcon size={18} />
 									<Text>
-										{format(selectedItem.createdAt, 'd. MMMM yyyy', { locale: da })}
-										{selectedItem.lastUpdated && selectedItem.lastUpdated > selectedItem.createdAt && <> (opdateret {format(selectedItem.lastUpdated, 'd. MMMM yyyy', { locale: da })})</>}
+										{format(selectedItem.created_at, 'd. MMMM yyyy', { locale: da })}
+										{selectedItem.last_updated && selectedItem.last_updated > selectedItem.created_at && <> (opdateret {format(selectedItem.last_updated, 'd. MMMM yyyy', { locale: da })})</>}
 									</Text>
 								</Group>
 							)}
@@ -848,9 +816,9 @@ export default function NewsAndEventsPage() {
 								</Group>
 							)}
 
-							{selectedItem.createdBy && (
+							{selectedItem.created_by && (
 								<Text size='sm' c='dimmed' mb='md'>
-									Oprettet af: {selectedItem.createdBy}
+									Oprettet af: {selectedItem.created_by}
 								</Text>
 							)}
 
@@ -863,7 +831,7 @@ export default function NewsAndEventsPage() {
 									{isAuthorized && (
 										<>
 											<Button variant='subtle' leftSection={<PushPin size={16} />} onClick={() => togglePinItem(selectedItem.id)}>
-												{selectedItem.isPinned ? 'Fjern fastgørelse' : 'Fastgør'}
+												{selectedItem.is_pinned ? 'Fjern fastgørelse' : 'Fastgør'}
 											</Button>
 											<Button variant='subtle' leftSection={<Pencil size={16} />}>
 												Rediger

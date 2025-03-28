@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
-import { DiscordUser, hasPermission, getUserPermissionLevel, PermissionLevel } from '../lib/discord';
+import { DiscordUser, getUserPermissionLevel, PermissionLevel } from '../lib/discord';
 
 interface AuthContextType {
 	user: DiscordUser | null;
@@ -10,7 +10,7 @@ interface AuthContextType {
 	permissionLevel: PermissionLevel;
 	signInWithDiscord: () => Promise<void>;
 	signOut: () => Promise<void>;
-	hasPermission: (requiredLevel: PermissionLevel) => boolean;
+	hasPermission: (requiredLevel: PermissionLevel) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -21,7 +21,7 @@ const AuthContext = createContext<AuthContextType>({
 	permissionLevel: 'none',
 	signInWithDiscord: async () => {},
 	signOut: async () => {},
-	hasPermission: () => false,
+	hasPermission: async () => Promise.resolve(false),
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -81,10 +81,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		if (error) throw error;
 	};
 
-	const checkPermission = (requiredLevel: PermissionLevel): boolean => {
-		return hasPermission(user, requiredLevel);
-	};
+	const checkPermission = async (requiredLevel: PermissionLevel): Promise<boolean> => {
+		if (!user) return false;
 
+		const discordId = user.provider_id || user.sub || (user.user_metadata && (user.user_metadata.provider_id || user.user_metadata.sub));
+
+		if (!discordId) return false;
+
+		const { data, error } = await supabase.from('user_permissions').select('permission_level').eq('user_id', discordId).single();
+
+		if (error || !data) return false;
+
+		const permissionLevels = {
+			admin: 100,
+			staff: 75,
+			content: 50,
+			viewer: 25,
+			none: 0,
+		};
+
+		const userLevel = data.permission_level as keyof typeof permissionLevels;
+		const requiredPriority = permissionLevels[requiredLevel] || 0;
+		const userPriority = permissionLevels[userLevel] || 0;
+
+		return userPriority >= requiredPriority;
+	};
 	return (
 		<AuthContext.Provider
 			value={{
