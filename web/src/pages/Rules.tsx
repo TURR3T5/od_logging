@@ -134,17 +134,14 @@ export default function RulesPage() {
 					setActiveRoleplayRule(ruleId);
 				}
 
-				// Set a small timeout to ensure state updates have propagated
 				setTimeout(() => {
 					const element = document.getElementById(`rule-${ruleId}`);
 					if (element) {
-						// Manually scroll to the element with smooth behavior
 						element.scrollIntoView({
 							behavior: 'smooth',
 							block: 'center',
 						});
 
-						// Add a highlighting animation to the rule
 						element.classList.add('highlight-rule');
 						setTimeout(() => {
 							element.classList.remove('highlight-rule');

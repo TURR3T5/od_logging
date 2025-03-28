@@ -58,8 +58,6 @@ export default function PlayerStatisticsPage() {
 	const fetchStats = async () => {
 		setLoading(true);
 		try {
-			// In a real implementation, this would be an API call to fetch actual stats
-			// For demonstration, we'll simulate the data
 			setTimeout(() => {
 				setServerStats({
 					totalPlayers: 2453,
@@ -90,8 +88,6 @@ export default function PlayerStatisticsPage() {
 	};
 
 	const fetchActivityData = (range: '24h' | '7d' | '30d') => {
-		// This would be an API call in a real implementation
-		// Simulating data for demo
 		const days = range === '24h' ? 1 : range === '7d' ? 7 : 30;
 		const data: ActivityData[] = [];
 
@@ -99,21 +95,18 @@ export default function PlayerStatisticsPage() {
 			const date = subDays(new Date(), i);
 			const dateStr = format(date, 'yyyy-MM-dd');
 
-			// Login activity
 			data.push({
 				date: dateStr,
 				value: Math.floor(Math.random() * 120) + 50,
 				category: 'Logins',
 			});
 
-			// Crime activity
 			data.push({
 				date: dateStr,
 				value: Math.floor(Math.random() * 40) + 10,
 				category: 'Crimes',
 			});
 
-			// Economy activity
 			data.push({
 				date: dateStr,
 				value: Math.floor(Math.random() * 200) + 100,

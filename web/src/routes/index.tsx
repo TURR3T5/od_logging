@@ -9,6 +9,7 @@ import NewsAndEventsPage from '../pages/NewsAndEventsPage';
 import WhitelistApplicationPage from '../pages/WhitelistPortal';
 import PlayerStatisticsPage from '../pages/PlayerStatisticsPage';
 import ProfilePage from '../pages/ProfilePage';
+import RoleManagementPage from '../pages/RoleManagement';
 
 const rootRoute = createRootRoute({
 	component: App,
@@ -68,7 +69,13 @@ const profileRoute = createRoute({
 	component: ProfilePage,
 });
 
-const routeTree = rootRoute.addChildren([homeRoute, loginRoute, authCallbackRoute, logsRoute, rulesRoute, eventsCalendarRoute, whitelistApplicationRoute, playerStatsRoute, profileRoute]);
+const roleManagementRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: '/admin/roles',
+	component: RoleManagementPage,
+});
+
+const routeTree = rootRoute.addChildren([homeRoute, loginRoute, authCallbackRoute, logsRoute, rulesRoute, eventsCalendarRoute, whitelistApplicationRoute, playerStatsRoute, profileRoute, roleManagementRoute]);
 
 export const router = createRouter({ routeTree });
 

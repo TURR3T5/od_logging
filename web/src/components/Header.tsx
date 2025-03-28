@@ -1,11 +1,13 @@
-import { Group, Text, Button, Box, Container, Menu } from '@mantine/core';
+import { Group, Text, Button, Box, Container, Menu, Badge } from '@mantine/core';
 import { useAuth } from '../components/AuthProvider';
 import { useNavigate } from '@tanstack/react-router';
-import { SignOut, House, ListBullets, Book, Calendar, User, CaretDown, ChartBar } from '@phosphor-icons/react';
+import { SignOut, House, ListBullets, Book, Calendar, User, CaretDown, ChartBar, ShieldStar } from '@phosphor-icons/react';
 
 export default function Header() {
-	const { isAuthorized, isLoading, user, signInWithDiscord, signOut } = useAuth();
+	const { isAuthorized, isLoading, user, signInWithDiscord, signOut, permissionLevel } = useAuth();
 	const navigate = useNavigate();
+
+	const isAdmin = permissionLevel === 'admin';
 
 	const menuItems = [
 		{ label: 'Home', icon: House, onClick: () => navigate({ to: '/' }) },
@@ -15,6 +17,15 @@ export default function Header() {
 		{ label: 'Ansøgninger', icon: User, onClick: () => navigate({ to: '/whitelist' }) },
 		{ label: 'Server Logs', icon: ListBullets, onClick: () => navigate({ to: '/logs' }), requireAuth: true },
 	];
+
+	if (isAdmin) {
+		menuItems.push({
+			label: 'Role Management',
+			icon: ShieldStar,
+			onClick: () => navigate({ to: '/admin/roles' }),
+			requireAuth: true,
+		});
+	}
 
 	const filteredMenuItems = menuItems.filter((item) => !item.requireAuth || (item.requireAuth && isAuthorized));
 
@@ -110,6 +121,13 @@ export default function Header() {
 						) : isAuthorized ? (
 							<Group>
 								<Text c='gray.0'>{user?.username && `Welcome, ${user.username}`}</Text>
+
+								{isAdmin && (
+									<Badge color='red' variant='filled' size='sm'>
+										Admin
+									</Badge>
+								)}
+
 								<Button variant='subtle' color='blue' onClick={() => navigate({ to: '/profile' })} leftSection={<User size={16} style={{ display: 'flex', alignItems: 'center' }} />}>
 									Profil
 								</Button>

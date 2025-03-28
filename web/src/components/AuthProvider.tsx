@@ -1,14 +1,16 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
-import { DiscordUser, hasPermission } from '../lib/discord';
+import { DiscordUser, hasPermission, getUserPermissionLevel, PermissionLevel } from '../lib/discord';
 
 interface AuthContextType {
 	user: DiscordUser | null;
 	session: any;
 	isLoading: boolean;
 	isAuthorized: boolean;
+	permissionLevel: PermissionLevel;
 	signInWithDiscord: () => Promise<void>;
 	signOut: () => Promise<void>;
+	hasPermission: (requiredLevel: PermissionLevel) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -16,8 +18,10 @@ const AuthContext = createContext<AuthContextType>({
 	session: null,
 	isLoading: true,
 	isAuthorized: false,
+	permissionLevel: 'none',
 	signInWithDiscord: async () => {},
 	signOut: async () => {},
+	hasPermission: () => false,
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -25,6 +29,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const [session, setSession] = useState<any>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isAuthorized, setIsAuthorized] = useState(false);
+	const [permissionLevel, setPermissionLevel] = useState<PermissionLevel>('none');
 
 	useEffect(() => {
 		supabase.auth.getSession().then(({ data: { session } }) => {
@@ -32,7 +37,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 			const discordUser = (session?.user?.user_metadata as DiscordUser) || null;
 			setUser(discordUser);
-			setIsAuthorized(hasPermission(discordUser));
+
+			const level = getUserPermissionLevel(discordUser);
+			setPermissionLevel(level);
+
+			setIsAuthorized(level !== 'none');
 			setIsLoading(false);
 		});
 
@@ -43,7 +52,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 			const discordUser = (session?.user?.user_metadata as DiscordUser) || null;
 			setUser(discordUser);
-			setIsAuthorized(hasPermission(discordUser));
+
+			const level = getUserPermissionLevel(discordUser);
+			setPermissionLevel(level);
+
+			setIsAuthorized(level !== 'none');
 			setIsLoading(false);
 		});
 
@@ -68,6 +81,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		if (error) throw error;
 	};
 
+	const checkPermission = (requiredLevel: PermissionLevel): boolean => {
+		return hasPermission(user, requiredLevel);
+	};
+
 	return (
 		<AuthContext.Provider
 			value={{
@@ -75,8 +92,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 				session,
 				isLoading,
 				isAuthorized,
+				permissionLevel,
 				signInWithDiscord,
 				signOut,
+				hasPermission: checkPermission,
 			}}
 		>
 			{children}

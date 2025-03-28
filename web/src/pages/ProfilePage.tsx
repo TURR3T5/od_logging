@@ -67,12 +67,6 @@ export default function ProfilePage() {
 		const fetchProfile = async () => {
 			setIsLoading(true);
 			try {
-				// In a real implementation, this would call your actual API
-				// const response = await fetch('/api/profile');
-				// const data = await response.json();
-				// setProfile(data);
-
-				// For demonstration, we'll simulate data
 				setTimeout(() => {
 					setProfile({
 						id: '123456789',
@@ -197,7 +191,6 @@ export default function ProfilePage() {
 	const handleSaveProfile = () => {
 		if (!profile) return;
 
-		// In a real implementation, you would call your API to update the profile
 		setProfile({
 			...profile,
 			username: editedUsername,
