@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react'
 import { Container, Title, Text, Box, Paper, Group, Badge, Divider, TextInput, List, Alert, Chip, Button, ActionIcon, Tabs, Loader, Center } from '@mantine/core';
 import { MagnifyingGlass, X, Info, Plus, FileArrowDown, Lightbulb } from '@phosphor-icons/react';
 import { notifications } from '@mantine/notifications';
-import { debounce, throttle } from 'lodash';
+import { useDebouncedValue, useThrottledState } from '@mantine/hooks';
 import MainLayout from '../layouts/MainLayout';
 import { useAuth } from '../components/AuthProvider';
 import RuleApiService, { Rule, RulesResponse } from '../lib/RuleApiService';
@@ -17,7 +17,8 @@ export default function RulesPage() {
 	const [activeCommunityRule, setActiveCommunityRule] = useState<string | null>(null);
 	const [activeRoleplayRule, setActiveRoleplayRule] = useState<string | null>(null);
 	const [activeTab, setActiveTab] = useState<string | null>('all');
-	const [searchQuery, setSearchQuery] = useState('');
+	const [searchInput, setSearchInput] = useState('');
+	const [searchQuery, setSearchQuery] = useThrottledState('', 300);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [editModalOpen, setEditModalOpen] = useState(false);
@@ -39,23 +40,15 @@ export default function RulesPage() {
 		roleplay: [],
 	});
 
-	const scrollYRef = useRef(0);
 	const rulesRef = useRef<HTMLDivElement>(null);
 	const { isAuthorized, user } = useAuth();
 	const displayCommunityRules = activeTab === 'all' || activeTab === 'community';
 	const displayRoleplayRules = activeTab === 'all' || activeTab === 'roleplay';
+	const [debouncedSearchValue] = useDebouncedValue(searchInput, 300);
 
 	useEffect(() => {
-		const handleScroll = throttle(() => {
-			scrollYRef.current = window.scrollY;
-		}, 100);
-
-		window.addEventListener('scroll', handleScroll, { passive: true });
-		return () => {
-			handleScroll.cancel();
-			window.removeEventListener('scroll', handleScroll);
-		};
-	}, []);
+		setSearchQuery(debouncedSearchValue);
+	}, [debouncedSearchValue, setSearchQuery]);
 
 	useEffect(() => {
 		fetchRules();
@@ -76,12 +69,6 @@ export default function RulesPage() {
 			roleplay: filterRulesByQuery(rules.roleplay, searchQuery),
 		});
 	}, [searchQuery, rules]);
-
-	const debouncedSearch = useRef(
-		debounce((value: string) => {
-			setSearchQuery(value);
-		}, 300)
-	).current;
 
 	const fetchRules = async () => {
 		setIsLoading(true);
@@ -135,29 +122,35 @@ export default function RulesPage() {
 
 	const scrollToRule = useCallback(
 		(ruleId: string) => {
-			const element = document.getElementById(`rule-${ruleId}`);
-			if (element) {
-				const allRules = [...rules.community, ...rules.roleplay];
-				const rule = allRules.find((r) => r.id === ruleId);
+			const allRules = [...rules.community, ...rules.roleplay];
+			const rule = allRules.find((r) => r.id === ruleId);
 
-				if (rule) {
-					setActiveTab(rule.category === 'community' ? 'community' : 'roleplay');
+			if (rule) {
+				setActiveTab(rule.category === 'community' ? 'community' : 'roleplay');
 
-					if (rule.category === 'community') {
-						setActiveCommunityRule(ruleId);
-					} else {
-						setActiveRoleplayRule(ruleId);
-					}
+				if (rule.category === 'community') {
+					setActiveCommunityRule(ruleId);
+				} else {
+					setActiveRoleplayRule(ruleId);
+				}
 
-					requestAnimationFrame(() => {
-						element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+				// Set a small timeout to ensure state updates have propagated
+				setTimeout(() => {
+					const element = document.getElementById(`rule-${ruleId}`);
+					if (element) {
+						// Manually scroll to the element with smooth behavior
+						element.scrollIntoView({
+							behavior: 'smooth',
+							block: 'center',
+						});
 
+						// Add a highlighting animation to the rule
 						element.classList.add('highlight-rule');
 						setTimeout(() => {
 							element.classList.remove('highlight-rule');
 						}, 2000);
-					});
-				}
+					}
+				}, 50);
 			}
 		},
 		[rules.community, rules.roleplay]
@@ -306,15 +299,14 @@ export default function RulesPage() {
 								<TextInput
 									leftSection={<MagnifyingGlass size={18} />}
 									placeholder='Søg efter regler...'
-									defaultValue={searchQuery}
-									onChange={(event) => debouncedSearch(event.currentTarget.value)}
+									value={searchInput}
+									onChange={(event) => setSearchInput(event.currentTarget.value)}
 									style={{ flexGrow: 1 }}
 									rightSection={
-										searchQuery ? (
+										searchInput ? (
 											<ActionIcon
 												onClick={() => {
-													setSearchQuery('');
-													debouncedSearch('');
+													setSearchInput('');
 												}}
 											>
 												<X size={16} />

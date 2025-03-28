@@ -1,5 +1,5 @@
 .highlight-rule {
-    animation: highlightAnimation 2s ease-in-out;
+  animation: highlightAnimation 2s ease-in-out;
 }
 
 @keyframes highlightAnimation {
@@ -9,7 +9,7 @@
 }
 
 .mantine-Accordion-item {
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .mantine-Accordion-control:hover {
@@ -30,6 +30,7 @@
   50% { opacity: 1; }
   100% { opacity: 0.8; }
 }
+
 .mantine-Accordion-content {
   white-space: pre-line;
   line-height: 1.6;
@@ -47,4 +48,94 @@
 
 .mantine-Accordion-content li {
   margin-bottom: 0.25rem;
+}
+
+/* Badge hover effect */
+.rule-badge {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rule-badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Rule item hover animation */
+.rule-item {
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.rule-item:hover {
+  transform: translateY(-2px);
+}
+
+/* Smooth collapse animation */
+.rule-content {
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+  overflow: hidden;
+}
+
+/* Custom scrollbar for rule content */
+.rule-content {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.5) transparent;
+}
+
+.rule-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.rule-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.rule-content::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 116, 139, 0.5);
+  border-radius: 6px;
+}
+
+/* Fade in animation for new rules */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.new-rule {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+/* Fancy background gradient animation */
+.fancy-bg {
+  background: linear-gradient(-45deg, #0f172a, #1e293b, #334155, #475569);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+}
+
+@keyframes gradientBG {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Search highlight animation */
+@keyframes searchHighlight {
+  0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+}
+
+.search-highlight {
+  animation: searchHighlight 2s ease-out;
 }
