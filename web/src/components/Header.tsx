@@ -11,7 +11,7 @@ export default function Header() {
 		{ label: 'Home', icon: House, onClick: () => navigate({ to: '/' }) },
 		{ label: 'Regler', icon: Book, onClick: () => navigate({ to: '/rules' }) },
 		{ label: 'Nyheder og Events', icon: Calendar, onClick: () => navigate({ to: '/events' }) },
-		{ label: 'Whitelist', icon: User, onClick: () => navigate({ to: '/whitelist' }) },
+		{ label: 'Ansøgninger', icon: User, onClick: () => navigate({ to: '/whitelist' }) },
 		{ label: 'Server Logs', icon: ListBullets, onClick: () => navigate({ to: '/logs' }), requireAuth: true },
 	];
 

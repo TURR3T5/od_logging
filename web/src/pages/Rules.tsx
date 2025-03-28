@@ -202,7 +202,7 @@ export default function RulesPage() {
 		return rules.pinned.length > 0 ? (
 			rules.pinned.map((rule) => (
 				<List.Item key={rule.id}>
-					<Group gap='xs' onClick={() => scrollToRule(rule.id)} style={{ cursor: 'pointer' }} >
+					<Group gap='xs' onClick={() => scrollToRule(rule.id)} style={{ cursor: 'pointer' }}>
 						<Badge size='sm' variant='light' color={rule.category === 'community' ? 'blue' : 'green'}>
 							{rule.badge}
 						</Badge>
@@ -410,7 +410,6 @@ export default function RulesPage() {
 										</Box>
 									</Box>
 								) : (
-									// Individual rule category display for when a specific tab is selected
 									<Box>
 										{displayCommunityRules && (
 											<Box mb='xl' ref={rulesRef}>
