@@ -13,22 +13,10 @@ interface PermissionRole {
 	isActive: boolean;
 }
 
-interface RolePermissionsData {
-	id: string;
-	admin_roles: string[];
-	staff_roles: string[];
-	content_roles: string[];
-	viewer_roles: string[];
-	created_at: string;
-	updated_at: string;
-	updated_by: string;
-}
-
 export default function RoleManagement() {
 	const { isAuthorized, hasPermission, user } = useAuth();
 	const [isLoading, setIsLoading] = useState(true);
 	const [roles, setRoles] = useState<PermissionRole[]>([]);
-	const [selectedRole, setSelectedRole] = useState<PermissionRole | null>(null);
 	const [roleModalOpen, setRoleModalOpen] = useState(false);
 	const [newRoleId, setNewRoleId] = useState('');
 	const [newRoleName, setNewRoleName] = useState('');
@@ -37,7 +25,16 @@ export default function RoleManagement() {
 	const [searchTerm, setSearchTerm] = useState('');
 
 	useEffect(() => {
-		if (isAuthorized && hasPermission('admin')) {
+		const checkPermission = async () => {
+			if (isAuthorized && (await hasPermission('admin'))) {
+				fetchRoles();
+			} else {
+				setIsLoading(false);
+			}
+		};
+		checkPermission();
+
+		if (!isAuthorized) {
 			fetchRoles();
 		} else {
 			setIsLoading(false);
@@ -188,10 +185,6 @@ export default function RoleManagement() {
 
 	const toggleRoleStatus = (id: string) => {
 		setRoles(roles.map((role) => (role.id === id ? { ...role, isActive: !role.isActive } : role)));
-	};
-
-	const changeRoleLevel = (id: string, newLevel: 'admin' | 'staff' | 'content' | 'viewer') => {
-		setRoles(roles.map((role) => (role.id === id ? { ...role, level: newLevel } : role)));
 	};
 
 	const filteredRoles = roles.filter((role) => role.name.toLowerCase().includes(searchTerm.toLowerCase()) || role.id.includes(searchTerm));

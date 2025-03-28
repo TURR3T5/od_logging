@@ -22,7 +22,7 @@ export default function NewsAndEventsPage() {
 	const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
 	const [showPinnedOnly, setShowPinnedOnly] = useState(false);
 	const [createType, setCreateType] = useState<'news' | 'event'>('news');
-	const [isLoading, setIsLoading] = useState(true);
+	const [_isLoading, setIsLoading] = useState(true);
 	const { isAuthorized, user } = useAuth();
 
 	const [newItem, setNewItem] = useState<Partial<ContentItem>>({

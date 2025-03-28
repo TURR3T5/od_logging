@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
-import { DiscordUser, getUserPermissionLevel, PermissionLevel } from '../lib/discord';
+import { DiscordUser, getUserPermissionLevel, hasPermission, PermissionLevel } from '../lib/discord';
 
 interface AuthContextType {
 	user: DiscordUser | null;
@@ -32,16 +32,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const [permissionLevel, setPermissionLevel] = useState<PermissionLevel>('none');
 
 	useEffect(() => {
-		supabase.auth.getSession().then(({ data: { session } }) => {
+		supabase.auth.getSession().then(async ({ data: { session } }) => {
 			setSession(session);
 
 			const discordUser = (session?.user?.user_metadata as DiscordUser) || null;
 			setUser(discordUser);
 
-			const level = getUserPermissionLevel(discordUser);
-			setPermissionLevel(level);
+			if (discordUser) {
+				console.log('User:', discordUser);
 
-			setIsAuthorized(level !== 'none');
+				if (discordUser.guilds) {
+					console.log(
+						'Discord Servers:',
+						discordUser.guilds.map((g) => ({
+							id: g.id,
+							name: g.name,
+							hasRoles: !!g.roles,
+						}))
+					);
+
+					// Find your target server and log roles
+					const targetServer = discordUser.guilds.find((g) => g.id === 'YOUR_DISCORD_SERVER_ID');
+					if (targetServer) {
+						console.log('Target Server:', targetServer.name);
+						console.log(
+							'Roles in target server:',
+							targetServer.roles?.map((r) => ({
+								id: r.id,
+								name: r.name,
+							}))
+						);
+					} else {
+						console.log("Target server not found in user's guilds");
+					}
+				} else {
+					console.log('No guilds found in Discord user data - check scopes');
+				}
+
+				const level = await getUserPermissionLevel(discordUser);
+				setPermissionLevel(level);
+				setIsAuthorized(level !== 'none');
+			}
+
 			setIsLoading(false);
 		});
 
@@ -53,10 +85,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			const discordUser = (session?.user?.user_metadata as DiscordUser) || null;
 			setUser(discordUser);
 
-			const level = getUserPermissionLevel(discordUser);
-			setPermissionLevel(level);
+			if (discordUser) {
+				const level = await getUserPermissionLevel(discordUser);
+				setPermissionLevel(level);
+				setIsAuthorized(level !== 'none');
+			} else {
+				setPermissionLevel('none');
+				setIsAuthorized(false);
+			}
 
-			setIsAuthorized(level !== 'none');
 			setIsLoading(false);
 		});
 
@@ -81,31 +118,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		if (error) throw error;
 	};
 
-	const checkPermission = async (requiredLevel: PermissionLevel): Promise<boolean> => {
-		if (!user) return false;
-
-		const discordId = user.provider_id || user.sub || (user.user_metadata && (user.user_metadata.provider_id || user.user_metadata.sub));
-
-		if (!discordId) return false;
-
-		const { data, error } = await supabase.from('user_permissions').select('permission_level').eq('user_id', discordId).single();
-
-		if (error || !data) return false;
-
-		const permissionLevels = {
-			admin: 100,
-			staff: 75,
-			content: 50,
-			viewer: 25,
-			none: 0,
-		};
-
-		const userLevel = data.permission_level as keyof typeof permissionLevels;
-		const requiredPriority = permissionLevels[requiredLevel] || 0;
-		const userPriority = permissionLevels[userLevel] || 0;
-
-		return userPriority >= requiredPriority;
-	};
 	return (
 		<AuthContext.Provider
 			value={{
@@ -116,7 +128,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 				permissionLevel,
 				signInWithDiscord,
 				signOut,
-				hasPermission: checkPermission,
+				hasPermission: (level) => hasPermission(user, level),
 			}}
 		>
 			{children}
