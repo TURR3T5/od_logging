@@ -102,6 +102,15 @@ export default function NewsAndEventsPage() {
 	};
 
 	const handleCreateItem = async () => {
+		if (!user) {
+			notifications.show({
+				title: 'Unauthorized',
+				message: 'You must be logged in to create content',
+				color: 'red',
+			});
+			return;
+		}
+
 		if (!newItem.title || !newItem.description) {
 			notifications.show({
 				title: 'Missing information',
@@ -118,10 +127,11 @@ export default function NewsAndEventsPage() {
 				content: newItem.content || newItem.description || '',
 				type: newItem.type || 'news',
 				category: newItem.type === 'news' ? 'announcement' : 'event',
-				created_by: user?.username || 'Unknown',
+				created_by: user.username || 'Unknown',
 				is_pinned: newItem.is_pinned || false,
 			};
 
+			// Add type-specific details
 			if (newItem.type === 'news' && newItem.news_type) {
 				contentItem.news_type = newItem.news_type;
 			}
@@ -137,13 +147,13 @@ export default function NewsAndEventsPage() {
 				}
 
 				contentItem.event_type = newItem.event_type as 'community' | 'official' | 'special';
-				contentItem.event_date = newItem.event_date instanceof Date ? newItem.event_date.toISOString() : typeof newItem.event_date === 'string' ? newItem.event_date : null; // Handle the null case
+				contentItem.event_date = newItem.event_date instanceof Date ? newItem.event_date.toISOString() : typeof newItem.event_date === 'string' ? newItem.event_date : null;
 
 				contentItem.location = newItem.location;
 				contentItem.address = newItem.address;
 			}
 
-			const contentId = await NewsEventsService.createContent(contentItem);
+			const contentId = await NewsEventsService.createContent(contentItem, user);
 
 			if (contentId) {
 				notifications.show({
@@ -154,6 +164,7 @@ export default function NewsAndEventsPage() {
 
 				fetchItems();
 
+				// Reset form
 				setNewItem({
 					title: '',
 					description: '',
@@ -169,17 +180,27 @@ export default function NewsAndEventsPage() {
 			}
 		} catch (error) {
 			console.error('Error creating content:', error);
-			notifications.show({
-				title: 'Error',
-				message: 'There was an error creating the content. Please try again.',
-				color: 'red',
-			});
+
+			// Check if it's a permission error
+			if (error instanceof Error && error.message.includes('Insufficient permissions')) {
+				notifications.show({
+					title: 'Unauthorized',
+					message: 'You do not have permission to create this content',
+					color: 'red',
+				});
+			} else {
+				notifications.show({
+					title: 'Error',
+					message: 'There was an error creating the content. Please try again.',
+					color: 'red',
+				});
+			}
 		}
 	};
 
 	const handleDeleteItem = async (id: string) => {
 		try {
-			const success = await NewsEventsService.deleteContent(id);
+			const success = await NewsEventsService.deleteContent(id, user);
 
 			if (success) {
 				const updatedItems = items.filter((item) => item.id !== id);
@@ -221,7 +242,7 @@ export default function NewsAndEventsPage() {
 			const success = await NewsEventsService.updateContent(id, {
 				is_pinned: !item.is_pinned,
 				updated_by: user?.username || 'Unknown',
-			});
+			}, user);
 
 			if (success) {
 				const updatedItems = items.map((item) => (item.id === id ? { ...item, is_pinned: !item.is_pinned } : item));
