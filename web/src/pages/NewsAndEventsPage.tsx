@@ -422,7 +422,7 @@ export default function NewsAndEventsPage() {
 													<Badge color={getTypeDetails(item).color} leftSection={getTypeDetails(item).icon}>
 														{getTypeDetails(item).label}
 													</Badge>
-													<ActionIcon color='blue' variant='subtle'>
+													<ActionIcon color='blue' variant='subtle' onClick={() => togglePinItem(item.id)}>
 														<PushPin size={16} weight='fill' />
 													</ActionIcon>
 												</Group>
@@ -656,7 +656,7 @@ export default function NewsAndEventsPage() {
 																</Badge>
 																<Text fw={700}>{item.title}</Text>
 																{item.isPinned && (
-																	<ActionIcon color='blue' variant='subtle'>
+																	<ActionIcon color='blue' variant='subtle' onClick={() => togglePinItem(item.id)}>
 																		<PushPin size={16} weight='fill' />
 																	</ActionIcon>
 																)}
