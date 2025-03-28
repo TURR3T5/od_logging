@@ -1,6 +1,8 @@
+// src/components/AuthProvider.tsx
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import { DiscordUser, getUserPermissionLevel, hasPermission, PermissionLevel } from '../lib/discord';
+import { TARGET_SERVER_ID } from '../lib/discord.ts';
 
 interface AuthContextType {
 	user: DiscordUser | null;
@@ -32,90 +34,121 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const [permissionLevel, setPermissionLevel] = useState<PermissionLevel>('none');
 
 	useEffect(() => {
-		supabase.auth.getSession().then(async ({ data: { session } }) => {
-			setSession(session);
+		try {
+			supabase.auth.getSession().then(async ({ data: { session } }) => {
+				setSession(session);
 
-			const discordUser = (session?.user?.user_metadata as DiscordUser) || null;
-			setUser(discordUser);
+				if (session?.user) {
+					const discordUser = (session.user.user_metadata as DiscordUser) || null;
+					setUser(discordUser);
 
-			if (discordUser) {
-				console.log('User:', discordUser);
+					// Debug logging for user info
+					console.log('==== DISCORD AUTH DEBUG ====');
+					console.log('User Session:', session);
+					console.log('Discord User:', discordUser);
 
-				if (discordUser.guilds) {
-					console.log(
-						'Discord Servers:',
-						discordUser.guilds.map((g) => ({
-							id: g.id,
-							name: g.name,
-							hasRoles: !!g.roles,
-						}))
-					);
-
-					// Find your target server and log roles
-					const targetServer = discordUser.guilds.find((g) => g.id === 'YOUR_DISCORD_SERVER_ID');
-					if (targetServer) {
-						console.log('Target Server:', targetServer.name);
+					// Debug logging for guild info
+					if (discordUser?.guilds) {
+						console.log('Guild Count:', discordUser.guilds.length);
 						console.log(
-							'Roles in target server:',
-							targetServer.roles?.map((r) => ({
-								id: r.id,
-								name: r.name,
+							'Guilds:',
+							discordUser.guilds.map((g) => ({
+								id: g.id,
+								name: g.name,
+								hasRoles: !!g.roles,
+								roleCount: g.roles?.length || 0,
 							}))
 						);
+
+						// Log the specific target guild we're looking for (from your discord.ts file)
+						const targetGuild = discordUser.guilds.find(
+							(g) => g.id === TARGET_SERVER_ID // Make sure to import TARGET_SERVER_ID from discord.ts
+						);
+
+						if (targetGuild) {
+							console.log('Target Guild Found:', {
+								name: targetGuild.name,
+								id: targetGuild.id,
+								hasRoles: !!targetGuild.roles,
+								roleCount: targetGuild.roles?.length || 0,
+								roles: targetGuild.roles?.map((r) => ({
+									id: r.id,
+									name: r.name,
+									position: r.position,
+								})),
+							});
+						} else {
+							console.warn('Target Guild NOT FOUND:', TARGET_SERVER_ID);
+							console.log(
+								'Available guild IDs:',
+								discordUser.guilds.map((g) => g.id)
+							);
+						}
 					} else {
-						console.log("Target server not found in user's guilds");
+						console.warn('No guilds found in Discord user data. Check scopes permissions.');
+						console.log('Full user data:', discordUser);
+					}
+
+					// Continue with permissions check
+					if (discordUser) {
+						try {
+							const level = await getUserPermissionLevel(discordUser);
+							console.log('Permission level:', level);
+							setPermissionLevel(level);
+							setIsAuthorized(level !== 'none');
+						} catch (error) {
+							console.error('Error getting user permission level:', error);
+							setPermissionLevel('none');
+							setIsAuthorized(false);
+						}
 					}
 				} else {
-					console.log('No guilds found in Discord user data - check scopes');
+					console.log('No session found or user not logged in');
 				}
 
-				const level = await getUserPermissionLevel(discordUser);
-				setPermissionLevel(level);
-				setIsAuthorized(level !== 'none');
-			}
+				setIsLoading(false);
+			});
 
+			// Rest of the code remains the same...
+		} catch (error) {
+			console.error('Error in auth setup:', error);
 			setIsLoading(false);
-		});
-
-		const {
-			data: { subscription },
-		} = supabase.auth.onAuthStateChange(async (_event, session) => {
-			setSession(session);
-
-			const discordUser = (session?.user?.user_metadata as DiscordUser) || null;
-			setUser(discordUser);
-
-			if (discordUser) {
-				const level = await getUserPermissionLevel(discordUser);
-				setPermissionLevel(level);
-				setIsAuthorized(level !== 'none');
-			} else {
-				setPermissionLevel('none');
-				setIsAuthorized(false);
-			}
-
-			setIsLoading(false);
-		});
-
-		return () => {
-			subscription.unsubscribe();
-		};
+		}
 	}, []);
 
 	const signInWithDiscord = async () => {
-		const { error } = await supabase.auth.signInWithOAuth({
-			provider: 'discord',
-			options: {
-				scopes: 'identify email guilds guilds.members.read',
-				redirectTo: `${window.location.origin}/auth/callback`,
-			},
-		});
-		if (error) throw error;
+		try {
+			const { error } = await supabase.auth.signInWithOAuth({
+				provider: 'discord',
+				options: {
+					scopes: 'identify email guilds guilds.members.read',
+					redirectTo: `https://wisaxuzzzebogbhkeyuc.supabase.co/auth/v1/callback`,
+				},
+			});
+			if (error) {
+				console.error('SignIn error:', error);
+				throw error;
+			}
+		} catch (error) {
+			console.error('Error signing in with Discord:', error);
+			throw error;
+		}
 	};
 
 	const signOut = async () => {
-		const { error } = await supabase.auth.signOut();
-		if (error) throw error;
+		try {
+			const { error } = await supabase.auth.signOut();
+			if (error) throw error;
+
+			// Clear state after signout
+			setUser(null);
+			setSession(null);
+			setIsAuthorized(false);
+			setPermissionLevel('none');
+		} catch (error) {
+			console.error('Error signing out:', error);
+			throw error;
+		}
 	};
 
 	return (
