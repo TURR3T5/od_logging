@@ -7,6 +7,8 @@ import AuthCallbackPage from '../pages/AuthCallback';
 import RulesPage from '../pages/Rules';
 import NewsAndEventsPage from '../pages/NewsAndEventsPage';
 import WhitelistApplicationPage from '../pages/WhitelistPortal';
+import PlayerStatisticsPage from '../pages/PlayerStatisticsPage';
+import ProfilePage from '../pages/ProfilePage';
 
 const rootRoute = createRootRoute({
 	component: App,
@@ -54,7 +56,19 @@ const whitelistApplicationRoute = createRoute({
 	component: WhitelistApplicationPage,
 });
 
-const routeTree = rootRoute.addChildren([homeRoute, loginRoute, authCallbackRoute, logsRoute, rulesRoute, eventsCalendarRoute, whitelistApplicationRoute]);
+const playerStatsRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: '/stats',
+	component: PlayerStatisticsPage,
+});
+
+const profileRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: '/profile',
+	component: ProfilePage,
+});
+
+const routeTree = rootRoute.addChildren([homeRoute, loginRoute, authCallbackRoute, logsRoute, rulesRoute, eventsCalendarRoute, whitelistApplicationRoute, playerStatsRoute, profileRoute]);
 
 export const router = createRouter({ routeTree });
 

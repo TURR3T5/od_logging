@@ -373,7 +373,7 @@ const mockAllApplications: JobApplication[] = [
 ];
 
 export default function WhitelistApplicationPage() {
-	const { user, isAuthorized } = useAuth();
+	const { isAuthorized } = useAuth();
 	const [applications, setApplications] = useState<JobApplication[]>(isAuthorized ? mockAllApplications : mockUserApplications);
 	const [userApplications, setUserApplications] = useState<JobApplication[]>(mockUserApplications);
 	const [selectedJob, setSelectedJob] = useState<Job | null>(null);

@@ -54,7 +54,7 @@ export default function HomePage() {
 	});
 	const [newsModalOpen, setNewsModalOpen] = useState(false);
 	const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
-	const [pinnedItems, setPinnedItems] = useState<PinnedItem[]>([
+	const [pinnedItems, _setPinnedItems] = useState<PinnedItem[]>([
 		{
 			id: '1',
 			type: 'news',

@@ -1,7 +1,7 @@
 import { Group, Text, Button, Box, Container, Menu } from '@mantine/core';
 import { useAuth } from '../components/AuthProvider';
 import { useNavigate } from '@tanstack/react-router';
-import { SignOut, House, ListBullets, Book, Calendar, User, CaretDown } from '@phosphor-icons/react';
+import { SignOut, House, ListBullets, Book, Calendar, User, CaretDown, ChartBar } from '@phosphor-icons/react';
 
 export default function Header() {
 	const { isAuthorized, isLoading, user, signInWithDiscord, signOut } = useAuth();
@@ -11,6 +11,7 @@ export default function Header() {
 		{ label: 'Home', icon: House, onClick: () => navigate({ to: '/' }) },
 		{ label: 'Regler', icon: Book, onClick: () => navigate({ to: '/rules' }) },
 		{ label: 'Nyheder og Events', icon: Calendar, onClick: () => navigate({ to: '/events' }) },
+		{ label: 'Statistik', icon: ChartBar, onClick: () => navigate({ to: '/stats' }) },
 		{ label: 'Ansøgninger', icon: User, onClick: () => navigate({ to: '/whitelist' }) },
 		{ label: 'Server Logs', icon: ListBullets, onClick: () => navigate({ to: '/logs' }), requireAuth: true },
 	];
@@ -109,6 +110,9 @@ export default function Header() {
 						) : isAuthorized ? (
 							<Group>
 								<Text c='gray.0'>{user?.username && `Welcome, ${user.username}`}</Text>
+								<Button variant='subtle' color='blue' onClick={() => navigate({ to: '/profile' })} leftSection={<User size={16} style={{ display: 'flex', alignItems: 'center' }} />}>
+									Profil
+								</Button>
 								<Button variant='outline' color='red' onClick={signOut} leftSection={<SignOut size={16} style={{ display: 'flex', alignItems: 'center' }} />}>
 									Logout
 								</Button>

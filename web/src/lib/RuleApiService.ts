@@ -244,6 +244,26 @@ export const RuleApiService = {
 
     return [];
   },
+
+  async deleteRule(ruleId: string): Promise<void> {
+    const { error } = await supabase
+      .from('rules')
+      .delete()
+      .eq('id', ruleId);
+
+    if (error) throw error;
+
+    cacheService.invalidate(RULES_CACHE_KEY);
+    cacheService.invalidate(`rule_content_${ruleId}`);
+    cacheService.invalidate(`${RULE_HISTORY_CACHE_PREFIX}${ruleId}`);
+
+    const categories = ['community', 'roleplay'];
+    categories.forEach(cat => {
+      for (let i = 1; i <= 5; i++) {
+        cacheService.invalidate(`rules_${cat}_page_${i}_limit_20`);
+      }
+    });
+  },
 };
 
 export default RuleApiService;
