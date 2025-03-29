@@ -238,7 +238,7 @@ app.get('/discord/guild-details', verifyDiscordApiKey, async (req, res) => {
   
   try {
     // Get guild info
-    const guildResponse = await axios.get(`${DISCORD_API_URL}/guilds/${TARGET_SERVER_ID}?with_counts=true`, {
+    const guildResponse = await axios.get(`${DISCORD_API_URL}/guilds/${TARGET_SERVER_ID}`, {
       headers: {
         Authorization: `Bot ${DISCORD_BOT_TOKEN}`
       }
