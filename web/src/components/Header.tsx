@@ -4,7 +4,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { SignOut, House, ListBullets, Book, Calendar, User, CaretDown, ChartBar, ShieldStar, Bug, Wrench } from '@phosphor-icons/react';
 
 export default function Header() {
-	const { isAuthorized, isLoading, user, /* signInWithDiscord, */ signInWithEmail, signUpWithEmail, signOut, permissionLevel } = useAuth();
+	const { isAuthorized, isLoading, user, signOut, permissionLevel } = useAuth();
 	const navigate = useNavigate();
 
 	const isAdmin = permissionLevel === 'admin';
@@ -147,7 +147,7 @@ export default function Header() {
 							<Text>Loading...</Text>
 						) : isAuthorized ? (
 							<Group>
-								<Text c='gray.0'>{user?.username && `Welcome, ${user.username}`}</Text>
+								<Text c='gray.0'>{user?.username || (user?.email && `Welcome, ${user.email.split('@')[0]}`)}</Text>
 
 								{isAdmin && (
 									<Badge color='red' variant='filled' size='sm'>
@@ -168,8 +168,8 @@ export default function Header() {
 								</Button>
 							</Group>
 						) : (
-							<Button variant='gradient' gradient={{ from: 'indigo', to: 'blue' }} onClick={signInWithDiscord}>
-								Login with Discord
+							<Button variant='gradient' gradient={{ from: 'indigo', to: 'blue' }} onClick={() => navigate({ to: '/login' })}>
+								Login
 							</Button>
 						)}
 					</Group>
