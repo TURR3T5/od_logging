@@ -4,7 +4,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { SignOut, House, ListBullets, Book, Calendar, User, CaretDown, ChartBar, ShieldStar, Bug, Wrench } from '@phosphor-icons/react';
 
 export default function Header() {
-	const { isAuthorized, isLoading, user, signInWithDiscord, signOut, permissionLevel } = useAuth();
+	const { isAuthorized, isLoading, user, /* signInWithDiscord, */ signInWithEmail, signUpWithEmail, signOut, permissionLevel } = useAuth();
 	const navigate = useNavigate();
 
 	const isAdmin = permissionLevel === 'admin';
