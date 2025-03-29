@@ -118,11 +118,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 	const signInWithDiscord = async () => {
 		try {
-			const { error } = await supabase.auth.signInWithOAuth({
+			// In your AuthProvider
+			const { data, error } = await supabase.auth.signInWithOAuth({
 				provider: 'discord',
 				options: {
 					scopes: 'identify email guilds guilds.members.read',
-					redirectTo: `https://wisaxuzzzebogbhkeyuc.supabase.co/auth/v1/callback`,
+					redirectTo: `${window.location.origin}/auth/callback`,
 				},
 			});
 			if (error) {
