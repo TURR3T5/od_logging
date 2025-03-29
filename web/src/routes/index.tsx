@@ -1,3 +1,4 @@
+// src/routes/index.tsx
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
 import App from '../App';
 import HomePage from '../pages/Home';
@@ -10,6 +11,7 @@ import WhitelistApplicationPage from '../pages/WhitelistPortal';
 import PlayerStatisticsPage from '../pages/PlayerStatisticsPage';
 import ProfilePage from '../pages/ProfilePage';
 import RoleManagementPage from '../pages/RoleManagement';
+import DiscordBotTestPage from '../pages/DiscordBotTestPage';
 
 const rootRoute = createRootRoute({
 	component: App,
@@ -75,7 +77,14 @@ const roleManagementRoute = createRoute({
 	component: RoleManagementPage,
 });
 
-const routeTree = rootRoute.addChildren([homeRoute, loginRoute, authCallbackRoute, logsRoute, rulesRoute, eventsCalendarRoute, whitelistApplicationRoute, playerStatsRoute, profileRoute, roleManagementRoute]);
+// Add the new Discord bot test route
+const discordBotTestRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: '/admin/discord-bot-test',
+	component: DiscordBotTestPage,
+});
+
+const routeTree = rootRoute.addChildren([homeRoute, loginRoute, authCallbackRoute, logsRoute, rulesRoute, eventsCalendarRoute, whitelistApplicationRoute, playerStatsRoute, profileRoute, roleManagementRoute, discordBotTestRoute]);
 
 export const router = createRouter({ routeTree });
 

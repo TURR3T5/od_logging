@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import discordBotService from './discordBot';
 
 export interface DiscordUser {
   avatar_url?: string;
@@ -62,10 +63,8 @@ export interface DiscordRole {
   mentionable: boolean;
 }
 
-// Using the hard-coded target server ID from the codebase
 export const TARGET_SERVER_ID = "679360230299140114";
 
-// List of allowed Discord user IDs for fall-back authorization
 export const ALLOWED_DISCORD_USER_IDS = [
   "256031472605986829",
 ];
@@ -76,7 +75,7 @@ export const hasPermission = async (user: any, requiredLevel: PermissionLevel = 
   if (!user) return false;
   
   try {
-    // Get Discord ID - try all possible locations
+    // Get Discord ID from all possible locations
     const discordId = user.provider_id || user.sub || user.id || 
       (user.user_metadata && (user.user_metadata.provider_id || user.user_metadata.sub));
     
@@ -106,7 +105,56 @@ export const hasPermission = async (user: any, requiredLevel: PermissionLevel = 
       return false;
     }
     
-    // Get user's Discord roles from the target server
+    // Two approaches to get user roles:
+    
+    // APPROACH 1: Try to get roles from Discord bot (if configured)
+    if (discordBotService.isConfigured()) {
+      // First sync the roles (this will update our database with latest Discord roles)
+      await discordBotService.syncUserRoles(discordId);
+      
+      // Then fetch from our database
+      const { data: userRoles, error: userRolesError } = await supabase
+        .from('user_roles')
+        .select('role_id')
+        .eq('discord_id', discordId);
+        
+      if (userRolesError) {
+        console.error('Error fetching user roles:', userRolesError);
+      }
+      
+      if (userRoles && userRoles.length > 0) {
+        const userRoleIds = userRoles.map(ur => ur.role_id);
+        
+        // Check if user has any of the required roles
+        switch(requiredLevel) {
+          case 'admin':
+            return userRoleIds.some((roleId: string) => rolePermissions.admin_roles.includes(roleId));
+          case 'staff':
+            return userRoleIds.some((roleId: string) => 
+              rolePermissions.admin_roles.includes(roleId) || 
+              rolePermissions.staff_roles.includes(roleId)
+            );
+          case 'content':
+            return userRoleIds.some((roleId: string) => 
+              rolePermissions.admin_roles.includes(roleId) || 
+              rolePermissions.staff_roles.includes(roleId) || 
+              rolePermissions.content_roles.includes(roleId)
+            );
+          case 'viewer':
+            return userRoleIds.some((roleId: string) => 
+              rolePermissions.admin_roles.includes(roleId) || 
+              rolePermissions.staff_roles.includes(roleId) || 
+              rolePermissions.content_roles.includes(roleId) || 
+              rolePermissions.viewer_roles.includes(roleId)
+            );
+          default:
+            return false;
+        }
+      }
+    }
+    
+    // APPROACH 2: Fallback to checking user's Discord roles from OAuth data
+    // This is the original approach, which may not work reliably
     const targetGuild = user.guilds?.find((guild: any) => guild.id === TARGET_SERVER_ID);
     
     if (!targetGuild) {

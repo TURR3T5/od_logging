@@ -1,7 +1,7 @@
 import { Group, Text, Button, Box, Container, Menu, Badge } from '@mantine/core';
 import { useAuth } from '../components/AuthProvider';
 import { useNavigate } from '@tanstack/react-router';
-import { SignOut, House, ListBullets, Book, Calendar, User, CaretDown, ChartBar, ShieldStar } from '@phosphor-icons/react';
+import { SignOut, House, ListBullets, Book, Calendar, User, CaretDown, ChartBar, ShieldStar, Bug } from '@phosphor-icons/react';
 
 export default function Header() {
 	const { isAuthorized, isLoading, user, signInWithDiscord, signOut, permissionLevel } = useAuth();
@@ -23,6 +23,12 @@ export default function Header() {
 			label: 'Role Management',
 			icon: ShieldStar,
 			onClick: () => navigate({ to: '/admin/roles' }),
+			requireAuth: true,
+		});
+		menuItems.push({
+			label: 'Discord Bot Test',
+			icon: Bug,
+			onClick: () => navigate({ to: '/admin/discord-bot-test' }),
 			requireAuth: true,
 		});
 	}

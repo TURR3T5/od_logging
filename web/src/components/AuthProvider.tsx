@@ -44,8 +44,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 					// Debug logging for user info
 					console.log('==== DISCORD AUTH DEBUG ====');
-					console.log('User Session:', session);
-					console.log('Discord User:', discordUser);
 
 					// Debug logging for guild info
 					if (discordUser?.guilds) {
