@@ -1,4 +1,4 @@
-// src/lib/NewsEventsService.ts
+
 import { supabase } from './supabase';
 import cacheService from './CacheService';
 import { hasPermission } from './discord';
@@ -16,16 +16,16 @@ export interface ContentItem {
     type: 'news' | 'event';
     category: string;
     
-    // News specific
+    
     news_type?: 'update' | 'announcement' | 'changelog'; 
     
-    // Event specific
+    
     event_type?: 'community' | 'official' | 'special';
     event_date?: string | Date | null;
     location?: string;
     address?: string;
     
-    // Tags
+    
     tags?: string[];
 }
 
@@ -49,7 +49,7 @@ export const NewsEventsService = {
     if (cached) return cached;
     
     try {
-      // Get content items
+      
       const { data: contentItems, error: contentError } = await supabase
         .from('content_items')
         .select('*')
@@ -58,10 +58,10 @@ export const NewsEventsService = {
       if (contentError) throw contentError;
       if (!contentItems) return [];
       
-      // Fetch associated metadata based on type
+      
       const contentIds = contentItems.map(item => item.id);
       
-      // Get news metadata
+      
       const { data: newsMetadata, error: newsError } = await supabase
         .from('news_metadata')
         .select('*')
@@ -69,7 +69,7 @@ export const NewsEventsService = {
         
       if (newsError) throw newsError;
       
-      // Get event metadata
+      
       const { data: eventMetadata, error: eventError } = await supabase
         .from('event_metadata')
         .select('*')
@@ -77,7 +77,7 @@ export const NewsEventsService = {
         
       if (eventError) throw eventError;
       
-      // Get content tags
+      
       const { data: contentTags, error: tagsError } = await supabase
         .from('content_tags')
         .select('*')
@@ -85,7 +85,7 @@ export const NewsEventsService = {
         
       if (tagsError) throw tagsError;
       
-      // Map tags to content items
+      
       const tagsByContentId: Record<string, string[]> = {};
       contentTags?.forEach(tag => {
         if (!tagsByContentId[tag.content_id]) {
@@ -94,19 +94,19 @@ export const NewsEventsService = {
         tagsByContentId[tag.content_id].push(tag.tag);
       });
       
-      // Create a map of news metadata
+      
       const newsMetadataMap: Record<string, any> = {};
       newsMetadata?.forEach(meta => {
         newsMetadataMap[meta.content_id] = meta;
       });
       
-      // Create a map of event metadata
+      
       const eventMetadataMap: Record<string, any> = {};
       eventMetadata?.forEach(meta => {
         eventMetadataMap[meta.content_id] = meta;
       });
       
-      // Combine all data
+      
       const combinedContent: ContentItem[] = contentItems.map(item => {
         const result: ContentItem = {
           ...item,
@@ -157,17 +157,17 @@ export const NewsEventsService = {
   },
   
   async createContent(content: Omit<ContentItem, 'id' | 'created_at'>, user: any): Promise<string | null> {
-    // First, validate user permissions
+    
     const hasPermissions = await checkContentPermission(user);
     if (!hasPermissions) {
       throw new Error('Insufficient permissions to create content');
     }
 
     try {
-      // Enforce user identity in creation
+      
       content.created_by = user?.username || 'Unknown';
 
-      // Existing content creation logic...
+      
       const { data: contentData, error: contentError } = await supabase
         .from('content_items')
         .insert({
@@ -185,7 +185,7 @@ export const NewsEventsService = {
       if (contentError) throw contentError;
       if (!contentData?.id) throw new Error('Failed to create content');
       
-      // Rest of the content creation logic remains the same...
+      
       return contentData.id;
     } catch (error) {
       console.error('Error creating content:', error);
@@ -194,18 +194,18 @@ export const NewsEventsService = {
   },
 
   async updateContent(id: string, updates: Partial<ContentItem>, user: any): Promise<boolean> {
-    // First, validate user permissions
+    
     const hasPermissions = await checkContentPermission(user);
     if (!hasPermissions) {
       throw new Error('Insufficient permissions to update content');
     }
 
     try {
-      // Enforce user identity in update
+      
       updates.updated_by = user?.username || 'Unknown';
       updates.last_updated = new Date().toISOString();
 
-      // Existing update logic...
+      
       const { error } = await supabase
         .from('content_items')
         .update(updates)
@@ -213,7 +213,7 @@ export const NewsEventsService = {
         
       if (error) throw error;
       
-      // Rest of the update logic remains the same...
+      
       return true;
     } catch (error) {
       console.error('Error updating content:', error);
@@ -222,7 +222,7 @@ export const NewsEventsService = {
   },
 
   async deleteContent(id: string, user: any): Promise<boolean> {
-    // First, validate user permissions (higher threshold for deletion)
+    
     const hasPermissions = await checkContentPermission(user, 'staff');
     if (!hasPermissions) {
       throw new Error('Insufficient permissions to delete content');

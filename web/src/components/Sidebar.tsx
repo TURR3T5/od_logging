@@ -12,9 +12,7 @@ interface SidebarItem {
 const sidebarSections: SidebarItem[] = [
 	{
 		label: 'Overblik',
-		children: [
-			{ label: 'Server Logs', path: '/logs' },
-		],
+		children: [{ label: 'Server Logs', path: '/logs' }],
 	},
 	{
 		label: 'Economy',

@@ -152,7 +152,7 @@ export default function PlayerStatisticsPage() {
 	};
 
 	return (
-		<MainLayout requireAuth={isAuthorized}>
+		<MainLayout requireAuth={true} requiredPermission='admin'>
 			<Container size='xl' py='xl'>
 				<Paper shadow='md' p='md' radius='md' withBorder mb='xl'>
 					<Group justify='space-between' mb='md'>

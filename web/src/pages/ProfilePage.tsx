@@ -343,7 +343,6 @@ export default function ProfilePage() {
 									<Text ml='auto'>{formatCurrency(profile.stats.moneyEarned)}</Text>
 								</Group>
 							</Box>
-
 						</Paper>
 					</Grid.Col>
 

@@ -1,5 +1,4 @@
-// src/components/debug/DiscordBotDebug.tsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Paper, Title, Text, Group, Button, TextInput, Code, Accordion, Divider, Alert, Badge } from '@mantine/core';
 import { useAuth } from '../AuthProvider';
 import discordBotService from '../../lib/discordBot';
@@ -13,7 +12,6 @@ export default function DiscordBotDebug() {
 	const [guildDetails, setGuildDetails] = useState<any>(null);
 	const [syncStatus, setSyncStatus] = useState<{ success: boolean; message: string } | null>(null);
 
-	// Test bot access to the Discord server
 	const testBotAccess = async () => {
 		setIsTestingBot(true);
 		try {
@@ -33,10 +31,8 @@ export default function DiscordBotDebug() {
 		}
 	};
 
-	// Get a user's roles
 	const getUserRoles = async () => {
 		if (!userIdToTest.trim()) {
-			// If no ID provided, use the current user's ID
 			if (user?.provider_id) {
 				setUserIdToTest(user.provider_id);
 			} else {
@@ -54,7 +50,6 @@ export default function DiscordBotDebug() {
 		}
 	};
 
-	// Get detailed information about the guild
 	const getGuildInfo = async () => {
 		try {
 			const details = await discordBotService.getGuildDetails();
@@ -65,7 +60,6 @@ export default function DiscordBotDebug() {
 		}
 	};
 
-	// Test syncing user roles to the database
 	const testSyncUserRoles = async () => {
 		if (!userIdToTest.trim()) {
 			if (user?.provider_id) {

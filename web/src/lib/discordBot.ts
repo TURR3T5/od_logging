@@ -1,11 +1,7 @@
-// Debug mode flag - set to false in production
 const DEBUG_MODE = true;
+const API_URL = '/api';
+const API_KEY = import.meta.env.VITE_FIVEM_API_KEY || '';
 
-// Use the existing server endpoints
-const API_URL = '/api'; // This will be proxied to your Express server
-const API_KEY = import.meta.env.VITE_FIVEM_API_KEY || ''; // Use the same API key as your FiveM server
-
-// Interface for member data
 export interface DiscordMember {
   user: {
     id: string;
@@ -19,7 +15,6 @@ export interface DiscordMember {
 }
 
 class DiscordBotService {
-  // Test if the bot can access the server
   async testBotAccess(): Promise<boolean> {
     if (DEBUG_MODE) {
       console.log('Testing Discord bot access...');
@@ -57,7 +52,6 @@ class DiscordBotService {
     }
   }
   
-  // Get a user's roles in the target guild
   async getMemberRoles(discordUserId: string): Promise<string[] | null> {
     if (DEBUG_MODE) {
       console.log(`Fetching roles for user ID: ${discordUserId}`);
@@ -88,14 +82,12 @@ class DiscordBotService {
     }
   }
   
-  // Update or create user roles in our database based on Discord roles
   async syncUserRoles(discordUserId: string): Promise<boolean> {
     if (DEBUG_MODE) {
       console.log(`Syncing roles for user ID: ${discordUserId}`);
     }
     
     try {
-      // Use the server endpoint to handle the sync
       const response = await fetch(`${API_URL}/discord/sync-user-roles`, {
         method: 'POST',
         headers: {
@@ -124,12 +116,10 @@ class DiscordBotService {
     }
   }
   
-  // Helper function to check if this service is properly configured
   isConfigured(): boolean {
     return !!API_KEY;
   }
   
-  // Debug function to get detailed guild info
   async getGuildDetails(): Promise<any | null> {
     try {
       const response = await fetch(`${API_URL}/discord/guild-details`, {
@@ -153,6 +143,5 @@ class DiscordBotService {
   }
 }
 
-// Create and export a singleton instance
 const discordBotService = new DiscordBotService();
 export default discordBotService;

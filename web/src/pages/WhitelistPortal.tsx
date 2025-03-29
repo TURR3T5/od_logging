@@ -417,7 +417,7 @@ export default function WhitelistApplicationPage() {
 	};
 
 	return (
-		<MainLayout requireAuth={false}>
+		<MainLayout requireAuth={true} requiredPermission='admin'>
 			<Container size='xl' py='xl'>
 				<Title order={1} mb='md'>
 					Ansøgninger

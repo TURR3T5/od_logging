@@ -1,4 +1,3 @@
-// src/components/AuthProvider.tsx
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import { DiscordUser, getUserPermissionLevel, hasPermission, PermissionLevel } from '../lib/discord';
@@ -42,10 +41,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 					const discordUser = (session.user.user_metadata as DiscordUser) || null;
 					setUser(discordUser);
 
-					// Debug logging for user info
 					console.log('==== DISCORD AUTH DEBUG ====');
 
-					// Debug logging for guild info
 					if (discordUser?.guilds) {
 						console.log('Guild Count:', discordUser.guilds.length);
 						console.log(
@@ -58,10 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 							}))
 						);
 
-						// Log the specific target guild we're looking for (from your discord.ts file)
-						const targetGuild = discordUser.guilds.find(
-							(g) => g.id === TARGET_SERVER_ID // Make sure to import TARGET_SERVER_ID from discord.ts
-						);
+						const targetGuild = discordUser.guilds.find((g) => g.id === TARGET_SERVER_ID);
 
 						if (targetGuild) {
 							console.log('Target Guild Found:', {
@@ -87,7 +81,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 						console.log('Full user data:', discordUser);
 					}
 
-					// Continue with permissions check
 					if (discordUser) {
 						try {
 							const level = await getUserPermissionLevel(discordUser);
@@ -107,7 +100,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 				setIsLoading(false);
 			});
 
-			// Rest of the code remains the same...
+			const {
+				data: { subscription },
+			} = supabase.auth.onAuthStateChange(async (event, session) => {
+				if (event === 'SIGNED_IN' && session) {
+					setSession(session);
+					const discordUser = (session.user.user_metadata as DiscordUser) || null;
+					setUser(discordUser);
+
+					if (discordUser) {
+						try {
+							const level = await getUserPermissionLevel(discordUser);
+							setPermissionLevel(level);
+							setIsAuthorized(level !== 'none');
+						} catch (error) {
+							console.error('Error getting user permission level:', error);
+							setPermissionLevel('none');
+							setIsAuthorized(false);
+						}
+					}
+				} else if (event === 'SIGNED_OUT') {
+					setSession(null);
+					setUser(null);
+					setPermissionLevel('none');
+					setIsAuthorized(false);
+				}
+			});
+
+			return () => {
+				subscription.unsubscribe();
+			};
 		} catch (error) {
 			console.error('Error in auth setup:', error);
 			setIsLoading(false);
@@ -116,8 +138,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 	const signInWithDiscord = async () => {
 		try {
-			// In your AuthProvider
-			const { data, error } = await supabase.auth.signInWithOAuth({
+			const { error } = await supabase.auth.signInWithOAuth({
 				provider: 'discord',
 				options: {
 					scopes: 'identify email guilds guilds.members.read',
@@ -139,7 +160,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			const { error } = await supabase.auth.signOut();
 			if (error) throw error;
 
-			// Clear state after signout
 			setUser(null);
 			setSession(null);
 			setIsAuthorized(false);

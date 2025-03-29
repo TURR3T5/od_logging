@@ -1,4 +1,3 @@
-// src/routes/index.tsx
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
 import App from '../App';
 import HomePage from '../pages/Home';
@@ -77,7 +76,6 @@ const roleManagementRoute = createRoute({
 	component: RoleManagementPage,
 });
 
-// Add the new Discord bot test route
 const discordBotTestRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: '/admin/discord-bot-test',

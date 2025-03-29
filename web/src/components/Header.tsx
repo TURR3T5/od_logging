@@ -1,42 +1,31 @@
 import { Group, Text, Button, Box, Container, Menu, Badge } from '@mantine/core';
 import { useAuth } from '../components/AuthProvider';
 import { useNavigate } from '@tanstack/react-router';
-import { SignOut, House, ListBullets, Book, Calendar, User, CaretDown, ChartBar, ShieldStar, Bug } from '@phosphor-icons/react';
+import { SignOut, House, ListBullets, Book, Calendar, User, CaretDown, ChartBar, ShieldStar, Bug, Wrench } from '@phosphor-icons/react';
 
 export default function Header() {
 	const { isAuthorized, isLoading, user, signInWithDiscord, signOut, permissionLevel } = useAuth();
 	const navigate = useNavigate();
 
 	const isAdmin = permissionLevel === 'admin';
+	const isStaff = permissionLevel === 'admin' || permissionLevel === 'staff';
 
-	const menuItems = [
+	const publicMenuItems = [
 		{ label: 'Home', icon: House, onClick: () => navigate({ to: '/' }) },
 		{ label: 'Regler', icon: Book, onClick: () => navigate({ to: '/rules' }) },
+	];
+
+	const wipMenuItems = [
 		{ label: 'Nyheder og Events', icon: Calendar, onClick: () => navigate({ to: '/events' }) },
 		{ label: 'Statistik', icon: ChartBar, onClick: () => navigate({ to: '/stats' }) },
 		{ label: 'Ansøgninger', icon: User, onClick: () => navigate({ to: '/whitelist' }) },
-		{ label: 'Server Logs', icon: ListBullets, onClick: () => navigate({ to: '/logs' }), requireAuth: true },
 	];
 
-	if (isAdmin) {
-		menuItems.push({
-			label: 'Role Management',
-			icon: ShieldStar,
-			onClick: () => navigate({ to: '/admin/roles' }),
-			requireAuth: true,
-		});
-		menuItems.push({
-			label: 'Discord Bot Test',
-			icon: Bug,
-			onClick: () => navigate({ to: '/admin/discord-bot-test' }),
-			requireAuth: true,
-		});
-	}
-
-	const filteredMenuItems = menuItems.filter((item) => !item.requireAuth || (item.requireAuth && isAuthorized));
-
-	const displayItems = filteredMenuItems.slice(0, 6);
-	const dropdownItems = filteredMenuItems.slice(6);
+	const adminMenuItems = [
+		{ label: 'Server Logs', icon: ListBullets, onClick: () => navigate({ to: '/logs' }) },
+		{ label: 'Role Management', icon: ShieldStar, onClick: () => navigate({ to: '/admin/roles' }) },
+		{ label: 'Discord Bot Test', icon: Bug, onClick: () => navigate({ to: '/admin/discord-bot-test' }) },
+	];
 
 	return (
 		<Box
@@ -68,7 +57,7 @@ export default function Header() {
 						</Text>
 
 						<Group ml='xl' gap='xl'>
-							{displayItems.map((item, index) => (
+							{publicMenuItems.map((item, index) => (
 								<Group
 									key={index}
 									gap='xs'
@@ -89,7 +78,7 @@ export default function Header() {
 								</Group>
 							))}
 
-							{dropdownItems.length > 0 && (
+							{isAdmin && (
 								<Menu shadow='md' width={200}>
 									<Menu.Target>
 										<Group
@@ -103,14 +92,46 @@ export default function Header() {
 												alignItems: 'center',
 											})}
 										>
+											<Wrench size={22} style={{ display: 'flex', alignItems: 'center' }} />
 											<Text c='gray.0' style={{ display: 'flex', alignItems: 'center' }}>
-												Mere
+												WIP
 											</Text>
 											<CaretDown size={14} />
 										</Group>
 									</Menu.Target>
 									<Menu.Dropdown>
-										{dropdownItems.map((item, index) => (
+										{wipMenuItems.map((item, index) => (
+											<Menu.Item key={index} leftSection={<item.icon size={16} />} onClick={item.onClick}>
+												{item.label}
+											</Menu.Item>
+										))}
+									</Menu.Dropdown>
+								</Menu>
+							)}
+
+							{isAdmin && (
+								<Menu shadow='md' width={200}>
+									<Menu.Target>
+										<Group
+											gap='xs'
+											style={(theme) => ({
+												cursor: 'pointer',
+												transition: 'color 200ms ease',
+												'&:hover': {
+													color: theme.colors.blue[4],
+												},
+												alignItems: 'center',
+											})}
+										>
+											<ShieldStar size={22} style={{ display: 'flex', alignItems: 'center' }} />
+											<Text c='gray.0' style={{ display: 'flex', alignItems: 'center' }}>
+												Admin
+											</Text>
+											<CaretDown size={14} />
+										</Group>
+									</Menu.Target>
+									<Menu.Dropdown>
+										{adminMenuItems.map((item, index) => (
 											<Menu.Item key={index} leftSection={<item.icon size={16} />} onClick={item.onClick}>
 												{item.label}
 											</Menu.Item>
@@ -131,6 +152,11 @@ export default function Header() {
 								{isAdmin && (
 									<Badge color='red' variant='filled' size='sm'>
 										Admin
+									</Badge>
+								)}
+								{isStaff && !isAdmin && (
+									<Badge color='blue' variant='filled' size='sm'>
+										Staff
 									</Badge>
 								)}
 

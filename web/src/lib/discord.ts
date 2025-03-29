@@ -75,7 +75,6 @@ export const hasPermission = async (user: any, requiredLevel: PermissionLevel = 
   if (!user) return false;
   
   try {
-    // Get Discord ID from all possible locations
     const discordId = user.provider_id || user.sub || user.id || 
       (user.user_metadata && (user.user_metadata.provider_id || user.user_metadata.sub));
     
@@ -84,12 +83,10 @@ export const hasPermission = async (user: any, requiredLevel: PermissionLevel = 
       return false;
     }
     
-    // If the user is in the allow list, give them admin permissions
     if (ALLOWED_DISCORD_USER_IDS.includes(discordId)) {
       return true;
     }
     
-    // Get valid Discord roles from database
     const { data: rolePermissions, error } = await supabase
       .from('role_permissions')
       .select('*')
@@ -105,14 +102,9 @@ export const hasPermission = async (user: any, requiredLevel: PermissionLevel = 
       return false;
     }
     
-    // Two approaches to get user roles:
-    
-    // APPROACH 1: Try to get roles from Discord bot (if configured)
     if (discordBotService.isConfigured()) {
-      // First sync the roles (this will update our database with latest Discord roles)
       await discordBotService.syncUserRoles(discordId);
       
-      // Then fetch from our database
       const { data: userRoles, error: userRolesError } = await supabase
         .from('user_roles')
         .select('role_id')
@@ -125,7 +117,6 @@ export const hasPermission = async (user: any, requiredLevel: PermissionLevel = 
       if (userRoles && userRoles.length > 0) {
         const userRoleIds = userRoles.map(ur => ur.role_id);
         
-        // Check if user has any of the required roles
         switch(requiredLevel) {
           case 'admin':
             return userRoleIds.some((roleId: string) => rolePermissions.admin_roles.includes(roleId));
@@ -153,8 +144,6 @@ export const hasPermission = async (user: any, requiredLevel: PermissionLevel = 
       }
     }
     
-    // APPROACH 2: Fallback to checking user's Discord roles from OAuth data
-    // This is the original approach, which may not work reliably
     const targetGuild = user.guilds?.find((guild: any) => guild.id === TARGET_SERVER_ID);
     
     if (!targetGuild) {
@@ -169,7 +158,6 @@ export const hasPermission = async (user: any, requiredLevel: PermissionLevel = 
     
     const userRoleIds = targetGuild.roles.map((role: any) => role.id);
     
-    // Check if user has any of the required roles
     switch(requiredLevel) {
       case 'admin':
         return userRoleIds.some((roleId: string) => rolePermissions.admin_roles.includes(roleId));
@@ -204,7 +192,6 @@ export const getUserPermissionLevel = async (user: any): Promise<PermissionLevel
   if (!user) return 'none';
   
   try {
-    // Short-circuit for allowed users
     const discordId = user.provider_id || user.sub || user.id || 
       (user.user_metadata && (user.user_metadata.provider_id || user.user_metadata.sub));
     

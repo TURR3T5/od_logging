@@ -1,4 +1,3 @@
-// src/lib/ApplicationService.ts
 import { supabase } from './supabase';
 import cacheService from './CacheService';
 
@@ -24,7 +23,7 @@ export interface JobQuestion {
 export interface JobApplication {
   id: string;
   job_id: string;
-  job_title?: string; // Joined field
+  job_title?: string;
   user_id: string;
   username: string | null;
   discord_id: string | null;
@@ -33,13 +32,13 @@ export interface JobApplication {
   updated_at: string | null;
   updated_by: string | null;
   feedback: string | null;
-  answers?: ApplicationAnswer[]; // Joined field
+  answers?: ApplicationAnswer[];
 }
 
 export interface ApplicationAnswer {
   application_id: string;
   question_id: string;
-  question_label?: string; // Joined field
+  question_label?: string;
   answer: string | null;
 }
 
@@ -96,7 +95,7 @@ export const ApplicationService = {
     if (cached) return cached;
     
     try {
-      // Get applications
+      
       const { data: applications, error: appError } = await supabase
         .from('job_applications')
         .select('*')
@@ -105,7 +104,7 @@ export const ApplicationService = {
       if (appError) throw appError;
       if (!applications) return [];
       
-      // Get job titles
+      
       const jobIds = [...new Set(applications.map(app => app.job_id))];
       
       const { data: jobs, error: jobsError } = await supabase
@@ -115,7 +114,7 @@ export const ApplicationService = {
         
       if (jobsError) throw jobsError;
       
-      // Get answers for all applications
+      
       const applicationIds = applications.map(app => app.id);
       
       const { data: answers, error: answersError } = await supabase
@@ -125,7 +124,7 @@ export const ApplicationService = {
         
       if (answersError) throw answersError;
       
-      // Get question texts
+      
       const questionIds = answers ? [...new Set(answers.map(ans => ans.question_id))] : [];
       
       const { data: questions, error: questionsError } = await supabase
@@ -135,7 +134,7 @@ export const ApplicationService = {
         
       if (questionsError) throw questionsError;
       
-      // Create lookup maps
+      
       const jobTitleMap: Record<string, string> = {};
       jobs?.forEach(job => {
         jobTitleMap[job.id] = job.title;
@@ -146,7 +145,7 @@ export const ApplicationService = {
         questionLabelMap[q.id] = q.label;
       });
       
-      // Group answers by application
+      
       const answersByApplication: Record<string, ApplicationAnswer[]> = {};
       answers?.forEach(answer => {
         if (!answersByApplication[answer.application_id]) {
@@ -159,7 +158,7 @@ export const ApplicationService = {
         });
       });
       
-      // Combine all data
+      
       const enrichedApplications: JobApplication[] = applications.map(app => ({
         ...app,
         job_title: jobTitleMap[app.job_id],
@@ -180,7 +179,7 @@ export const ApplicationService = {
     if (cached) return cached;
     
     try {
-      // Get applications for this user
+      
       const { data: applications, error: appError } = await supabase
         .from('job_applications')
         .select('*')
@@ -190,7 +189,7 @@ export const ApplicationService = {
       if (appError) throw appError;
       if (!applications) return [];
       
-      // Get job titles
+      
       const jobIds = [...new Set(applications.map(app => app.job_id))];
       
       const { data: jobs, error: jobsError } = await supabase
@@ -200,7 +199,7 @@ export const ApplicationService = {
       
       if (jobsError) throw jobsError;
       
-      // Get answers for all applications
+      
       const applicationIds = applications.map(app => app.id);
       
       const { data: answers, error: answersError } = await supabase
@@ -210,7 +209,7 @@ export const ApplicationService = {
         
       if (answersError) throw answersError;
       
-      // Get question texts
+      
       const questionIds = answers ? [...new Set(answers.map(ans => ans.question_id))] : [];
       
       const { data: questions, error: questionsError } = await supabase
@@ -220,7 +219,7 @@ export const ApplicationService = {
         
       if (questionsError) throw questionsError;
       
-      // Create lookup maps
+      
       const jobTitleMap: Record<string, string> = {};
       jobs?.forEach(job => {
         jobTitleMap[job.id] = job.title;
@@ -231,7 +230,7 @@ export const ApplicationService = {
         questionLabelMap[q.id] = q.label;
       });
       
-      // Group answers by application
+      
       const answersByApplication: Record<string, ApplicationAnswer[]> = {};
       answers?.forEach(answer => {
         if (!answersByApplication[answer.application_id]) {
@@ -244,7 +243,7 @@ export const ApplicationService = {
         });
       });
       
-      // Combine all data
+      
       const enrichedApplications: JobApplication[] = applications.map(app => ({
         ...app,
         job_title: jobTitleMap[app.job_id],
@@ -261,14 +260,14 @@ export const ApplicationService = {
 
   async getApplicationById(id: string): Promise<JobApplication | null> {
     try {
-      // First check if it's in the cache
+      
       const allApplications = cacheService.get<JobApplication[]>(CACHE_KEY_APPLICATIONS);
       if (allApplications) {
         const cached = allApplications.find(app => app.id === id);
         if (cached) return cached;
       }
       
-      // Get the application
+      
       const { data: application, error: appError } = await supabase
         .from('job_applications')
         .select('*')
@@ -278,7 +277,7 @@ export const ApplicationService = {
       if (appError) throw appError;
       if (!application) return null;
       
-      // Get job details
+      
       const { data: job, error: jobError } = await supabase
         .from('job_types')
         .select('id, title')
@@ -287,7 +286,7 @@ export const ApplicationService = {
         
       if (jobError) throw jobError;
       
-      // Get answers
+      
       const { data: answers, error: answersError } = await supabase
         .from('application_answers')
         .select('*')
@@ -295,7 +294,7 @@ export const ApplicationService = {
         
       if (answersError) throw answersError;
       
-      // Get question labels
+      
       const questionIds = answers ? answers.map(ans => ans.question_id) : [];
       
       const { data: questions, error: questionsError } = await supabase
@@ -305,19 +304,19 @@ export const ApplicationService = {
         
       if (questionsError) throw questionsError;
       
-      // Create question label map
+      
       const questionLabelMap: Record<string, string> = {};
       questions?.forEach(q => {
         questionLabelMap[q.id] = q.label;
       });
       
-      // Enrich answers with question labels
+      
       const enrichedAnswers = answers?.map(answer => ({
         ...answer,
         question_label: questionLabelMap[answer.question_id]
       })) || [];
       
-      // Return the enriched application
+      
       return {
         ...application,
         job_title: job?.title,
@@ -338,7 +337,7 @@ export const ApplicationService = {
         
       if (error) throw error;
       
-      // Invalidate caches
+      
       cacheService.invalidate(CACHE_KEY_JOBS);
       
       return true;
@@ -350,7 +349,7 @@ export const ApplicationService = {
   
   async updateJobQuestions(jobId: string, questions: Partial<JobQuestion>[]): Promise<boolean> {
     try {
-      // First get existing questions
+      
       const { data: existingQuestions, error: fetchError } = await supabase
         .from('job_questions')
         .select('id')
@@ -358,12 +357,12 @@ export const ApplicationService = {
         
       if (fetchError) throw fetchError;
       
-      // Identify questions to update and create
+      
       const existingIds = new Set(existingQuestions?.map(q => q.id) || []);
       const questionsToUpdate = questions.filter(q => q.id && existingIds.has(q.id));
       const questionsToCreate = questions.filter(q => !q.id || !existingIds.has(q.id as string));
       
-      // Update existing questions
+      
       for (const question of questionsToUpdate) {
         const { error } = await supabase
           .from('job_questions')
@@ -373,7 +372,7 @@ export const ApplicationService = {
         if (error) throw error;
       }
       
-      // Create new questions
+      
       if (questionsToCreate.length > 0) {
         const newQuestions = questionsToCreate.map(q => ({
           ...q,
@@ -387,7 +386,7 @@ export const ApplicationService = {
         if (error) throw error;
       }
       
-      // Invalidate cache
+      
       cacheService.invalidate(`${CACHE_KEY_QUESTIONS}_${jobId}`);
       
       return true;
@@ -399,7 +398,7 @@ export const ApplicationService = {
   
   async deleteJobType(id: string): Promise<boolean> {
     try {
-      // This will cascade delete questions
+      
       const { error } = await supabase
         .from('job_types')
         .delete()
@@ -407,7 +406,7 @@ export const ApplicationService = {
         
       if (error) throw error;
       
-      // Invalidate caches
+      
       cacheService.invalidate(CACHE_KEY_JOBS);
       cacheService.invalidate(`${CACHE_KEY_QUESTIONS}_${id}`);
       cacheService.invalidate(CACHE_KEY_APPLICATIONS);
@@ -455,7 +454,7 @@ export const ApplicationService = {
   
   async incrementMembersCount(jobId: string): Promise<boolean> {
     try {
-      // First get current count
+      
       const { data, error: fetchError } = await supabase
         .from('job_types')
         .select('members_count')
@@ -466,7 +465,7 @@ export const ApplicationService = {
       
       const currentCount = data?.members_count || 0;
       
-      // Update count
+      
       const { error: updateError } = await supabase
         .from('job_types')
         .update({ members_count: currentCount + 1 })
@@ -474,7 +473,7 @@ export const ApplicationService = {
         
       if (updateError) throw updateError;
       
-      // Invalidate cache
+      
       cacheService.invalidate(CACHE_KEY_JOBS);
       
       return true;

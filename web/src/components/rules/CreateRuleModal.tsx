@@ -90,11 +90,11 @@ export default function CreateRuleModal({ opened, onClose, onRuleCreated }: Crea
 		}));
 	};
 
-    useEffect(() => {
-        if (opened) {
-            handleOpened();
-        }
-    }, [opened]);
+	useEffect(() => {
+		if (opened) {
+			handleOpened();
+		}
+	}, [opened]);
 
 	return (
 		<Modal opened={opened} onClose={onClose} title={<Text fw={700}>Opret Ny Regel</Text>} size='lg'>

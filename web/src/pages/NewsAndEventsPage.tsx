@@ -87,7 +87,6 @@ export default function NewsAndEventsPage() {
 			const dateA = a.type === 'event' && a.event_date ? (typeof a.event_date === 'string' ? new Date(a.event_date) : a.event_date) : new Date(a.created_at);
 			const dateB = b.type === 'event' && b.event_date ? (typeof b.event_date === 'string' ? new Date(b.event_date) : b.event_date) : new Date(b.created_at);
 
-			// Handle null dates
 			if (!dateA) return 1;
 			if (!dateB) return -1;
 
@@ -131,7 +130,6 @@ export default function NewsAndEventsPage() {
 				is_pinned: newItem.is_pinned || false,
 			};
 
-			// Add type-specific details
 			if (newItem.type === 'news' && newItem.news_type) {
 				contentItem.news_type = newItem.news_type;
 			}
@@ -164,7 +162,6 @@ export default function NewsAndEventsPage() {
 
 				fetchItems();
 
-				// Reset form
 				setNewItem({
 					title: '',
 					description: '',
@@ -181,7 +178,6 @@ export default function NewsAndEventsPage() {
 		} catch (error) {
 			console.error('Error creating content:', error);
 
-			// Check if it's a permission error
 			if (error instanceof Error && error.message.includes('Insufficient permissions')) {
 				notifications.show({
 					title: 'Unauthorized',
@@ -239,10 +235,14 @@ export default function NewsAndEventsPage() {
 			const item = items.find((i) => i.id === id);
 			if (!item) return;
 
-			const success = await NewsEventsService.updateContent(id, {
-				is_pinned: !item.is_pinned,
-				updated_by: user?.username || 'Unknown',
-			}, user);
+			const success = await NewsEventsService.updateContent(
+				id,
+				{
+					is_pinned: !item.is_pinned,
+					updated_by: user?.username || 'Unknown',
+				},
+				user
+			);
 
 			if (success) {
 				const updatedItems = items.map((item) => (item.id === id ? { ...item, is_pinned: !item.is_pinned } : item));
@@ -339,7 +339,7 @@ export default function NewsAndEventsPage() {
 		.slice(0, 4);
 
 	return (
-		<MainLayout requireAuth={false}>
+		<MainLayout requireAuth={true} requiredPermission='admin'>
 			<Container size='xl' py='xs'>
 				<Group justify='space-between' mb='md'>
 					<Box>

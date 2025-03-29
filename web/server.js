@@ -10,19 +10,16 @@ dotenv.config({ path: './.env.local' });
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Move all sensitive data to environment variables
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const fivemApiKey = process.env.FIVEM_API_KEY;
 const FIVEM_SERVER_IP = process.env.FIVEM_SERVER_IP || '195.60.166.90:30120';
 
-// Discord API configuration
 const DISCORD_API_URL = 'https://discord.com/api/v10';
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
-const DISCORD_API_KEY = process.env.DISCORD_API_KEY || fivemApiKey; // Can reuse FiveM key or set a separate one
+const DISCORD_API_KEY = process.env.DISCORD_API_KEY || fivemApiKey;
 const TARGET_SERVER_ID = process.env.DISCORD_SERVER_ID || '679360230299140114';
 
-// Check for missing critical environment variables
 if (!supabaseUrl || !supabaseServiceKey || !fivemApiKey) {
 	console.error('Missing required environment variables. Please check your .env file.');
 	process.exit(1);
@@ -33,8 +30,6 @@ if (!DISCORD_BOT_TOKEN) {
 }
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-/*  */
 
 app.use(
 	cors({
@@ -123,7 +118,6 @@ const verifyApiKey = (req, res, next) => {
 	next();
 };
 
-// Middleware to verify Discord API key
 const verifyDiscordApiKey = (req, res, next) => {
   const apiKey = req.headers['x-api-key'];
   if (!DISCORD_BOT_TOKEN) {
@@ -207,11 +201,8 @@ app.post('/log', verifyApiKey, async (req, res) => {
 	}
 });
 
-/*--------------------------*/
-/* DISCORD BOT API ENDPOINTS */
-/*--------------------------*/
+/* Discord bot API endpoints */
 
-// API status/info
 app.get('/discord', (req, res) => {
   if (!DISCORD_BOT_TOKEN) {
     return res.status(503).json({ 
@@ -230,21 +221,18 @@ app.get('/discord', (req, res) => {
   });
 });
 
-// Get guild details
 app.get('/discord/guild-details', verifyDiscordApiKey, async (req, res) => {
   if (!DISCORD_BOT_TOKEN) {
     return res.status(503).json({ error: 'Discord bot API is not configured' });
   }
   
   try {
-    // Get guild info
     const guildResponse = await axios.get(`${DISCORD_API_URL}/guilds/${TARGET_SERVER_ID}`, {
       headers: {
         Authorization: `Bot ${DISCORD_BOT_TOKEN}`
       }
     });
 
-    // Get roles
     const rolesResponse = await axios.get(`${DISCORD_API_URL}/guilds/${TARGET_SERVER_ID}/roles`, {
       headers: {
         Authorization: `Bot ${DISCORD_BOT_TOKEN}`
@@ -264,7 +252,6 @@ app.get('/discord/guild-details', verifyDiscordApiKey, async (req, res) => {
   }
 });
 
-// Get member roles
 app.post('/discord/member-roles', verifyDiscordApiKey, async (req, res) => {
   if (!DISCORD_BOT_TOKEN) {
     return res.status(503).json({ error: 'Discord bot API is not configured' });
@@ -285,7 +272,6 @@ app.post('/discord/member-roles', verifyDiscordApiKey, async (req, res) => {
     
     res.json({ roles: response.data.roles });
   } catch (error) {
-    // If user not found in guild, return empty roles array
     if (error.response?.status === 404) {
       return res.json({ roles: [] });
     }
@@ -298,7 +284,6 @@ app.post('/discord/member-roles', verifyDiscordApiKey, async (req, res) => {
   }
 });
 
-// Sync user roles to database endpoint
 app.post('/discord/sync-user-roles', verifyDiscordApiKey, async (req, res) => {
   if (!DISCORD_BOT_TOKEN) {
     return res.status(503).json({ error: 'Discord bot API is not configured' });
@@ -311,7 +296,6 @@ app.post('/discord/sync-user-roles', verifyDiscordApiKey, async (req, res) => {
   }
   
   try {
-    // Get user's roles from Discord
     let roles = [];
     try {
       const response = await axios.get(`${DISCORD_API_URL}/guilds/${TARGET_SERVER_ID}/members/${userId}`, {
@@ -322,14 +306,12 @@ app.post('/discord/sync-user-roles', verifyDiscordApiKey, async (req, res) => {
       roles = response.data.roles;
     } catch (error) {
       if (error.response?.status === 404) {
-        // User not in guild, will clear their roles
         roles = [];
       } else {
         throw error;
       }
     }
     
-    // Delete existing roles for this user
     const { error: deleteError } = await supabase
       .from('user_roles')
       .delete()
@@ -339,7 +321,6 @@ app.post('/discord/sync-user-roles', verifyDiscordApiKey, async (req, res) => {
       throw deleteError;
     }
     
-    // If user has roles, insert them
     if (roles.length > 0) {
       const roleEntries = roles.map(roleId => ({
         discord_id: userId,
