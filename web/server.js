@@ -155,7 +155,7 @@ app.get('/log', (req, res) => {
 				'x-api-key': 'your-api-key-here',
 			},
 			body: {
-				server_id: 'server_name',
+				server_id: 'server_ingame_id',
 				event_type: 'event_name',
 				category: 'category_name',
 				type: 'type_name',

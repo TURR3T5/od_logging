@@ -292,8 +292,8 @@ export default function HomePage() {
 							<Box
 								style={{
 									position: 'absolute',
-									width: '91.666667%',
-									height: '80%',
+									width: '99.666667%',
+									height: '88%',
 									borderRadius: '16px',
 									overflow: 'hidden',
 									maxWidth: '1800px',
@@ -397,59 +397,6 @@ export default function HomePage() {
 				</Box>
 			</Box>
 
-			<Box
-				style={{
-					backgroundColor: '#0a0a0a',
-					padding: '20px 0',
-					borderBottom: '1px solid #222',
-				}}
-			>
-				<Container size='xl'>
-					<Grid>
-						<Grid.Col span={{ base: 6, md: 3 }}>
-							<Box style={{ textAlign: 'center' }}>
-								<Text size='sm' c='dimmed'>
-									ONLINE SPILLERE
-								</Text>
-								<Text size='xl' fw={700} variant='gradient' gradient={{ from: 'blue', to: 'cyan' }}>
-									{serverStats.onlinePlayers}
-								</Text>
-							</Box>
-						</Grid.Col>
-						<Grid.Col span={{ base: 6, md: 3 }}>
-							<Box style={{ textAlign: 'center' }}>
-								<Text size='sm' c='dimmed'>
-									MAX SPILLERE
-								</Text>
-								<Text size='xl' fw={700} variant='gradient' gradient={{ from: 'blue', to: 'cyan' }}>
-									{serverStats.maxPlayers}
-								</Text>
-							</Box>
-						</Grid.Col>
-						<Grid.Col span={{ base: 6, md: 3 }}>
-							<Box style={{ textAlign: 'center' }}>
-								<Text size='sm' c='dimmed'>
-									WHITELIST MEDLEMMER
-								</Text>
-								<Text size='xl' fw={700} variant='gradient' gradient={{ from: 'blue', to: 'cyan' }}>
-									{serverStats.whitelistCount}
-								</Text>
-							</Box>
-						</Grid.Col>
-						<Grid.Col span={{ base: 6, md: 3 }}>
-							<Box style={{ textAlign: 'center' }}>
-								<Text size='sm' c='dimmed'>
-									SERVER STATUS
-								</Text>
-								<Badge color={serverStats.status === 'online' ? 'green' : 'red'} variant='light'>
-									{serverStats.status === 'online' ? 'Online' : 'Offline'}
-								</Badge>
-							</Box>
-						</Grid.Col>
-					</Grid>
-				</Container>
-			</Box>
-
 			{pinnedItems.length > 0 && (
 				<Box
 					style={{
@@ -471,7 +418,7 @@ export default function HomePage() {
 
 						<SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing='md'>
 							{pinnedItems.map((item) => (
-								<Card key={item.id} withBorder shadow='sm' padding='md' radius='md'>
+								<Card key={item.id} withBorder shadow='sm' padding='md' radius='md' bg='dark.8'>
 									<Card.Section withBorder inheritPadding py='xs'>
 										<Group justify='space-between'>
 											<Badge color={item.type === 'news' ? (item.newsType === 'update' ? 'blue' : item.newsType === 'changelog' ? 'green' : 'orange') : item.eventType === 'official' ? 'blue' : item.eventType === 'community' ? 'green' : 'purple'} leftSection={item.type === 'news' ? <Megaphone size={14} /> : <CalendarCheck size={14} />}>
@@ -584,7 +531,7 @@ export default function HomePage() {
 
 								<Box>
 									{featuredPlayers.map((player) => (
-										<Card key={player.id} withBorder mb='md' padding='sm'>
+										<Card key={player.id} withBorder mb='md' padding='sm' bg='dark.8'>
 											<Group>
 												<Avatar src={player.avatarUrl} size='lg' radius='md' />
 												<Box>
@@ -695,16 +642,8 @@ export default function HomePage() {
 									padding='xl'
 									radius='md'
 									withBorder
-									style={(theme) => ({
-										backgroundColor: theme.colors.dark[8],
-										borderColor: theme.colors.dark[5],
-										height: '100%',
-										transition: 'all 0.3s',
-										'&:hover': {
-											transform: 'translateY(-5px)',
-											borderColor: theme.colors.blue[5],
-										},
-									})}
+									h={240}
+									bg='dark.8'
 								>
 									<Box
 										style={(theme) => ({
@@ -744,48 +683,6 @@ export default function HomePage() {
 							</Grid.Col>
 						))}
 					</Grid>
-				</Container>
-			</Box>
-
-			<Box
-				style={{
-					padding: '80px 0',
-					textAlign: 'center',
-				}}
-			>
-				<Container size='md'>
-					<Title
-						order={2}
-						style={{
-							fontSize: '2.25rem',
-							fontWeight: 'bold',
-							marginBottom: '24px',
-							textAlign: 'center',
-						}}
-					>
-						Klar til at Starte Din Rejse?
-					</Title>
-					<Text
-						size='xl'
-						style={{
-							marginBottom: '40px',
-							color: '#d1d5db',
-							maxWidth: '42rem',
-							margin: '0 auto 40px',
-							textAlign: 'center',
-						}}
-					>
-						Forbind med andre spillere, deltag i events og skab uforglemmelige rollespilsoplevelser i vores fordybende FiveM server.
-					</Text>
-
-					<Group justify='center' gap='xl'>
-						<Button component='a' href='https://discord.gg/odessarp' target='_blank' size='xl' leftSection={<DiscordLogo size={24} />} variant='gradient' gradient={{ from: 'indigo', to: 'blue' }} style={{ padding: '0 32px' }}>
-							Tilslut Vores Discord
-						</Button>
-						<Button component='a' href='fivem://connect/play.odessarp.com' size='xl' variant='outline' rightSection={<ArrowRight size={24} />} color='blue' style={{ padding: '0 32px' }}>
-							Forbind til Server
-						</Button>
-					</Group>
 				</Container>
 			</Box>
 
