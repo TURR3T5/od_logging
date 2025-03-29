@@ -147,7 +147,7 @@ export default function Header() {
 							<Text>Loading...</Text>
 						) : isAuthorized ? (
 							<Group>
-								<Text c='gray.0'>{user?.username || (user?.email && `Welcome, ${user.email.split('@')[0]}`)}</Text>
+								<Text c='gray.0'>{user?.username || (user?.email && `Velkommen, ${user.email.split('@')[0]}`)}</Text>
 
 								{isAdmin && (
 									<Badge color='red' variant='filled' size='sm'>

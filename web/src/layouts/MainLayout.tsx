@@ -35,10 +35,9 @@ export default function MainLayout({ children, requireAuth = true, requiredPermi
 				navigate({ to: '/login' });
 			} else if (requiredPermission) {
 				setCheckingPermission(true);
-				hasPermission(requiredPermission).then((result) => {
-					setHasPermissionState(result);
-					setCheckingPermission(false);
-				});
+				const permitted = hasPermission(requiredPermission);
+				setHasPermissionState(permitted);
+				setCheckingPermission(false);
 			} else {
 				setHasPermissionState(true);
 				setCheckingPermission(false);
