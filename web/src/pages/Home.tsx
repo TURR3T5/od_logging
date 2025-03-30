@@ -481,7 +481,7 @@ export default function HomePage() {
 										</Group>
 									</Title>
 									<Button variant='subtle' rightSection={<ArrowRight size={16} />} onClick={() => navigate({ to: '/events' })}>
-										Se alle begivenheder
+										Se alle nyheder og events
 									</Button>
 								</Group>
 
