@@ -33,6 +33,7 @@ export default function NewsAndEventsPage() {
 		content: '',
 		type: 'news',
 		news_type: 'announcement',
+		event_type: 'community',
 		is_pinned: false,
 	});
 
@@ -797,7 +798,7 @@ export default function NewsAndEventsPage() {
 										Begivenhedstype
 									</Text>
 									<SegmentedControl
-										value={(newItem as any).eventType || 'community'}
+										value={newItem.type === 'event' ? newItem.event_type || 'community' : 'community'}
 										onChange={(value) => setNewItem({ ...newItem, event_type: value as any })}
 										data={[
 											{ label: 'Fællesskab', value: 'community' },
