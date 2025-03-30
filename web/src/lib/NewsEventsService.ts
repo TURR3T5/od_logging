@@ -40,7 +40,42 @@ export const checkContentPermission = async (
   ): Promise<boolean> => {
     if (!user) return false;
   
-    return hasPermission(user, requiredLevel);
+    const discordPermission = await hasPermission(user, requiredLevel);
+    if (discordPermission) return true;
+
+    try {
+      const userEmail = user.email?.toLowerCase();
+      if (!userEmail) return false;
+      
+      const { data, error } = await supabase
+        .from('user_roles_email')
+        .select('role')
+        .eq('email', userEmail)
+        .single();
+        
+      if (error) {
+        console.error('Error checking email role:', error);
+        return false;
+      }
+      
+      if (!data || !data.role) return false;
+
+      const permissionHierarchy: Record<string, number> = {
+        'admin': 3,
+        'staff': 2,
+        'content': 1,
+        'viewer': 0,
+        'none': -1
+      };
+      
+      const userPermissionLevel = permissionHierarchy[data.role] || -1;
+      const requiredPermissionLevel = permissionHierarchy[requiredLevel] || 1;
+      
+      return userPermissionLevel >= requiredPermissionLevel;
+    } catch (error) {
+      console.error('Error in email permission check:', error);
+      return false;
+    }
 };
 
 export const NewsEventsService = {
