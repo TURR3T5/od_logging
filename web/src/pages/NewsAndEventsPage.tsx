@@ -1,3 +1,4 @@
+import { EditContentModal } from '../components/EditContentModal';
 import { useState, useEffect } from 'react';
 import { Container, Title, Text, Box, Group, Button, Modal, TextInput, Textarea, Paper, Badge, ActionIcon, Card, Menu, Indicator, Divider, Grid, SegmentedControl, Tabs, Checkbox, Switch } from '@mantine/core';
 import { DatePickerInput, Calendar } from '@mantine/dates';
@@ -8,7 +9,6 @@ import MainLayout from '../layouts/MainLayout';
 import { Plus, DotsThree, CalendarCheck, Trash, CheckCircle, Calendar as CalendarIcon, Star, Bell, PushPin, Pencil, FileText, Megaphone } from '@phosphor-icons/react';
 import 'dayjs/locale/da';
 import { format, isSameDay } from 'date-fns';
-import { da } from 'date-fns/locale';
 import { ContentItem, NewsEventsService } from '../lib/NewsEventsService';
 
 export default function NewsAndEventsPage() {
@@ -24,6 +24,8 @@ export default function NewsAndEventsPage() {
 	const [createType, setCreateType] = useState<'news' | 'event'>('news');
 	const [_isLoading, setIsLoading] = useState(true);
 	const { isAuthorized, user } = useAuth();
+	const [editModalOpened, setEditModalOpened] = useState(false);
+	const [itemToEdit, setItemToEdit] = useState<ContentItem | null>(null);
 
 	const [newItem, setNewItem] = useState<Partial<ContentItem>>({
 		title: '',
@@ -33,6 +35,33 @@ export default function NewsAndEventsPage() {
 		news_type: 'announcement',
 		is_pinned: false,
 	});
+
+	const handleCloseEditModal = () => {
+		setEditModalOpened(false);
+		setItemToEdit(null);
+	};
+
+	const handleUpdateItem = async (id: string, updates: Partial<ContentItem>) => {
+		try {
+			const success = await NewsEventsService.updateContent(id, updates, user);
+
+			if (success) {
+				const updatedItems = items.map((item) => (item.id === id ? { ...item, ...updates } : item));
+				setItems(updatedItems);
+				filterItems(updatedItems);
+
+				if (selectedItem?.id === id) {
+					setSelectedItem({ ...selectedItem, ...updates });
+				}
+
+				return true;
+			}
+			return false;
+		} catch (error) {
+			console.error('Error updating item:', error);
+			return false;
+		}
+	};
 
 	useEffect(() => {
 		fetchItems();
@@ -271,6 +300,12 @@ export default function NewsAndEventsPage() {
 		}
 	};
 
+	// New edit functionality
+	const handleOpenEditModal = (item: ContentItem) => {
+		setItemToEdit(item);
+		setEditModalOpened(true);
+	};
+
 	const getTypeDetails = (item: ContentItem) => {
 		if (item.type === 'news') {
 			switch (item.news_type) {
@@ -423,7 +458,7 @@ export default function NewsAndEventsPage() {
 
 											{item.type === 'event' && (
 												<Text size='sm' c='dimmed' mb='xs'>
-													{item.event_date ? format(new Date(item.event_date || new Date()), 'd. MMMM yyyy, HH:mm', { locale: da }) : 'Dato ikke tilgængelig'}
+													{item.event_date ? format(new Date(item.event_date || new Date()), 'd. MMMM yyyy, HH:mm') : 'Dato ikke tilgængelig'}
 												</Text>
 											)}
 
@@ -467,7 +502,7 @@ export default function NewsAndEventsPage() {
 							<Grid.Col span={{ base: 12, md: 7 }}>
 								<Paper withBorder p='md' radius='md' h='100%'>
 									<Group justify='space-between' mb='md'>
-										<Title order={3}>{selectedDate ? <>Events {format(selectedDate, 'd. MMMM yyyy', { locale: da })}</> : <>Vælg en dato</>}</Title>
+										<Title order={3}>{selectedDate ? <>Events {format(selectedDate, 'd. MMMM yyyy')}</> : <>Vælg en dato</>}</Title>
 									</Group>
 
 									{filteredItems.length > 0 ? (
@@ -494,6 +529,9 @@ export default function NewsAndEventsPage() {
 																<>
 																	<Menu.Item onClick={() => togglePinItem(item.id)} leftSection={<PushPin size={14} />}>
 																		{item.is_pinned ? 'Fjern fastgørelse' : 'Fastgør'}
+																	</Menu.Item>
+																	<Menu.Item onClick={() => handleOpenEditModal(item)} leftSection={<Pencil size={14} />}>
+																		Rediger
 																	</Menu.Item>
 																	<Menu.Item color='red' leftSection={<Trash size={14} />} onClick={() => handleDeleteItem(item.id)}>
 																		Slet
@@ -560,14 +598,14 @@ export default function NewsAndEventsPage() {
 
 													{item.type === 'event' && (
 														<Text size='sm' c='dimmed' mb='xs'>
-															{item.event_date ? format(new Date(item.event_date), 'd. MMMM yyyy, HH:mm', { locale: da }) : 'Dato ikke tilgængelig'}
+															{item.event_date ? format(new Date(item.event_date), 'd. MMMM yyyy, HH:mm') : 'Dato ikke tilgængelig'}
 														</Text>
 													)}
 
 													{item.type === 'news' && (
 														<Text size='sm' c='dimmed' mb='xs'>
-															{format(item.created_at, 'd. MMMM yyyy', { locale: da })}
-															{item.last_updated && item.last_updated > item.created_at && <> (opdateret {format(item.last_updated, 'd. MMMM', { locale: da })})</>}
+															{format(item.created_at, 'd. MMMM yyyy')}
+															{item.last_updated && item.last_updated > item.created_at && <> (opdateret {format(item.last_updated, 'd. MMMM')})</>}
 														</Text>
 													)}
 
@@ -590,7 +628,9 @@ export default function NewsAndEventsPage() {
 																	<Menu.Item onClick={() => togglePinItem(item.id)} leftSection={<PushPin size={14} />}>
 																		{item.is_pinned ? 'Fjern fastgørelse' : 'Fastgør'}
 																	</Menu.Item>
-																	<Menu.Item leftSection={<Pencil size={14} />}>Rediger</Menu.Item>
+																	<Menu.Item leftSection={<Pencil size={14} />} onClick={() => handleOpenEditModal(item)}>
+																		Rediger
+																	</Menu.Item>
 																	<Menu.Item color='red' leftSection={<Trash size={14} />} onClick={() => handleDeleteItem(item.id)}>
 																		Slet
 																	</Menu.Item>
@@ -613,9 +653,9 @@ export default function NewsAndEventsPage() {
 								<Box>
 									{filteredItems.length > 0 ? (
 										filteredItems.map((item, index, arr) => {
-											const currentMonth = item.type === 'event' ? format(new Date(item.event_date ?? ''), 'MMMM yyyy', { locale: da }) : format(new Date(item.created_at ?? ''), 'MMMM yyyy', { locale: da });
+											const currentMonth = item.type === 'event' ? format(new Date(item.event_date ?? ''), 'MMMM yyyy') : format(new Date(item.created_at ?? ''), 'MMMM yyyy');
 
-											const previousMonth = index > 0 ? (arr[index - 1].type === 'event' ? format(new Date(arr[index - 1].event_date ?? ''), 'MMMM yyyy', { locale: da }) : format(new Date(arr[index - 1].created_at ?? ''), 'MMMM yyyy', { locale: da })) : '';
+											const previousMonth = index > 0 ? (arr[index - 1].type === 'event' ? format(new Date(arr[index - 1].event_date ?? ''), 'MMMM yyyy') : format(new Date(arr[index - 1].created_at ?? ''), 'MMMM yyyy')) : '';
 
 											const showMonthDivider = index === 0 || currentMonth !== previousMonth;
 
@@ -651,7 +691,7 @@ export default function NewsAndEventsPage() {
 																)}
 															</Group>
 															<Group>
-																{item.type === 'event' && item.event_date ? <Badge variant='outline'>{format(typeof item.event_date === 'string' ? new Date(item.event_date) : item.event_date, 'd. MMM, HH:mm', { locale: da })}</Badge> : <Badge variant='outline'>{format(new Date(item.created_at), 'd. MMM', { locale: da })}</Badge>}
+																{item.type === 'event' && item.event_date ? <Badge variant='outline'>{format(typeof item.event_date === 'string' ? new Date(item.event_date) : item.event_date, 'd. MMM, HH:mm')}</Badge> : <Badge variant='outline'>{format(new Date(item.created_at), 'd. MMM')}</Badge>}
 																<Menu shadow='md' width={200} position='bottom-end'>
 																	<Menu.Target>
 																		<ActionIcon>
@@ -667,7 +707,9 @@ export default function NewsAndEventsPage() {
 																				<Menu.Item onClick={() => togglePinItem(item.id)} leftSection={<PushPin size={14} />}>
 																					{item.is_pinned ? 'Fjern fastgørelse' : 'Fastgør'}
 																				</Menu.Item>
-																				<Menu.Item leftSection={<Pencil size={14} />}>Rediger</Menu.Item>
+																				<Menu.Item leftSection={<Pencil size={14} />} onClick={() => handleOpenEditModal(item)}>
+																					Rediger
+																				</Menu.Item>
 																				<Menu.Item color='red' leftSection={<Trash size={14} />} onClick={() => handleDeleteItem(item.id)}>
 																					Slet
 																				</Menu.Item>
@@ -814,15 +856,15 @@ export default function NewsAndEventsPage() {
 							{selectedItem.type === 'event' ? (
 								<Group mb='md'>
 									<CalendarCheck size={18} />
-									<Text fw={500}>{selectedItem.event_date ? format(new Date(selectedItem.event_date), 'd. MMMM yyyy', { locale: da }) : 'Dato ikke tilgængelig'}</Text>
+									<Text fw={500}>{selectedItem.event_date ? format(new Date(selectedItem.event_date), 'd. MMMM yyyy') : 'Dato ikke tilgængelig'}</Text>
 									<Text>kl. {selectedItem.event_date ? format(new Date(selectedItem.event_date), 'HH:mm') : 'N/A'}</Text>
 								</Group>
 							) : (
 								<Group mb='md'>
 									<CalendarIcon size={18} />
 									<Text>
-										{format(selectedItem.created_at, 'd. MMMM yyyy', { locale: da })}
-										{selectedItem.last_updated && selectedItem.last_updated > selectedItem.created_at && <> (opdateret {format(selectedItem.last_updated, 'd. MMMM yyyy', { locale: da })})</>}
+										{format(selectedItem.created_at, 'd. MMMM yyyy')}
+										{selectedItem.last_updated && selectedItem.last_updated > selectedItem.created_at && <> (opdateret {format(selectedItem.last_updated, 'd. MMMM yyyy')})</>}
 									</Text>
 								</Group>
 							)}
@@ -854,7 +896,14 @@ export default function NewsAndEventsPage() {
 											<Button variant='subtle' leftSection={<PushPin size={16} />} onClick={() => togglePinItem(selectedItem.id)}>
 												{selectedItem.is_pinned ? 'Fjern fastgørelse' : 'Fastgør'}
 											</Button>
-											<Button variant='subtle' leftSection={<Pencil size={16} />}>
+											<Button
+												variant='subtle'
+												leftSection={<Pencil size={16} />}
+												onClick={() => {
+													closeItemModal();
+													handleOpenEditModal(selectedItem);
+												}}
+											>
 												Rediger
 											</Button>
 											<Button
@@ -891,6 +940,7 @@ export default function NewsAndEventsPage() {
 						</Box>
 					)}
 				</Modal>
+				<EditContentModal item={itemToEdit} opened={editModalOpened} onClose={handleCloseEditModal} onUpdate={handleUpdateItem} />
 			</Container>
 		</MainLayout>
 	);

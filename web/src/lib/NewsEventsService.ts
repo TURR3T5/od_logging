@@ -66,7 +66,7 @@ export const checkContentPermission = async (
         'content': 1,
         'viewer': 0,
         'none': -1
-      };
+      }
       
       const userPermissionLevel = permissionHierarchy[data.role] || -1;
       const requiredPermissionLevel = permissionHierarchy[requiredLevel] || 1;
@@ -76,7 +76,7 @@ export const checkContentPermission = async (
       console.error('Error in email permission check:', error);
       return false;
     }
-};
+}
 
 export const NewsEventsService = {
   async getAllContent(): Promise<ContentItem[]> {
@@ -262,18 +262,15 @@ export const NewsEventsService = {
   },
 
   async updateContent(id: string, updates: Partial<ContentItem>, user: any): Promise<boolean> {
-    
     const hasPermissions = await checkContentPermission(user);
     if (!hasPermissions) {
       throw new Error('Insufficient permissions to update content');
     }
-
+  
     try {
-      
       updates.updated_by = user?.username || 'Unknown';
       updates.last_updated = new Date().toISOString();
-
-      
+  
       const { data: currentItem, error: fetchError } = await supabase
         .from('content_items')
         .select('*')
@@ -282,8 +279,7 @@ export const NewsEventsService = {
         
       if (fetchError) throw fetchError;
       if (!currentItem) throw new Error('Content item not found');
-      
-      
+
       const contentUpdates: any = {};
       
       if (updates.title !== undefined) contentUpdates.title = updates.title;
@@ -293,7 +289,7 @@ export const NewsEventsService = {
       if (updates.category !== undefined) contentUpdates.category = updates.category;
       if (updates.updated_by) contentUpdates.updated_by = updates.updated_by;
       if (updates.last_updated) contentUpdates.last_updated = updates.last_updated;
-
+  
       const { error: updateError } = await supabase
         .from('content_items')
         .update(contentUpdates)
@@ -302,48 +298,72 @@ export const NewsEventsService = {
       if (updateError) throw updateError;
       
       if (currentItem.type === 'news' && updates.news_type) {
-        const { error: newsUpdateError } = await supabase
-          .from('news_metadata')
-          .upsert({
-            content_id: id,
-            news_type: updates.news_type
-          });
-          
-        if (newsUpdateError) throw newsUpdateError;
-      }
 
-      if (currentItem.type === 'event') {
-        const eventUpdates: any = { content_id: id };
-        let hasUpdates = false;
-        
-        if (updates.event_type) {
-          eventUpdates.event_type = updates.event_type;
-          hasUpdates = true;
+        const { data: existingNewsMetadata, error: metaCheckError } = await supabase
+          .from('news_metadata')
+          .select('*')
+          .eq('content_id', id)
+          .single();
+          
+        if (metaCheckError && metaCheckError.code !== 'PGRST116') {
+          throw metaCheckError;
         }
-        
-        if (updates.event_date) {
-          eventUpdates.event_date = typeof updates.event_date === 'string' 
-            ? updates.event_date 
-            : updates.event_date?.toISOString();
-          hasUpdates = true;
-        }
-        
-        if (updates.location !== undefined) {
-          eventUpdates.location = updates.location;
-          hasUpdates = true;
-        }
-        
-        if (updates.address !== undefined) {
-          eventUpdates.address = updates.address;
-          hasUpdates = true;
-        }
-        
-        if (hasUpdates) {
-          const { error: eventUpdateError } = await supabase
-            .from('event_metadata')
-            .upsert(eventUpdates);
+
+        if (existingNewsMetadata) {
+          const { error: newsUpdateError } = await supabase
+            .from('news_metadata')
+            .update({ news_type: updates.news_type })
+            .eq('content_id', id);
             
-          if (eventUpdateError) throw eventUpdateError;
+          if (newsUpdateError) throw newsUpdateError;
+        } else {
+          const { error: newsInsertError } = await supabase
+            .from('news_metadata')
+            .insert({ content_id: id, news_type: updates.news_type });
+            
+          if (newsInsertError) throw newsInsertError;
+        }
+      }
+  
+      if (currentItem.type === 'event') {
+        if (updates.event_type || updates.event_date || updates.location !== undefined || updates.address !== undefined) {
+          const { data: existingEventMetadata, error: eventMetaCheckError } = await supabase
+            .from('event_metadata')
+            .select('*')
+            .eq('content_id', id)
+            .single();
+            
+          if (eventMetaCheckError && eventMetaCheckError.code !== 'PGRST116') {
+            throw eventMetaCheckError;
+          }
+          
+          const eventUpdates: any = { content_id: id };
+          
+          if (updates.event_type) eventUpdates.event_type = updates.event_type;
+          
+          if (updates.event_date) {
+            eventUpdates.event_date = typeof updates.event_date === 'string' 
+              ? updates.event_date 
+              : updates.event_date?.toISOString();
+          }
+          
+          if (updates.location !== undefined) eventUpdates.location = updates.location;
+          if (updates.address !== undefined) eventUpdates.address = updates.address;
+          
+          if (existingEventMetadata) {
+            const { error: eventUpdateError } = await supabase
+              .from('event_metadata')
+              .update(eventUpdates)
+              .eq('content_id', id);
+              
+            if (eventUpdateError) throw eventUpdateError;
+          } else {
+            const { error: eventInsertError } = await supabase
+              .from('event_metadata')
+              .insert(eventUpdates);
+              
+            if (eventInsertError) throw eventInsertError;
+          }
         }
       }
       
@@ -368,12 +388,12 @@ export const NewsEventsService = {
           if (insertTagsError) throw insertTagsError;
         }
       }
-
+  
       cacheService.invalidate(CACHE_KEY_ALL_CONTENT);
       cacheService.invalidate(CACHE_KEY_NEWS);
       cacheService.invalidate(CACHE_KEY_EVENTS);
       cacheService.invalidate(CACHE_KEY_PINNED);
-
+  
       return true;
     } catch (error) {
       console.error('Error updating content:', error);

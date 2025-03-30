@@ -7,7 +7,6 @@ import { Users, Car, Buildings, Calendar, ShieldCheck, GameController, ArrowRigh
 import { format } from 'date-fns';
 import { da } from 'date-fns/locale';
 import { useUpcomingContent, convertToPinnedItems, convertToNewsItems } from '../lib/NewsHooks';
-import { ContentItem } from '../lib/NewsEventsService';
 
 interface PinnedItem {
 	id: string;
@@ -42,7 +41,7 @@ interface FeaturedPlayer {
 }
 
 export default function HomePage() {
-	const { pinnedItems: dbPinnedItems, recentNews: dbRecentNews, isLoading } = useUpcomingContent();
+	const { pinnedItems: dbPinnedItems, recentNews: dbRecentNews } = useUpcomingContent();
 	const { isAuthorized } = useAuth();
 	const navigate = useNavigate();
 	const [currentSlide, setCurrentSlide] = useState(0);
