@@ -5,6 +5,7 @@ import { notifications } from '@mantine/notifications';
 import MainLayout from '../layouts/MainLayout';
 import { CheckCircle, FileText, ClockCounterClockwise, ShieldStar, Heartbeat, Users, Clock, ArrowRight } from '@phosphor-icons/react';
 import { useAuth } from '../components/AuthProvider';
+import { EmptyState } from '../components/common/EmptyState';
 
 interface Question {
 	id: string;
@@ -241,9 +242,7 @@ function ApplicationsList({ applications, isAdmin = false, onUpdateStatus }: { a
 
 	if (applications.length === 0) {
 		return (
-			<Paper p='xl' withBorder ta='center'>
-				<Text c='dimmed'>{isAdmin ? 'Ingen ansøgninger at vise' : 'Du har ingen aktive ansøgninger'}</Text>
-			</Paper>
+			<EmptyState title='Ingen ansøgninger' message='Der er ingen ansøgninger at vise.' icon={<ClockCounterClockwise size={48} />} />
 		);
 	}
 

@@ -1,7 +1,7 @@
-import { EditContentModal } from '../components/EditContentModal';
+import { EditContentModal } from '../components/modals/EditContentModal';
 import { useState, useEffect } from 'react';
-import { Container, Title, Text, Box, Group, Button, Modal, TextInput, Textarea, Paper, Badge, ActionIcon, Card, Menu, Indicator, Divider, Grid, SegmentedControl, Tabs, Checkbox, Switch } from '@mantine/core';
-import { DatePickerInput, Calendar } from '@mantine/dates';
+import { Container, Title, Text, Box, Group, Button, Paper, Badge, ActionIcon, Card, Menu, Indicator, Divider, Grid, SegmentedControl, Tabs, Switch } from '@mantine/core';
+import { Calendar } from '@mantine/dates';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useAuth } from '../components/AuthProvider';
@@ -10,30 +10,26 @@ import { Plus, DotsThree, CalendarCheck, Trash, CheckCircle, Calendar as Calenda
 import 'dayjs/locale/da';
 import { format, isSameDay } from 'date-fns';
 import { ContentItem } from '../lib/NewsEventsService';
+
+import { CreateContentModal } from '../components/modals/CreateContentModal';
+import { ViewContentModal } from '../components/modals/ViewContentModal';
+import { ContentCard } from '../components/common/ContentCard';
 import { useContentManagement } from '../hooks/useContentManagement';
+import { PageHeader } from '../components/common/PageHeader';
+import { LoadingState } from '../components/common/LoadingState';
+import { EmptyState } from '../components/common/EmptyState';
 
 export default function NewsAndEventsPage() {
 	const [activeTab, setActiveTab] = useState<string | null>('news');
 	const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
 	const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'grid'>('list');
-	const [opened, { open, close }] = useDisclosure(false);
-	const [itemModalOpened, { open: openItemModal, close: closeItemModal }] = useDisclosure(false);
 	const [showPinnedOnly, setShowPinnedOnly] = useState(false);
-	const [createType, setCreateType] = useState<'news' | 'event'>('news');
 	const { isAuthorized, user } = useAuth();
 	const [editModalOpened, setEditModalOpened] = useState(false);
 	const [itemToEdit, setItemToEdit] = useState<ContentItem | null>(null);
-	const { items, filteredItems, setFilteredItems, selectedItem, setSelectedItem, fetchItems, filterItems, createItem, updateItem, deleteItem } = useContentManagement(user);
-
-	const [newItem, setNewItem] = useState<Partial<ContentItem>>({
-		title: '',
-		description: '',
-		content: '',
-		type: 'news',
-		news_type: 'announcement',
-		event_type: 'community',
-		is_pinned: false,
-	});
+	const { items, filteredItems, setFilteredItems, isLoading, selectedItem, setSelectedItem, fetchItems, filterItems, createItem, updateItem, deleteItem } = useContentManagement(user);
+	const [itemModalOpened, { open: openItemModal, close: closeItemModal }] = useDisclosure(false);
+	const [createModalOpened, { open: openCreateModal, close: closeCreateModal }] = useDisclosure(false);
 
 	const handleCloseEditModal = () => {
 		setEditModalOpened(false);
@@ -76,11 +72,6 @@ export default function NewsAndEventsPage() {
 
 	const handleDateChange = (date: Date | null) => {
 		setSelectedDate(date);
-	};
-
-	const handleCreateItem = () => {
-		createItem(newItem as any);
-		close();
 	};
 
 	const handleDeleteItem = (id: string) => {
@@ -144,7 +135,7 @@ export default function NewsAndEventsPage() {
 		const dayEvents = items.filter((item) => item.type === 'event' && item.event_date && isSameDay(new Date(item.event_date), date));
 
 		if (dayEvents.length === 0) {
-			return null;
+			return <EmptyState title='Ingen events' message='Ingen events på denne dato' />;
 		}
 
 		const colors = dayEvents.map((item) => {
@@ -181,20 +172,46 @@ export default function NewsAndEventsPage() {
 		})
 		.slice(0, 4);
 
+	const renderItems = () => {
+		if (isLoading) {
+			return <LoadingState text='Indlæser indhold...' />;
+		}
+
+		if (filteredItems.length === 0) {
+			return <EmptyState title='Ingen indhold fundet' message='Der er ingen indhold at vise med de valgte filtre.' actionLabel={isAuthorized ? 'Opret nyt' : undefined} onAction={isAuthorized ? openCreateModal : undefined} />;
+		}
+
+		if (viewMode === 'grid') {
+			return (
+				<Grid>
+					{filteredItems.map((item) => (
+						<Grid.Col span={{ base: 12, sm: 6, md: 4 }} key={item.id}>
+							<ContentCard item={item} viewMode='grid' onView={handleOpenItemModal} onPin={isAuthorized ? togglePinItem : undefined} onEdit={isAuthorized ? handleOpenEditModal : undefined} onDelete={isAuthorized ? handleDeleteItem : undefined} isAuthorized={isAuthorized} />
+						</Grid.Col>
+					))}
+				</Grid>
+			);
+		}
+
+		return filteredItems.map((item) => <ContentCard key={item.id} item={item} viewMode='list' onView={handleOpenItemModal} onPin={isAuthorized ? togglePinItem : undefined} onEdit={isAuthorized ? handleOpenEditModal : undefined} onDelete={isAuthorized ? handleDeleteItem : undefined} isAuthorized={isAuthorized} />);
+	};
+
 	return (
 		<MainLayout requireAuth={true} requiredPermission='admin'>
 			<Container size='xl' py='xs'>
-				<Group justify='space-between' mb='md'>
-					<Box>
-						<Title order={1}>Nyheder og Events</Title>
-						<Text c='dimmed'>Hold dig opdateret med de seneste nyheder og events fra OdessaRP</Text>
-					</Box>
-					{isAuthorized && (
-						<Button onClick={open} variant='gradient' gradient={{ from: 'blue', to: 'cyan' }} leftSection={<Plus size={16} />}>
-							Opret
-						</Button>
-					)}
-				</Group>
+				<PageHeader
+					title='Nyheder og Events'
+					description='Hold dig opdateret med de seneste nyheder og events fra OdessaRP'
+					primaryAction={
+						isAuthorized
+							? {
+									label: 'Opret',
+									onClick: openCreateModal,
+									icon: <Plus size={16} />,
+							  }
+							: undefined
+					}
+				/>
 
 				<Paper shadow='md' radius='md' p='md' withBorder mb='xl'>
 					<Group justify='space-between' mb='md'>
@@ -379,375 +396,11 @@ export default function NewsAndEventsPage() {
 						</Grid>
 					)}
 
-					{(activeTab !== 'events' || (activeTab === 'events' && viewMode !== 'calendar')) && (
-						<>
-							{viewMode === 'grid' ? (
-								<Grid>
-									{filteredItems.length > 0 ? (
-										filteredItems.map((item) => (
-											<Grid.Col span={{ base: 12, sm: 6, md: 4 }} key={item.id}>
-												<Card withBorder shadow='sm' padding='md' radius='md' style={{ height: '100%' }}>
-													<Card.Section withBorder inheritPadding py='xs'>
-														<Group justify='space-between'>
-															<Badge color={getTypeDetails(item).color} leftSection={getTypeDetails(item).icon}>
-																{getTypeDetails(item).label}
-															</Badge>
-															{item.is_pinned && (
-																<ActionIcon color='blue' variant='subtle'>
-																	<PushPin size={16} weight='fill' />
-																</ActionIcon>
-															)}
-														</Group>
-													</Card.Section>
-
-													<Text fw={700} size='lg' mt='md' mb='xs' lineClamp={1}>
-														{item.title}
-													</Text>
-
-													{item.type === 'event' && (
-														<Text size='sm' c='dimmed' mb='xs'>
-															{item.event_date ? format(new Date(item.event_date), 'd. MMMM yyyy, HH:mm') : 'Dato ikke tilgængelig'}
-														</Text>
-													)}
-
-													{item.type === 'news' && (
-														<Text size='sm' c='dimmed' mb='xs'>
-															{format(item.created_at, 'd. MMMM yyyy')}
-															{item.last_updated && item.last_updated > item.created_at && <> (opdateret {format(item.last_updated, 'd. MMMM')})</>}
-														</Text>
-													)}
-
-													<Text size='sm' lineClamp={3} mb='md'>
-														{item.description}
-													</Text>
-
-													<Group mt='auto' justify='space-between'>
-														<Button variant='light' onClick={() => handleOpenItemModal(item)}>
-															Læs mere
-														</Button>
-														{isAuthorized && (
-															<Menu shadow='md' width={200} position='bottom-end'>
-																<Menu.Target>
-																	<ActionIcon>
-																		<DotsThree size={20} />
-																	</ActionIcon>
-																</Menu.Target>
-																<Menu.Dropdown>
-																	<Menu.Item onClick={() => togglePinItem(item.id)} leftSection={<PushPin size={14} />}>
-																		{item.is_pinned ? 'Fjern fastgørelse' : 'Fastgør'}
-																	</Menu.Item>
-																	<Menu.Item leftSection={<Pencil size={14} />} onClick={() => handleOpenEditModal(item)}>
-																		Rediger
-																	</Menu.Item>
-																	<Menu.Item color='red' leftSection={<Trash size={14} />} onClick={() => handleDeleteItem(item.id)}>
-																		Slet
-																	</Menu.Item>
-																</Menu.Dropdown>
-															</Menu>
-														)}
-													</Group>
-												</Card>
-											</Grid.Col>
-										))
-									) : (
-										<Grid.Col>
-											<Text ta='center' py='xl' c='dimmed'>
-												Ingen {activeTab === 'news' ? 'nyheder' : activeTab === 'events' ? 'begivenheder' : 'indhold'} fundet
-											</Text>
-										</Grid.Col>
-									)}
-								</Grid>
-							) : (
-								<Box>
-									{filteredItems.length > 0 ? (
-										filteredItems.map((item, index, arr) => {
-											const currentMonth = item.type === 'event' ? format(new Date(item.event_date ?? ''), 'MMMM yyyy') : format(new Date(item.created_at ?? ''), 'MMMM yyyy');
-
-											const previousMonth = index > 0 ? (arr[index - 1].type === 'event' ? format(new Date(arr[index - 1].event_date ?? ''), 'MMMM yyyy') : format(new Date(arr[index - 1].created_at ?? ''), 'MMMM yyyy')) : '';
-
-											const showMonthDivider = index === 0 || currentMonth !== previousMonth;
-
-											return (
-												<Box key={item.id}>
-													{showMonthDivider && (
-														<Divider
-															label={
-																<Group gap='xs'>
-																	<CalendarIcon size={16} />
-																	<Text tt='uppercase' fw={500}>
-																		{currentMonth}
-																	</Text>
-																</Group>
-															}
-															labelPosition='center'
-															mb='md'
-															mt={index > 0 ? 'xl' : 0}
-														/>
-													)}
-
-													<Card mb='md' padding='md' radius='md' withBorder>
-														<Group justify='space-between' mb='xs'>
-															<Group>
-																<Badge color={getTypeDetails(item).color} leftSection={getTypeDetails(item).icon}>
-																	{getTypeDetails(item).label}
-																</Badge>
-																<Text fw={700}>{item.title}</Text>
-																{item.is_pinned && (
-																	<ActionIcon color='blue' variant='subtle' onClick={() => togglePinItem(item.id)}>
-																		<PushPin size={16} weight='fill' />
-																	</ActionIcon>
-																)}
-															</Group>
-															<Group>
-																{item.type === 'event' && item.event_date ? <Badge variant='outline'>{format(typeof item.event_date === 'string' ? new Date(item.event_date) : item.event_date, 'd. MMM, HH:mm')}</Badge> : <Badge variant='outline'>{format(new Date(item.created_at), 'd. MMM')}</Badge>}
-																<Menu shadow='md' width={200} position='bottom-end'>
-																	<Menu.Target>
-																		<ActionIcon>
-																			<DotsThree size={20} />
-																		</ActionIcon>
-																	</Menu.Target>
-																	<Menu.Dropdown>
-																		<Menu.Item onClick={() => handleOpenItemModal(item)} leftSection={<CheckCircle size={14} />}>
-																			Se detaljer
-																		</Menu.Item>
-																		{isAuthorized && (
-																			<>
-																				<Menu.Item onClick={() => togglePinItem(item.id)} leftSection={<PushPin size={14} />}>
-																					{item.is_pinned ? 'Fjern fastgørelse' : 'Fastgør'}
-																				</Menu.Item>
-																				<Menu.Item leftSection={<Pencil size={14} />} onClick={() => handleOpenEditModal(item)}>
-																					Rediger
-																				</Menu.Item>
-																				<Menu.Item color='red' leftSection={<Trash size={14} />} onClick={() => handleDeleteItem(item.id)}>
-																					Slet
-																				</Menu.Item>
-																			</>
-																		)}
-																	</Menu.Dropdown>
-																</Menu>
-															</Group>
-														</Group>
-														<Group>
-															{item.type === 'event' && item.location && (
-																<Text c='dimmed' size='sm'>
-																	Lokation: {item.location}
-																</Text>
-															)}
-															{item.created_by && (
-																<Text c='dimmed' size='sm'>
-																	Oprettet af: {item.created_by}
-																</Text>
-															)}
-														</Group>
-														<Text lineClamp={2} mt='sm'>
-															{item.description}
-														</Text>
-														<Button variant='subtle' size='sm' mt='sm' onClick={() => handleOpenItemModal(item)}>
-															Læs mere
-														</Button>
-													</Card>
-												</Box>
-											);
-										})
-									) : (
-										<Text ta='center' py='xl' c='dimmed'>
-											Ingen {activeTab === 'news' ? 'nyheder' : activeTab === 'events' ? 'begivenheder' : 'indhold'} fundet
-										</Text>
-									)}
-								</Box>
-							)}
-						</>
-					)}
+					{(activeTab !== 'events' || (activeTab === 'events' && viewMode !== 'calendar')) && <>{renderItems()}</>}
 				</Paper>
 
-				{/* Create Modal */}
-				<Modal opened={opened} onClose={close} title='Opret nyt indhold' size='lg' centered>
-					<Box>
-						<Tabs value={createType} onChange={(value) => setCreateType(value as 'news' | 'event')}>
-							<Tabs.List mb='md'>
-								<Tabs.Tab value='news' leftSection={<FileText size={16} />}>
-									Nyhed
-								</Tabs.Tab>
-								<Tabs.Tab value='event' leftSection={<CalendarIcon size={16} />}>
-									Begivenhed
-								</Tabs.Tab>
-							</Tabs.List>
-						</Tabs>
-
-						<TextInput label='Titel' placeholder='Skriv en titel' mb='md' required value={newItem.title} onChange={(e) => setNewItem({ ...newItem, title: e.target.value })} />
-
-						<TextInput label='Kort beskrivelse' placeholder='Kort beskrivelse (vises i oversigten)' mb='md' required value={newItem.description} onChange={(e) => setNewItem({ ...newItem, description: e.target.value })} />
-
-						{createType === 'news' && (
-							<Box mb='md'>
-								<Text fw={500} size='sm' mb='xs'>
-									Nyhedstype
-								</Text>
-								<SegmentedControl
-									value={newItem.type === 'news' ? newItem.news_type || 'announcement' : 'announcement'}
-									onChange={(value) => setNewItem({ ...newItem, news_type: value as any })}
-									data={[
-										{ label: 'Meddelelse', value: 'announcement' },
-										{ label: 'Opdatering', value: 'update' },
-										{ label: 'Changelog', value: 'changelog' },
-									]}
-									fullWidth
-								/>
-							</Box>
-						)}
-
-						{createType === 'event' && (
-							<>
-								<DatePickerInput label='Dato og tidspunkt' placeholder='Vælg dato og tidspunkt' valueFormat='DD MMM YYYY HH:mm' mb='md' required value={(newItem as any).event_date instanceof Date ? (newItem as any).event_date : (newItem as any).event_date ? new Date((newItem as any).event_date) : new Date()} onChange={(date) => setNewItem({ ...newItem, event_date: date })} locale='da' clearable={false} />
-
-								<Box mb='md'>
-									<Text fw={500} size='sm' mb='xs'>
-										Begivenhedstype
-									</Text>
-									<SegmentedControl
-										value={newItem.type === 'event' ? newItem.event_type || 'community' : 'community'}
-										onChange={(value) => setNewItem({ ...newItem, event_type: value as any })}
-										data={[
-											{ label: 'Fællesskab', value: 'community' },
-											{ label: 'Officiel', value: 'official' },
-											{ label: 'Special', value: 'special' },
-										]}
-										fullWidth
-									/>
-								</Box>
-
-								<TextInput label='Lokation' placeholder='Hvor afholdes begivenheden?' mb='md' value={(newItem as any).location || ''} onChange={(e) => setNewItem({ ...newItem, location: e.target.value })} />
-
-								<TextInput label='Adresse' placeholder='Specifik adresse (valgfri)' mb='md' value={(newItem as any).address || ''} onChange={(e) => setNewItem({ ...newItem, address: e.target.value })} />
-							</>
-						)}
-
-						<Textarea label='Indhold' placeholder='Detaljeret beskrivelse af indholdet' minRows={6} mb='md' value={newItem.content || ''} onChange={(e) => setNewItem({ ...newItem, content: e.target.value })} />
-
-						<Checkbox label='Fastgør dette indhold (vises i toppen og på forsiden)' checked={newItem.is_pinned} onChange={(e) => setNewItem({ ...newItem, is_pinned: e.currentTarget.checked })} mb='lg' />
-
-						<Group justify='flex-end'>
-							<Button variant='outline' onClick={close}>
-								Annuller
-							</Button>
-							<Button onClick={handleCreateItem}>Opret</Button>
-						</Group>
-					</Box>
-				</Modal>
-
-				{/* View Item Modal */}
-				<Modal
-					opened={itemModalOpened}
-					onClose={closeItemModal}
-					title={
-						<Group>
-							{selectedItem && (
-								<>
-									<Badge color={selectedItem ? getTypeDetails(selectedItem).color : 'gray'} size='lg' leftSection={selectedItem ? getTypeDetails(selectedItem).icon : undefined}>
-										{selectedItem ? getTypeDetails(selectedItem).label : ''}
-									</Badge>
-									<Text fw={700}>{selectedItem?.title}</Text>
-									{selectedItem.is_pinned && (
-										<ActionIcon color='blue' variant='subtle'>
-											<PushPin size={16} weight='fill' />
-										</ActionIcon>
-									)}
-								</>
-							)}
-						</Group>
-					}
-					size='lg'
-					centered
-				>
-					{selectedItem && (
-						<Box>
-							{selectedItem.type === 'event' ? (
-								<Group mb='md'>
-									<CalendarCheck size={18} />
-									<Text fw={500}>{selectedItem.event_date ? format(new Date(selectedItem.event_date), 'd. MMMM yyyy') : 'Dato ikke tilgængelig'}</Text>
-									<Text>kl. {selectedItem.event_date ? format(new Date(selectedItem.event_date), 'HH:mm') : 'N/A'}</Text>
-								</Group>
-							) : (
-								<Group mb='md'>
-									<CalendarIcon size={18} />
-									<Text>
-										{format(selectedItem.created_at, 'd. MMMM yyyy')}
-										{selectedItem.last_updated && selectedItem.last_updated > selectedItem.created_at && <> (opdateret {format(selectedItem.last_updated, 'd. MMMM yyyy')})</>}
-									</Text>
-								</Group>
-							)}
-
-							{selectedItem.type === 'event' && selectedItem.location && (
-								<Group mb='md'>
-									<Text fw={500}>Sted:</Text>
-									<Text>
-										{selectedItem.location}
-										{selectedItem.address && `, ${selectedItem.address}`}
-									</Text>
-								</Group>
-							)}
-
-							{selectedItem.created_by && (
-								<Text size='sm' c='dimmed' mb='md'>
-									Oprettet af: {selectedItem.created_by}
-								</Text>
-							)}
-
-							<Divider my='md' />
-
-							<Text style={{ whiteSpace: 'pre-line' }}>{selectedItem.content || selectedItem.description}</Text>
-
-							<Group justify='space-between' mt='xl'>
-								<Group>
-									{isAuthorized && (
-										<>
-											<Button variant='subtle' leftSection={<PushPin size={16} />} onClick={() => togglePinItem(selectedItem.id)}>
-												{selectedItem.is_pinned ? 'Fjern fastgørelse' : 'Fastgør'}
-											</Button>
-											<Button
-												variant='subtle'
-												leftSection={<Pencil size={16} />}
-												onClick={() => {
-													closeItemModal();
-													handleOpenEditModal(selectedItem);
-												}}
-											>
-												Rediger
-											</Button>
-											<Button
-												color='red'
-												variant='subtle'
-												leftSection={<Trash size={16} />}
-												onClick={() => {
-													handleDeleteItem(selectedItem.id);
-													closeItemModal();
-												}}
-											>
-												Slet
-											</Button>
-										</>
-									)}
-								</Group>
-								<Button onClick={closeItemModal}>Luk</Button>
-							</Group>
-
-							{selectedItem.type === 'event' && (
-								<Button
-									fullWidth
-									variant='light'
-									mt='md'
-									onClick={() => {
-										setActiveTab('events');
-										setViewMode('calendar');
-										closeItemModal();
-									}}
-								>
-									Se alle begivenheder
-								</Button>
-							)}
-						</Box>
-					)}
-				</Modal>
+				<CreateContentModal opened={createModalOpened} onClose={closeCreateModal} onCreate={createItem} />
+				<ViewContentModal opened={itemModalOpened} onClose={closeItemModal} item={selectedItem} isAuthorized={isAuthorized} onPin={togglePinItem} onEdit={handleOpenEditModal} onDelete={handleDeleteItem} />
 				<EditContentModal item={itemToEdit} opened={editModalOpened} onClose={handleCloseEditModal} onUpdate={handleUpdateItem} />
 			</Container>
 		</MainLayout>

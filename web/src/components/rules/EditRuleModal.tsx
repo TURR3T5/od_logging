@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Box, Group, TextInput, Tabs, Textarea, MultiSelect, Switch, Button, Text, Paper, Modal, Alert } from '@mantine/core';
+import { Box, Group, TextInput, Tabs, Textarea, MultiSelect, Switch, Button, Text, Paper, Modal } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { Pencil, Eye, Trash } from '@phosphor-icons/react';
 import RuleApiService, { Rule } from '../../lib/RuleApiService';
+import { ConfirmationModal } from '../common/ConfirmationModal';
+import { useDisclosure } from '@mantine/hooks';
 
 interface EditRuleModalProps {
 	currentRule: Rule | null;
@@ -20,8 +22,8 @@ export default function EditRuleModal({ currentRule, opened, onClose, onRuleUpda
 	const [editedBadge, setEditedBadge] = useState('');
 	const [changeNotes, setChangeNotes] = useState('');
 	const [isSaving, setIsSaving] = useState(false);
-	const [isDeleting, setIsDeleting] = useState(false);
-	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+	const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+	const [confirmModalOpened, { open: openConfirmModal, close: closeConfirmModal }] = useDisclosure(false);
 
 	useEffect(() => {
 		if (opened && currentRule) {
@@ -72,31 +74,15 @@ export default function EditRuleModal({ currentRule, opened, onClose, onRuleUpda
 		}
 	};
 
-	const handleDeleteRule = async () => {
-		if (!currentRule) return;
+	const handleDeleteClick = (id: string) => {
+		setItemToDelete(id);
+		openConfirmModal();
+	};
 
-		setIsDeleting(true);
-		try {
-			await RuleApiService.deleteRule(currentRule.id);
-
-			notifications.show({
-				title: 'Regel slettet',
-				message: 'Reglen er blevet slettet permanent',
-				color: 'green',
-			});
-
-			onRuleUpdated();
-			onClose();
-		} catch (error) {
-			console.error('Error deleting rule:', error);
-			notifications.show({
-				title: 'Fejl',
-				message: 'Der opstod en fejl under sletning af reglen',
-				color: 'red',
-			});
-		} finally {
-			setIsDeleting(false);
-			setShowDeleteConfirm(false);
+	const handleConfirmDelete = async () => {
+		if (itemToDelete) {
+			await deleteItem(itemToDelete);
+			closeConfirmModal();
 		}
 	};
 
@@ -159,7 +145,7 @@ export default function EditRuleModal({ currentRule, opened, onClose, onRuleUpda
 						<Textarea label='Ændringsnoter (valgfrit)' placeholder='Beskriv kort hvad der er ændret og hvorfor' value={changeNotes} onChange={(e) => setChangeNotes(e.target.value)} mb='lg' />
 
 						<Group justify='space-between'>
-							<Button color='red' variant='outline' leftSection={<Trash size={16} />} onClick={() => setShowDeleteConfirm(true)}>
+							<Button color='red' variant='outline' leftSection={<Trash size={16} />} onClick={() => handleDeleteClick(currentRule.id)}>
 								Slet regel
 							</Button>
 							<Group>
@@ -175,34 +161,7 @@ export default function EditRuleModal({ currentRule, opened, onClose, onRuleUpda
 				)}
 			</Modal>
 
-			<Modal
-				opened={showDeleteConfirm}
-				onClose={() => setShowDeleteConfirm(false)}
-				title={
-					<Text fw={700} c='red'>
-						Slet regel
-					</Text>
-				}
-				size='sm'
-				centered
-			>
-				<Alert color='red' mb='md' title='Bekræft sletning' variant='light'>
-					Er du sikker på, at du vil slette reglen{' '}
-					<strong>
-						{currentRule?.badge}: {currentRule?.title}
-					</strong>
-					? Denne handling kan ikke fortrydes.
-				</Alert>
-
-				<Group justify='right' mt='xl'>
-					<Button variant='outline' onClick={() => setShowDeleteConfirm(false)}>
-						Annuller
-					</Button>
-					<Button color='red' onClick={handleDeleteRule} loading={isDeleting}>
-						Slet permanent
-					</Button>
-				</Group>
-			</Modal>
+			<ConfirmationModal opened={confirmModalOpened} onClose={closeConfirmModal} onConfirm={handleConfirmDelete} title='Bekræft sletning' message='Er du sikker på, at du vil slette dette element? Denne handling kan ikke fortrydes.' confirmLabel='Slet' variant='danger' />
 		</>
 	);
 }

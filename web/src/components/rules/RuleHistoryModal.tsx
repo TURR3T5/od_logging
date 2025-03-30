@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Box, Center, Text, Group, Badge, Card, Tabs, Paper, Timeline, Modal, Accordion, Loader } from '@mantine/core';
 import { ArrowRight, Check } from '@phosphor-icons/react';
 import RuleApiService, { RuleChange } from '../../lib/RuleApiService';
+import { EmptyState } from '../common/EmptyState';
 
 interface RuleHistoryModalProps {
 	ruleId: string;
@@ -40,9 +41,7 @@ export default function RuleHistoryModal({ ruleId, opened, onClose }: RuleHistor
 			) : (
 				<Box>
 					{ruleHistory.length === 0 ? (
-						<Text ta='center' c='dimmed' py='xl'>
-							Ingen ændringshistorik fundet for denne regel
-						</Text>
+						<EmptyState title="Ingen data" message="Der er ingen data at vise." />
 					) : (
 						<Timeline active={0} bulletSize={24} lineWidth={2}>
 							{ruleHistory.map((change) => (

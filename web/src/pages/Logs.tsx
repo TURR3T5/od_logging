@@ -7,6 +7,7 @@ import MainLayout from '../layouts/MainLayout';
 import LogTable from '../components/LogTable';
 import { useLogsSearch, SearchFilters } from '../hooks/useLogsSearch';
 import { applyLogsFilters } from '../utils/queryHelper';
+import { EmptyState } from '../components/common/EmptyState';
 
 export interface Log {
 	id: string;
@@ -103,7 +104,7 @@ export default function LogsPage() {
 			}
 
 			if (!logs || logs.length === 0) {
-				return;
+				return <EmptyState title='Ingen logs fundet' message='Ingen logs er tilgængelige i databasen.' />;
 			}
 
 			const categoryCount: Record<string, number> = {};

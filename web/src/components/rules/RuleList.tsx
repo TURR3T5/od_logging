@@ -4,6 +4,7 @@ import { Rule } from '../../lib/RuleApiService';
 import { useInView } from 'react-intersection-observer';
 import { RuleItem } from './RuleItem';
 import { useRuleContent } from '../../hooks/useRuleContent';
+import { EmptyState } from '../common/EmptyState';
 
 interface RuleListProps {
 	rules: Rule[];
@@ -101,11 +102,7 @@ const RuleList = memo(({ rules, activeRuleId, isLoading, onRuleExpanded, onEditR
 	}
 
 	if (rules.length === 0) {
-		return (
-			<Text ta='center' fs='italic' py='md'>
-				Ingen regler matcher din søgning
-			</Text>
-		);
+		return <EmptyState title='Ingen regler' message='Der er ingen regler at vise.' />;
 	}
 
 	return (

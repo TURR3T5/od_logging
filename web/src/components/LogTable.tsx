@@ -5,9 +5,11 @@ import { ArrowUp, ArrowDown, Eye, MagnifyingGlass } from '@phosphor-icons/react'
 import { Log } from '../pages/Logs';
 import { SearchFilters } from '../hooks/useLogsSearch';
 import { format } from 'date-fns';
+import { useDataTable } from '../hooks/useDataTable';
 import { DateFilter } from '../filters/DateFilter';
 import { LogDetailsModal } from './LogDetailsModal';
-import { useTableSorting } from '../hooks/useTableSorting';
+import { EmptyState } from '../components/common/EmptyState';
+import { LoadingState } from '../components/common/LoadingState';
 
 const dateRangeFilterFn = (row: any, columnId: string, filterValue: [string, string]) => {
 	if (!filterValue || !Array.isArray(filterValue) || filterValue.length !== 2) {
@@ -70,7 +72,9 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 	const [playerSearchTerm, setPlayerSearchTerm] = useState('');
 	const [eventTypeSearchTerm, setEventTypeSearchTerm] = useState('');
 	const [dateRange, setDateRange] = useState<{ start: string; end: string } | null>(null);
-	const { sorting, setSorting, columnFilters, setColumnFilters, globalFilter, setGlobalFilter } = useTableSorting();
+	const { sorting, setSorting, columnFilters, setColumnFilters, globalFilter, setGlobalFilter } = useDataTable({
+		initialSorting: [{ id: 'timestamp', desc: true }],
+	});
 
 	useEffect(() => {
 		setHasAttemptedLoad(true);
@@ -214,14 +218,12 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 		getFacetedUniqueValues: getFacetedUniqueValues(),
 	});
 
-	if (isLoading && !hasAttemptedLoad) {
-		return (
-			<Box>
-				<Center p='xl'>
-					<Text>Loading logs...</Text>
-				</Center>
-			</Box>
-		);
+	if (isLoading) {
+		return <LoadingState text='Indlæser data...' />;
+	}
+
+	if (data.length === 0) {
+		return <EmptyState title='Ingen data' message='Der er ingen data at vise.' />;
 	}
 
 	if (data.length === 0 && !isLoading) {
