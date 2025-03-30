@@ -397,7 +397,7 @@ export default function HomePage() {
 				</Container>
 			</Box>
 
-			<Box style={{ padding: '60px 0', backgroundColor: '#070707' }}>
+			<Box style={{ padding: '60px 0', backgroundColor: '#070707' }} h={630}>
 				<Container size='xl'>
 					<Grid>
 						<Grid.Col span={{ base: 12, md: 8 }}>
@@ -416,7 +416,7 @@ export default function HomePage() {
 
 								{formattedNewsItems.length > 0 ? (
 									<Timeline active={1} bulletSize={24} lineWidth={2}>
-										{formattedNewsItems.map((item) => (
+										{formattedNewsItems.slice(0, 3).map((item) => (
 											<Timeline.Item
 												key={item.id}
 												bullet={item.type === 'update' ? <Bell size={14} /> : item.type === 'event' ? <Calendar size={14} /> : <Bell size={14} />}
