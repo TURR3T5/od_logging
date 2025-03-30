@@ -22,6 +22,7 @@ export default function EditRuleModal({ currentRule, opened, onClose, onRuleUpda
 	const [editedBadge, setEditedBadge] = useState('');
 	const [changeNotes, setChangeNotes] = useState('');
 	const [isSaving, setIsSaving] = useState(false);
+	const [isDeleting, setIsDeleting] = useState(false);
 	const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 	const [confirmModalOpened, { open: openConfirmModal, close: closeConfirmModal }] = useDisclosure(false);
 
@@ -80,8 +81,29 @@ export default function EditRuleModal({ currentRule, opened, onClose, onRuleUpda
 	};
 
 	const handleConfirmDelete = async () => {
-		if (itemToDelete) {
-			await deleteItem(itemToDelete);
+		if (!itemToDelete) return;
+
+		setIsDeleting(true);
+		try {
+			await RuleApiService.deleteRule(itemToDelete);
+
+			notifications.show({
+				title: 'Regel slettet',
+				message: 'Reglen er blevet slettet med succes',
+				color: 'green',
+			});
+
+			onRuleUpdated();
+			onClose();
+		} catch (error) {
+			console.error('Error deleting rule:', error);
+			notifications.show({
+				title: 'Fejl',
+				message: 'Der opstod en fejl under sletning af reglen',
+				color: 'red',
+			});
+		} finally {
+			setIsDeleting(false);
 			closeConfirmModal();
 		}
 	};
@@ -161,7 +183,7 @@ export default function EditRuleModal({ currentRule, opened, onClose, onRuleUpda
 				)}
 			</Modal>
 
-			<ConfirmationModal opened={confirmModalOpened} onClose={closeConfirmModal} onConfirm={handleConfirmDelete} title='Bekræft sletning' message='Er du sikker på, at du vil slette dette element? Denne handling kan ikke fortrydes.' confirmLabel='Slet' variant='danger' />
+			<ConfirmationModal opened={confirmModalOpened} onClose={closeConfirmModal} onConfirm={handleConfirmDelete} title='Bekræft sletning' message='Er du sikker på, at du vil slette dette element? Denne handling kan ikke fortrydes.' confirmLabel='Slet' variant='danger' isLoading={isDeleting} />
 		</>
 	);
 }
