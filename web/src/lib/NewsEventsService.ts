@@ -93,9 +93,7 @@ export const NewsEventsService = {
       if (contentError) throw contentError;
       if (!contentItems) return [];
       
-      
       const contentIds = contentItems.map(item => item.id);
-      
       
       const { data: newsMetadata, error: newsError } = await supabase
         .from('news_metadata')
@@ -104,7 +102,6 @@ export const NewsEventsService = {
         
       if (newsError) throw newsError;
       
-      
       const { data: eventMetadata, error: eventError } = await supabase
         .from('event_metadata')
         .select('*')
@@ -112,14 +109,12 @@ export const NewsEventsService = {
         
       if (eventError) throw eventError;
       
-      
       const { data: contentTags, error: tagsError } = await supabase
         .from('content_tags')
         .select('*')
         .in('content_id', contentIds);
         
       if (tagsError) throw tagsError;
-      
       
       const tagsByContentId: Record<string, string[]> = {};
       contentTags?.forEach(tag => {
@@ -129,18 +124,15 @@ export const NewsEventsService = {
         tagsByContentId[tag.content_id].push(tag.tag);
       });
       
-      
       const newsMetadataMap: Record<string, any> = {};
       newsMetadata?.forEach(meta => {
         newsMetadataMap[meta.content_id] = meta;
       });
       
-      
       const eventMetadataMap: Record<string, any> = {};
       eventMetadata?.forEach(meta => {
         eventMetadataMap[meta.content_id] = meta;
       });
-      
       
       const combinedContent: ContentItem[] = contentItems.map(item => {
         const result: ContentItem = {
@@ -202,7 +194,6 @@ export const NewsEventsService = {
       
       content.created_by = user?.username || 'Unknown';
 
-      
       const { data: contentData, error: contentError } = await supabase
         .from('content_items')
         .insert({
@@ -220,9 +211,51 @@ export const NewsEventsService = {
       if (contentError) throw contentError;
       if (!contentData?.id) throw new Error('Failed to create content');
       
+      if (content.type === 'news' && content.news_type) {
+        const { error: newsError } = await supabase
+          .from('news_metadata')
+          .insert({
+            content_id: contentData.id,
+            news_type: content.news_type
+          });
+          
+        if (newsError) throw newsError;
+      }
+      
+      if (content.type === 'event' && content.event_type && content.event_date) {
+        const { error: eventError } = await supabase
+          .from('event_metadata')
+          .insert({
+            content_id: contentData.id,
+            event_type: content.event_type,
+            event_date: typeof content.event_date === 'string' ? content.event_date : content.event_date?.toISOString(),
+            location: content.location,
+            address: content.address
+          });
+          
+        if (eventError) throw eventError;
+      }
+      
+      if (content.tags && content.tags.length > 0) {
+        const tagEntries = content.tags.map(tag => ({
+          content_id: contentData.id,
+          tag
+        }));
+        
+        const { error: tagsError } = await supabase
+          .from('content_tags')
+          .insert(tagEntries);
+          
+        if (tagsError) throw tagsError;
+      }
+
+      cacheService.invalidate(CACHE_KEY_ALL_CONTENT);
+      cacheService.invalidate(CACHE_KEY_NEWS);
+      cacheService.invalidate(CACHE_KEY_EVENTS);
+      cacheService.invalidate(CACHE_KEY_PINNED);
       
       return contentData.id;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating content:', error);
       return null;
     }
@@ -241,14 +274,106 @@ export const NewsEventsService = {
       updates.last_updated = new Date().toISOString();
 
       
-      const { error } = await supabase
+      const { data: currentItem, error: fetchError } = await supabase
         .from('content_items')
-        .update(updates)
+        .select('*')
+        .eq('id', id)
+        .single();
+        
+      if (fetchError) throw fetchError;
+      if (!currentItem) throw new Error('Content item not found');
+      
+      
+      const contentUpdates: any = {};
+      
+      if (updates.title !== undefined) contentUpdates.title = updates.title;
+      if (updates.description !== undefined) contentUpdates.description = updates.description;
+      if (updates.content !== undefined) contentUpdates.content = updates.content;
+      if (updates.is_pinned !== undefined) contentUpdates.is_pinned = updates.is_pinned;
+      if (updates.category !== undefined) contentUpdates.category = updates.category;
+      if (updates.updated_by) contentUpdates.updated_by = updates.updated_by;
+      if (updates.last_updated) contentUpdates.last_updated = updates.last_updated;
+
+      const { error: updateError } = await supabase
+        .from('content_items')
+        .update(contentUpdates)
         .eq('id', id);
         
-      if (error) throw error;
+      if (updateError) throw updateError;
       
+      if (currentItem.type === 'news' && updates.news_type) {
+        const { error: newsUpdateError } = await supabase
+          .from('news_metadata')
+          .upsert({
+            content_id: id,
+            news_type: updates.news_type
+          });
+          
+        if (newsUpdateError) throw newsUpdateError;
+      }
+
+      if (currentItem.type === 'event') {
+        const eventUpdates: any = { content_id: id };
+        let hasUpdates = false;
+        
+        if (updates.event_type) {
+          eventUpdates.event_type = updates.event_type;
+          hasUpdates = true;
+        }
+        
+        if (updates.event_date) {
+          eventUpdates.event_date = typeof updates.event_date === 'string' 
+            ? updates.event_date 
+            : updates.event_date?.toISOString();
+          hasUpdates = true;
+        }
+        
+        if (updates.location !== undefined) {
+          eventUpdates.location = updates.location;
+          hasUpdates = true;
+        }
+        
+        if (updates.address !== undefined) {
+          eventUpdates.address = updates.address;
+          hasUpdates = true;
+        }
+        
+        if (hasUpdates) {
+          const { error: eventUpdateError } = await supabase
+            .from('event_metadata')
+            .upsert(eventUpdates);
+            
+          if (eventUpdateError) throw eventUpdateError;
+        }
+      }
       
+      if (updates.tags) {
+        const { error: deleteTagsError } = await supabase
+          .from('content_tags')
+          .delete()
+          .eq('content_id', id);
+          
+        if (deleteTagsError) throw deleteTagsError;
+        
+        if (updates.tags.length > 0) {
+          const tagEntries = updates.tags.map(tag => ({
+            content_id: id,
+            tag
+          }));
+          
+          const { error: insertTagsError } = await supabase
+            .from('content_tags')
+            .insert(tagEntries);
+            
+          if (insertTagsError) throw insertTagsError;
+        }
+      }
+
+      cacheService.invalidate(CACHE_KEY_ALL_CONTENT);
+      cacheService.invalidate(CACHE_KEY_NEWS);
+      cacheService.invalidate(CACHE_KEY_EVENTS);
+      cacheService.invalidate(CACHE_KEY_PINNED);
+
       return true;
     } catch (error) {
       console.error('Error updating content:', error);

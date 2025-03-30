@@ -4,9 +4,22 @@ import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '../components/AuthProvider';
 import MainLayout from '../layouts/MainLayout';
 import { Users, Car, Buildings, Calendar, ShieldCheck, GameController, ArrowRight, DiscordLogo, Bell, Star, CalendarCheck, PushPin, Megaphone } from '@phosphor-icons/react';
-import axios from 'axios';
 import { format } from 'date-fns';
 import { da } from 'date-fns/locale';
+import { useUpcomingContent, convertToPinnedItems, convertToNewsItems } from '../lib/NewsHooks';
+import { ContentItem } from '../lib/NewsEventsService';
+
+interface PinnedItem {
+	id: string;
+	type: 'news' | 'event';
+	title: string;
+	description: string;
+	date: Date;
+	newsType?: 'update' | 'announcement' | 'changelog';
+	eventType?: 'official' | 'community' | 'special';
+	eventDate?: Date;
+	location?: string;
+}
 
 interface NewsItem {
 	id: number;
@@ -14,11 +27,10 @@ interface NewsItem {
 	content: string;
 	fullContent?: string;
 	date: string;
-	type: 'update' | 'event' | 'announcement';
+	type: string;
 	locationName?: string;
 	locationAddress?: string;
 	organizer?: string;
-	imageUrl?: string;
 }
 
 interface FeaturedPlayer {
@@ -29,92 +41,16 @@ interface FeaturedPlayer {
 	description: string;
 }
 
-interface PinnedItem {
-	id: string;
-	type: 'news' | 'event';
-	title: string;
-	description: string;
-	date: Date;
-	newsType?: 'update' | 'announcement' | 'changelog';
-	eventType?: 'community' | 'official' | 'special';
-	eventDate?: Date;
-	location?: string;
-}
-
 export default function HomePage() {
+	const { pinnedItems: dbPinnedItems, recentNews: dbRecentNews, isLoading } = useUpcomingContent();
 	const { isAuthorized } = useAuth();
 	const navigate = useNavigate();
 	const [currentSlide, setCurrentSlide] = useState(0);
 	const [isLoaded, setIsLoaded] = useState(false);
-	const [serverStats, setServerStats] = useState({
-		onlinePlayers: 0,
-		maxPlayers: 0,
-		whitelistCount: 0,
-		status: 'offline',
-	});
 	const [newsModalOpen, setNewsModalOpen] = useState(false);
 	const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
-	const [pinnedItems, _setPinnedItems] = useState<PinnedItem[]>([
-		{
-			id: '1',
-			type: 'news',
-			title: 'Server Update 3.5',
-			description: 'New vehicles, weapons, and optimizations have been added to the server.',
-			date: new Date('2025-03-25'),
-			newsType: 'update',
-		},
-		{
-			id: '3',
-			type: 'news',
-			title: 'New Police Chief Appointed',
-			description: 'Congratulations to Officer Johnson on being appointed as the new Police Chief!',
-			date: new Date('2025-03-22'),
-			newsType: 'announcement',
-		},
-		{
-			id: '4',
-			type: 'event',
-			title: 'Bilshow i Vinewood',
-			description: 'Det årlige vinewood bilshow hvor du kan vise dine bedste biler frem.',
-			date: new Date('2025-03-20'),
-			eventType: 'official',
-			eventDate: new Date('2025-03-29T18:00:00'),
-			location: 'Vinewood Bowl',
-		},
-	]);
-
-	const newsItems: NewsItem[] = [
-		{
-			id: 1,
-			title: 'Server Update 3.5',
-			content: 'New vehicles, weapons, and optimizations have been added to the server.',
-			fullContent: 'Vi er glade for at annoncere den nyeste opdatering til OdessaRP, version 3.5! Denne opdatering bringer en række spændende forbedringer til serveren. \n\nNye køretøjer inkluderer Übermacht Cypher, Pfister Comet S2 og Dinka Jester RR. Alle køretøjer kommer med komplette tuningmuligheder og unikke handlinger. \n\nVi har også tilføjet nye våben, herunder Heavy Rifle og Combat Shotgun, som kan købes lovligt med de rette licenser. Våbenmodifikationer er også blevet opdateret, så du kan tilpasse dine våben endnu mere. \n\nServeroptimeringer omfatter forbedret performance i Downtown-området, reduceret ressourceforbrug, og forbedrede NPC-rutiner der giver en mere realistisk oplevelse. \n\nHusk at melde eventuelle bugs i vores Discord under #bug-rapport kanalen.',
-			date: '2025-03-25',
-			type: 'update',
-			organizer: 'OdessaRP Admin Team',
-		},
-		{
-			id: 2,
-			title: 'Weekend Event: Car Show',
-			content: 'Join us at the Vinewood Bowl for a car show this weekend. Cash prizes for best vehicles!',
-			fullContent: 'Vinewood Bowl Car Show - den mest ventede bilbegivenhed i byen! \n\nKom og vis din bedste bil frem og deltag i konkurrencen om store pengepræmier! Vi har flere kategorier: Bedste Muscle Car, Bedste Sport/Super, Bedste Import, Bedste Klassiker, og Bedste Modification. \n\nHovedpræmien er $50.000 i spilpenge til vinderne, plus ekstra bonuspræmier fra vores sponsorer. Alle deltagende køretøjer vil blive bedømt af et panel af erfarne bilentusiaster fra serveren. \n\nUd over konkurrencen vil der være livemusik, mad og drikkevarer, plus mulighed for at netværke med andre bilentusiaster og forhandlere i byen. \n\nTilmelding starter en time før showet begynder, så kom i god tid for at sikre dig en plads!',
-			date: '2025-03-30',
-			type: 'event',
-			locationName: 'Vinewood Bowl',
-			locationAddress: 'Vinewood Hills, Los Santos',
-			organizer: 'Los Santos Car Club',
-			imageUrl: '/api/placeholder/400/200',
-		},
-		{
-			id: 3,
-			title: 'New Police Chief Appointed',
-			content: 'Congratulations to Officer Johnson on being appointed as the new Police Chief!',
-			fullContent: 'Det er med stor glæde at OdessaRP kan annoncere udnævnelsen af Sarah Johnson som vores nye politichef! \n\nEfter flere års dedikeret tjeneste på serveren, har Sarah bevist sit værd gennem eksemplarisk lederskab, retfærdig håndhævelse af loven, og en stærk forpligtelse til samfundet. \n\nUnder hendes ledelse planlægger politistyrken at implementere flere community-orienterede initiativer, herunder regelmæssige "Mød din betjent"-begivenheder, udvidede patruljeringer i højrisikoområder, og nye rekrutteringsprogrammer. \n\nVi ønsker Sarah tillykke med denne velfortjente udnævnelse, og ser frem til at opleve hendes vision for byens sikkerhed og retfærdighed udfolde sig.',
-			date: '2025-03-22',
-			type: 'announcement',
-			organizer: 'Byrådet',
-		},
-	];
+	const [formattedPinnedItems, setFormattedPinnedItems] = useState<PinnedItem[]>([]);
+	const [formattedNewsItems, setFormattedNewsItems] = useState<NewsItem[]>([]);
 
 	const featuredPlayers: FeaturedPlayer[] = [
 		{
@@ -141,29 +77,18 @@ export default function HomePage() {
 	];
 
 	useEffect(() => {
-		const fetchServerStats = async () => {
-			try {
-				const response = await axios.get('/api/server-stats');
-				setServerStats(response.data);
-				console.log('Server stats:', response.data);
-			} catch (error) {
-				console.error('Failed to fetch server stats:', error);
-
-				setServerStats({
-					onlinePlayers: 0,
-					maxPlayers: 0,
-					whitelistCount: 0,
-					status: 'offline',
-				});
-			}
-		};
-
-		fetchServerStats();
+		setIsLoaded(true);
 	}, []);
 
 	useEffect(() => {
-		setIsLoaded(true);
-	}, []);
+		if (dbPinnedItems.length > 0) {
+			setFormattedPinnedItems(convertToPinnedItems(dbPinnedItems));
+		}
+
+		if (dbRecentNews.length > 0) {
+			setFormattedNewsItems(convertToNewsItems(dbRecentNews));
+		}
+	}, [dbPinnedItems, dbRecentNews]);
 
 	const slides = [
 		{
@@ -397,27 +322,27 @@ export default function HomePage() {
 				</Box>
 			</Box>
 
-			{pinnedItems.length > 0 && (
-				<Box
-					style={{
-						backgroundColor: '#070707',
-						padding: '40px 0',
-						borderBottom: '1px solid #222',
-					}}
-				>
-					<Container size='xl'>
-						<Group justify='space-between' mb='md'>
-							<Group>
-								<PushPin size={24} />
-								<Title order={3}>Vigtige Meddelelser</Title>
-							</Group>
-							<Button variant='subtle' rightSection={<ArrowRight size={16} />} onClick={() => navigate({ to: '/events' })}>
-								Se alle nyheder og events
-							</Button>
+			<Box
+				style={{
+					backgroundColor: '#070707',
+					padding: '40px 0',
+					borderBottom: '1px solid #222',
+				}}
+			>
+				<Container size='xl'>
+					<Group justify='space-between' mb='md'>
+						<Group>
+							<PushPin size={24} />
+							<Title order={3}>Vigtige Meddelelser</Title>
 						</Group>
+						<Button variant='subtle' rightSection={<ArrowRight size={16} />} onClick={() => navigate({ to: '/events' })}>
+							Se alle nyheder og events
+						</Button>
+					</Group>
 
+					{formattedPinnedItems.length > 0 ? (
 						<SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing='md'>
-							{pinnedItems.map((item) => (
+							{formattedPinnedItems.map((item) => (
 								<Card key={item.id} withBorder shadow='sm' padding='md' radius='md' bg='dark.8'>
 									<Card.Section withBorder inheritPadding py='xs'>
 										<Group justify='space-between'>
@@ -464,9 +389,13 @@ export default function HomePage() {
 								</Card>
 							))}
 						</SimpleGrid>
-					</Container>
-				</Box>
-			)}
+					) : (
+						<Text c='dimmed' ta='center' py='xl'>
+							Ingen vigtige meddelelser på nuværende tidspunkt
+						</Text>
+					)}
+				</Container>
+			</Box>
 
 			<Box style={{ padding: '60px 0', backgroundColor: '#070707' }}>
 				<Container size='xl'>
@@ -485,36 +414,42 @@ export default function HomePage() {
 									</Button>
 								</Group>
 
-								<Timeline active={1} bulletSize={24} lineWidth={2}>
-									{newsItems.map((item) => (
-										<Timeline.Item
-											key={item.id}
-											bullet={item.type === 'update' ? <Bell size={14} /> : item.type === 'event' ? <Calendar size={14} /> : <Bell size={14} />}
-											title={
-												<Group>
-													<Text fw={600}>{item.title}</Text>
-													<Badge size='sm' variant='light' color={getNewsTypeColor(item.type)}>
-														{getNewsTypeLabel(item.type)}
-													</Badge>
-												</Group>
-											}
-										>
-											<Text size='sm' c='dimmed' mt={4}>
-												{new Date(item.date).toLocaleDateString('da-DK', {
-													year: 'numeric',
-													month: 'long',
-													day: 'numeric',
-												})}
-											</Text>
-											<Text size='sm' mt='sm'>
-												{item.content}
-											</Text>
-											<Button variant='subtle' size='xs' mt='sm' onClick={() => openNewsModal(item)}>
-												Læs mere
-											</Button>
-										</Timeline.Item>
-									))}
-								</Timeline>
+								{formattedNewsItems.length > 0 ? (
+									<Timeline active={1} bulletSize={24} lineWidth={2}>
+										{formattedNewsItems.map((item) => (
+											<Timeline.Item
+												key={item.id}
+												bullet={item.type === 'update' ? <Bell size={14} /> : item.type === 'event' ? <Calendar size={14} /> : <Bell size={14} />}
+												title={
+													<Group>
+														<Text fw={600}>{item.title}</Text>
+														<Badge size='sm' variant='light' color={getNewsTypeColor(item.type)}>
+															{getNewsTypeLabel(item.type)}
+														</Badge>
+													</Group>
+												}
+											>
+												<Text size='sm' c='dimmed' mt={4}>
+													{new Date(item.date).toLocaleDateString('da-DK', {
+														year: 'numeric',
+														month: 'long',
+														day: 'numeric',
+													})}
+												</Text>
+												<Text size='sm' mt='sm'>
+													{item.content}
+												</Text>
+												<Button variant='subtle' size='xs' mt='sm' onClick={() => openNewsModal(item)}>
+													Læs mere
+												</Button>
+											</Timeline.Item>
+										))}
+									</Timeline>
+								) : (
+									<Text c='dimmed' ta='center' py='xl'>
+										Ingen nyheder eller meddelelser
+									</Text>
+								)}
 							</Box>
 						</Grid.Col>
 
@@ -638,13 +573,7 @@ export default function HomePage() {
 					<Grid>
 						{serverFeatures.map((feature, index) => (
 							<Grid.Col span={{ base: 12, sm: 6, md: 4 }} key={index}>
-								<Card
-									padding='xl'
-									radius='md'
-									withBorder
-									h={240}
-									bg='dark.8'
-								>
+								<Card padding='xl' radius='md' withBorder h={240} bg='dark.8'>
 									<Box
 										style={(theme) => ({
 											display: 'flex',
@@ -721,20 +650,6 @@ export default function HomePage() {
 									{selectedNews.locationAddress && `, ${selectedNews.locationAddress}`}
 								</Text>
 							</Group>
-						)}
-
-						{selectedNews.imageUrl && (
-							<Box mb='md'>
-								<img
-									src={selectedNews.imageUrl}
-									alt={selectedNews.title}
-									style={{
-										width: '100%',
-										borderRadius: '8px',
-										marginBottom: '16px',
-									}}
-								/>
-							</Box>
 						)}
 
 						<Divider my='md' />
