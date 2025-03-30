@@ -9,23 +9,21 @@ import MainLayout from '../layouts/MainLayout';
 import { Plus, DotsThree, CalendarCheck, Trash, CheckCircle, Calendar as CalendarIcon, Star, Bell, PushPin, Pencil, FileText, Megaphone } from '@phosphor-icons/react';
 import 'dayjs/locale/da';
 import { format, isSameDay } from 'date-fns';
-import { ContentItem, NewsEventsService } from '../lib/NewsEventsService';
+import { ContentItem } from '../lib/NewsEventsService';
+import { useContentManagement } from '../hooks/useContentManagement';
 
 export default function NewsAndEventsPage() {
 	const [activeTab, setActiveTab] = useState<string | null>('news');
 	const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
-	const [items, setItems] = useState<ContentItem[]>([]);
-	const [filteredItems, setFilteredItems] = useState<ContentItem[]>([]);
 	const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'grid'>('list');
 	const [opened, { open, close }] = useDisclosure(false);
 	const [itemModalOpened, { open: openItemModal, close: closeItemModal }] = useDisclosure(false);
-	const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
 	const [showPinnedOnly, setShowPinnedOnly] = useState(false);
 	const [createType, setCreateType] = useState<'news' | 'event'>('news');
-	const [_isLoading, setIsLoading] = useState(true);
 	const { isAuthorized, user } = useAuth();
 	const [editModalOpened, setEditModalOpened] = useState(false);
 	const [itemToEdit, setItemToEdit] = useState<ContentItem | null>(null);
+	const { items, filteredItems, setFilteredItems, selectedItem, setSelectedItem, fetchItems, filterItems, createItem, updateItem, deleteItem } = useContentManagement(user);
 
 	const [newItem, setNewItem] = useState<Partial<ContentItem>>({
 		title: '',
@@ -43,23 +41,21 @@ export default function NewsAndEventsPage() {
 	};
 
 	const handleUpdateItem = async (id: string, updates: Partial<ContentItem>) => {
-		try {
-			const success = await NewsEventsService.updateContent(id, updates, user);
+		const success = await updateItem(id, updates);
 
-			if (success) {
-				const updatedItems = items.map((item) => (item.id === id ? { ...item, ...updates } : item));
-				setItems(updatedItems);
-				filterItems(updatedItems);
-
-				if (selectedItem?.id === id) {
-					setSelectedItem({ ...selectedItem, ...updates });
-				}
-
-				return true;
-			}
-			return false;
-		} catch (error) {
-			console.error('Error updating item:', error);
+		if (success) {
+			notifications.show({
+				title: 'Item Updated',
+				message: 'The content has been updated successfully',
+				color: 'green',
+			});
+			return true;
+		} else {
+			notifications.show({
+				title: 'Update Failed',
+				message: 'Failed to update the content. Please try again.',
+				color: 'red',
+			});
 			return false;
 		}
 	};
@@ -69,190 +65,31 @@ export default function NewsAndEventsPage() {
 	}, []);
 
 	useEffect(() => {
-		filterItems(items);
-	}, [selectedDate, activeTab, showPinnedOnly]);
-
-	const fetchItems = async () => {
-		setIsLoading(true);
-		try {
-			const allItems = await NewsEventsService.getAllContent();
-			setItems(allItems);
-			filterItems(allItems);
-		} catch (error) {
-			console.error('Error fetching content:', error);
-			notifications.show({
-				title: 'Error fetching content',
-				message: 'There was an error loading the content. Please try again later.',
-				color: 'red',
-			});
-		} finally {
-			setIsLoading(false);
-		}
-	};
-
-	const filterItems = (itemsList: ContentItem[] = items) => {
-		let filtered = [...itemsList];
-
-		if (activeTab === 'news') {
-			filtered = filtered.filter((item) => item.type === 'news');
-		} else if (activeTab === 'events') {
-			filtered = filtered.filter((item) => item.type === 'event');
-		}
-
-		if (showPinnedOnly) {
-			filtered = filtered.filter((item) => item.is_pinned);
-		}
-
-		if (activeTab === 'events' && selectedDate && viewMode === 'calendar') {
-			filtered = filtered.filter((item) => {
-				if (item.type === 'event' && item.event_date) {
-					const eventDate = typeof item.event_date === 'string' ? new Date(item.event_date) : item.event_date;
-					return eventDate && isSameDay(eventDate, selectedDate);
-				}
-				return false;
-			});
-		}
-
-		filtered = filtered.sort((a, b) => {
-			const dateA = a.type === 'event' && a.event_date ? (typeof a.event_date === 'string' ? new Date(a.event_date) : a.event_date) : new Date(a.created_at);
-			const dateB = b.type === 'event' && b.event_date ? (typeof b.event_date === 'string' ? new Date(b.event_date) : b.event_date) : new Date(b.created_at);
-
-			if (!dateA) return 1;
-			if (!dateB) return -1;
-
-			return dateB.getTime() - dateA.getTime();
+		const filtered = filterItems(items, {
+			contentType: activeTab === 'news' ? 'news' : activeTab === 'events' ? 'event' : 'all',
+			showPinnedOnly,
+			selectedDate,
+			viewMode,
 		});
-
 		setFilteredItems(filtered);
-	};
+	}, [activeTab, selectedDate, showPinnedOnly, viewMode, items, filterItems]);
 
 	const handleDateChange = (date: Date | null) => {
 		setSelectedDate(date);
 	};
 
-	const handleCreateItem = async () => {
-		if (!user) {
-			notifications.show({
-				title: 'Unauthorized',
-				message: 'You must be logged in to create content',
-				color: 'red',
-			});
-			return;
-		}
-
-		if (!newItem.title || !newItem.description) {
-			notifications.show({
-				title: 'Missing information',
-				message: 'Please fill in all required fields',
-				color: 'red',
-			});
-			return;
-		}
-
-		try {
-			const contentItem: Omit<ContentItem, 'id' | 'created_at'> = {
-				title: newItem.title || '',
-				description: newItem.description || '',
-				content: newItem.content || newItem.description || '',
-				type: newItem.type || 'news',
-				category: newItem.type === 'news' ? 'announcement' : 'event',
-				created_by: user.username || 'Unknown',
-				is_pinned: newItem.is_pinned || false,
-			};
-
-			if (newItem.type === 'news' && newItem.news_type) {
-				contentItem.news_type = newItem.news_type;
-			}
-
-			if (newItem.type === 'event') {
-				if (!newItem.event_date) {
-					notifications.show({
-						title: 'Missing information',
-						message: 'Please select an event date',
-						color: 'red',
-					});
-					return;
-				}
-
-				contentItem.event_type = newItem.event_type as 'community' | 'official' | 'special';
-				contentItem.event_date = newItem.event_date instanceof Date ? newItem.event_date.toISOString() : typeof newItem.event_date === 'string' ? newItem.event_date : null;
-
-				contentItem.location = newItem.location;
-				contentItem.address = newItem.address;
-			}
-
-			const contentId = await NewsEventsService.createContent(contentItem, user);
-
-			if (contentId) {
-				notifications.show({
-					title: `${newItem.type === 'event' ? 'Event' : 'News'} created`,
-					message: `Your content has been added to ${newItem.type === 'event' ? 'the calendar' : 'news'}`,
-					color: 'green',
-				});
-
-				fetchItems();
-
-				setNewItem({
-					title: '',
-					description: '',
-					content: '',
-					type: 'news',
-					news_type: 'announcement',
-					is_pinned: false,
-				});
-
-				close();
-			} else {
-				throw new Error('Failed to create content');
-			}
-		} catch (error) {
-			console.error('Error creating content:', error);
-
-			if (error instanceof Error && error.message.includes('Insufficient permissions')) {
-				notifications.show({
-					title: 'Unauthorized',
-					message: 'You do not have permission to create this content',
-					color: 'red',
-				});
-			} else {
-				notifications.show({
-					title: 'Error',
-					message: 'There was an error creating the content. Please try again.',
-					color: 'red',
-				});
-			}
-		}
+	const handleCreateItem = () => {
+		createItem(newItem as any);
+		close();
 	};
 
-	const handleDeleteItem = async (id: string) => {
-		try {
-			const success = await NewsEventsService.deleteContent(id, user);
-
-			if (success) {
-				const updatedItems = items.filter((item) => item.id !== id);
-				setItems(updatedItems);
-				filterItems(updatedItems);
-
-				if (selectedItem?.id === id) {
-					closeItemModal();
-				}
-
-				notifications.show({
-					title: 'Item deleted',
-					message: 'The content has been removed',
-					color: 'red',
-				});
-			} else {
-				throw new Error('Failed to delete content');
-			}
-		} catch (error) {
-			console.error('Error deleting content:', error);
-			notifications.show({
-				title: 'Error',
-				message: 'There was an error deleting the content. Please try again.',
-				color: 'red',
-			});
-		}
+	const handleDeleteItem = (id: string) => {
+		deleteItem(id);
+		notifications.show({
+			title: 'Sletning gennemført',
+			message: 'Indholdet er blevet slettet.',
+			color: 'red',
+		});
 	};
 
 	const handleOpenItemModal = (item: ContentItem) => {
@@ -260,48 +97,18 @@ export default function NewsAndEventsPage() {
 		openItemModal();
 	};
 
-	const togglePinItem = async (id: string) => {
-		try {
-			const item = items.find((i) => i.id === id);
-			if (!item) return;
-
-			const success = await NewsEventsService.updateContent(
-				id,
-				{
-					is_pinned: !item.is_pinned,
-					updated_by: user?.username || 'Unknown',
-				},
-				user
-			);
-
-			if (success) {
-				const updatedItems = items.map((item) => (item.id === id ? { ...item, is_pinned: !item.is_pinned } : item));
-				setItems(updatedItems);
-				filterItems(updatedItems);
-
-				if (selectedItem?.id === id) {
-					setSelectedItem({ ...selectedItem, is_pinned: !selectedItem.is_pinned });
-				}
-
-				notifications.show({
-					title: 'Status updated',
-					message: `The item is now ${updatedItems.find((i) => i.id === id)?.is_pinned ? 'pinned' : 'unpinned'}`,
-					color: 'blue',
-				});
-			} else {
-				throw new Error('Failed to update content');
-			}
-		} catch (error) {
-			console.error('Error updating content:', error);
+	const togglePinItem = (id: string) => {
+		const item = items.find((item) => item.id === id);
+		if (item) {
+			updateItem(id, { is_pinned: !item.is_pinned });
 			notifications.show({
-				title: 'Error',
-				message: 'There was an error updating the content. Please try again.',
-				color: 'red',
+				title: 'Fastgørelse ændret',
+				message: item.is_pinned ? 'Indholdet er blevet fjernet fra fastgjorte.' : 'Indholdet er blevet fastgjort.',
+				color: item.is_pinned ? 'red' : 'green',
 			});
 		}
 	};
 
-	// New edit functionality
 	const handleOpenEditModal = (item: ContentItem) => {
 		setItemToEdit(item);
 		setEditModalOpened(true);

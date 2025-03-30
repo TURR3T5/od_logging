@@ -44,6 +44,22 @@ const RULES_CACHE_KEY = 'rules_data';
 const RULE_HISTORY_CACHE_PREFIX = 'rule_history_';
 
 export const RuleApiService = {
+  invalidateAllCaches(ruleId?: string) {
+    cacheService.invalidate(RULES_CACHE_KEY);
+    
+    const categories = ['community', 'roleplay'];
+    categories.forEach(cat => {
+      for (let i = 1; i <= 5; i++) {
+        cacheService.invalidate(`rules_${cat}_page_${i}_limit_20`);
+      }
+    });
+    
+    if (ruleId) {
+      cacheService.invalidate(`rule_content_${ruleId}`);
+      cacheService.invalidate(`${RULE_HISTORY_CACHE_PREFIX}${ruleId}`);
+    }
+  },
+
   async getRulesList(): Promise<RulesResponse> {
     const cachedRules = cacheService.get<RulesResponse>(RULES_CACHE_KEY);
     if (cachedRules) {
@@ -181,15 +197,7 @@ export const RuleApiService = {
 
     if (error) throw error;
 
-    cacheService.invalidate(RULES_CACHE_KEY);
-    cacheService.invalidate(`rule_content_${ruleId}`);
-
-    const categories = ['community', 'roleplay'];
-    categories.forEach(cat => {
-      for (let i = 1; i <= 5; i++) {
-        cacheService.invalidate(`rules_${cat}_page_${i}_limit_20`);
-      }
-    });
+    this.invalidateAllCaches(ruleId); 
   },
 
   async createRule(rule: Omit<Rule, 'id' | 'created_at' | 'updated_at' | 'version' | 'updated_by' | 'order_index'>): Promise<void> {
@@ -212,13 +220,7 @@ export const RuleApiService = {
 
     if (error) throw error;
 
-    cacheService.invalidate(RULES_CACHE_KEY);
-    const categories = ['community', 'roleplay'];
-    categories.forEach(cat => {
-      for (let i = 1; i <= 5; i++) {
-        cacheService.invalidate(`rules_${cat}_page_${i}_limit_20`);
-      }
-    });
+    this.invalidateAllCaches() 
   },
 
   async getRuleHistory(ruleId: string): Promise<RuleChange[]> {
@@ -253,16 +255,7 @@ export const RuleApiService = {
 
     if (error) throw error;
 
-    cacheService.invalidate(RULES_CACHE_KEY);
-    cacheService.invalidate(`rule_content_${ruleId}`);
-    cacheService.invalidate(`${RULE_HISTORY_CACHE_PREFIX}${ruleId}`);
-
-    const categories = ['community', 'roleplay'];
-    categories.forEach(cat => {
-      for (let i = 1; i <= 5; i++) {
-        cacheService.invalidate(`rules_${cat}_page_${i}_limit_20`);
-      }
-    });
+    this.invalidateAllCaches(ruleId); 
   },
 };
 

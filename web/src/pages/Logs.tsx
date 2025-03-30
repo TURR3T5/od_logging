@@ -5,6 +5,8 @@ import { Container, Title, Text, Paper, Group, Box, Tabs, Menu, Button, Tooltip,
 import { DownloadSimple, ChartPie, ListBullets, BookmarkSimple } from '@phosphor-icons/react';
 import MainLayout from '../layouts/MainLayout';
 import LogTable from '../components/LogTable';
+import { useLogsSearch, SearchFilters } from '../hooks/useLogsSearch';
+import { applyLogsFilters } from '../utils/queryHelper';
 
 export interface Log {
 	id: string;
@@ -17,12 +19,6 @@ export interface Log {
 	player_name?: string;
 	discord_id?: string;
 	details: any;
-}
-
-export interface SearchFilters {
-	playerSearch: string;
-	eventTypeSearch: string;
-	dateRange: { start: string; end: string } | null;
 }
 
 export interface FilterPreset {
@@ -39,11 +35,7 @@ export default function LogsPage() {
 	const [page, setPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(1);
 	const router = useRouter();
-	const [searchFilters, setSearchFilters] = useState<SearchFilters>({
-		playerSearch: '',
-		eventTypeSearch: '',
-		dateRange: null,
-	});
+	const { searchFilters, handleSearch } = useLogsSearch();
 	const [activeTab, setActiveTab] = useState<string | null>('table');
 	const [categoryStats, setCategoryStats] = useState<any[]>([]);
 	const [eventTypeStats, setEventTypeStats] = useState<any[]>([]);
@@ -178,114 +170,18 @@ export default function LogsPage() {
 
 			let query = supabase.from('logs').select('*', { count: 'exact' }).order('created_at', { ascending: false });
 
-			const appliedFilters = [];
+			query = applyLogsFilters(query, currentFilters, searchFilters);
 
-			if (currentFilters.category) {
-				query = query.eq('category', currentFilters.category);
-				appliedFilters.push(`Category: ${currentFilters.category}`);
-			}
-
-			if (currentFilters.type) {
-				query = query.eq('type', currentFilters.type);
-				appliedFilters.push(`Type: ${currentFilters.type}`);
-			}
-
-			if (currentFilters.eventType) {
-				query = query.eq('event_type', currentFilters.eventType);
-				appliedFilters.push(`Event type: ${currentFilters.eventType}`);
-			}
-
-			if (searchFilters.eventTypeSearch) {
-				query = query.ilike('event_type', `%${searchFilters.eventTypeSearch}%`);
-				appliedFilters.push(`Event type search: ${searchFilters.eventTypeSearch}`);
-			}
-
-			if (currentFilters.serverId) {
-				query = query.eq('server_id', currentFilters.serverId);
-				appliedFilters.push(`Server ID: ${currentFilters.serverId}`);
-			}
-
-			if (currentFilters.discordId) {
-				const discordId = currentFilters.discordId.trim();
-				if (discordId) {
-					query = query.ilike('discord_id', `%${discordId}%`);
-					appliedFilters.push(`Discord ID: ${discordId}`);
-				}
-			}
-
-			if (searchFilters.playerSearch) {
-				const searchTerm = searchFilters.playerSearch.trim();
-				if (searchTerm) {
-					appliedFilters.push(`Player search: ${searchTerm}`);
-
-					const filterConditions = [`player_name.ilike.%${searchTerm}%`, `server_id.ilike.%${searchTerm}%`, `discord_id.ilike.%${searchTerm}%`];
-
-					if (!isNaN(Number(searchTerm))) {
-						filterConditions.push(`player_id.ilike.%${searchTerm}%`);
-					}
-
-					query = query.or(filterConditions.join(','));
-				}
-			}
-
-			if (searchFilters.dateRange) {
-				query = query.gte('created_at', searchFilters.dateRange.start).lte('created_at', searchFilters.dateRange.end);
-				const startDate = new Date(searchFilters.dateRange.start).toLocaleDateString();
-				const endDate = new Date(searchFilters.dateRange.end).toLocaleDateString();
-				appliedFilters.push(`Date range: ${startDate} - ${endDate}`);
-			}
-
-			const countQuery = supabase.from('logs').select('*', { count: 'exact' });
-
-			if (currentFilters.category) {
-				countQuery.eq('category', currentFilters.category);
-			}
-			if (currentFilters.type) {
-				countQuery.eq('type', currentFilters.type);
-			}
-			if (currentFilters.eventType) {
-				countQuery.eq('event_type', currentFilters.eventType);
-			}
-			if (searchFilters.eventTypeSearch) {
-				countQuery.ilike('event_type', `%${searchFilters.eventTypeSearch}%`);
-			}
-			if (currentFilters.serverId) {
-				countQuery.eq('server_id', currentFilters.serverId);
-			}
-
-			if (currentFilters.discordId) {
-				const discordId = currentFilters.discordId.trim();
-				if (discordId) {
-					countQuery.ilike('discord_id', `%${discordId}%`);
-				}
-			}
-
-			if (searchFilters.playerSearch) {
-				const searchTerm = searchFilters.playerSearch.trim();
-				if (searchTerm) {
-					const filterConditions = [`player_name.ilike.%${searchTerm}%`, `server_id.ilike.%${searchTerm}%`, `discord_id.ilike.%${searchTerm}%`];
-
-					if (!isNaN(Number(searchTerm))) {
-						filterConditions.push(`player_id.ilike.%${searchTerm}%`);
-					}
-
-					countQuery.or(filterConditions.join(','));
-				}
-			}
-
-			if (searchFilters.dateRange) {
-				countQuery.gte('created_at', searchFilters.dateRange.start).lte('created_at', searchFilters.dateRange.end);
-			}
+			let countQuery = supabase.from('logs').select('*', { count: 'exact' });
+			countQuery = applyLogsFilters(countQuery, currentFilters, searchFilters);
 
 			const { count, error: countError } = await countQuery;
-
 			if (countError) {
 				console.error('Error getting count:', countError);
 				return;
 			}
 
 			query = query.range((page - 1) * LOGS_PER_PAGE, page * LOGS_PER_PAGE - 1);
-
 			const { data, error } = await query;
 
 			if (error) {
@@ -333,13 +229,13 @@ export default function LogsPage() {
 		fetchLogs();
 	}, [page, fetchLogs]);
 
-	const handleSearch = (newFilters: SearchFilters) => {
-		setSearchFilters(newFilters);
+	const manageSearch = (newFilters: SearchFilters) => {
+		handleSearch(newFilters);
 		setPage(1);
 	};
 
 	const applyFilterPreset = (preset: FilterPreset) => {
-		setSearchFilters(preset.filters);
+		handleSearch(preset.filters);
 		setPage(1);
 
 		let navigateUrl = '/logs';
@@ -471,7 +367,7 @@ export default function LogsPage() {
 									totalPages,
 									onPageChange: setPage,
 								}}
-								onSearch={handleSearch}
+								onSearch={manageSearch}
 							/>
 						)}
 

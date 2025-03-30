@@ -1,13 +1,15 @@
 import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
-import { Container, Title, Text, Box, Paper, Group, Badge, Divider, TextInput, List, Alert, Chip, Button, ActionIcon, Tabs, Loader, Center } from '@mantine/core';
-import { MagnifyingGlass, X, Info, Plus, FileArrowDown, Lightbulb } from '@phosphor-icons/react';
+import { Container, Title, Box, Paper, Badge, Divider, Loader, Center } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { useDebouncedValue, useThrottledState } from '@mantine/hooks';
+import { useDebouncedValue } from '@mantine/hooks';
 import MainLayout from '../layouts/MainLayout';
 import { useAuth } from '../components/AuthProvider';
 import RuleApiService, { Rule, RulesResponse } from '../lib/RuleApiService';
 import RuleList from '../components/rules/RuleList';
-import './RulesPage.css';
+import { useRulesFilter } from '../hooks/useRulesFilter';
+import { RulesSidebar } from '../components/rules/RulesSidebar';
+import { RulesHeader } from '../components/rules/RulesHeader';
+import '../styles/RulesPage.css';
 
 const EditRuleModal = lazy(() => import('../components/rules/EditRuleModal'));
 const CreateRuleModal = lazy(() => import('../components/rules/CreateRuleModal'));
@@ -16,11 +18,8 @@ const RuleHistoryModal = lazy(() => import('../components/rules/RuleHistoryModal
 export default function RulesPage() {
 	const [activeCommunityRule, setActiveCommunityRule] = useState<string | null>(null);
 	const [activeRoleplayRule, setActiveRoleplayRule] = useState<string | null>(null);
-	const [activeTab, setActiveTab] = useState<string | null>('all');
-	const [searchInput, setSearchInput] = useState('');
-	const [searchQuery, setSearchQuery] = useThrottledState('', 300);
 	const [isLoading, setIsLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+	const [_error, setError] = useState<string | null>(null);
 	const [editModalOpen, setEditModalOpen] = useState(false);
 	const [currentRule, setCurrentRule] = useState<Rule | null>(null);
 	const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -32,19 +31,12 @@ export default function RulesPage() {
 		pinned: [],
 		recentlyUpdated: [],
 	});
-	const [filteredRules, setFilteredRules] = useState<{
-		community: Rule[];
-		roleplay: Rule[];
-	}>({
-		community: [],
-		roleplay: [],
-	});
-
+	const { searchQuery, setSearchQuery, activeTab, setActiveTab, filteredRules } = useRulesFilter(rules);
 	const rulesRef = useRef<HTMLDivElement>(null);
 	const { isAuthorized, user } = useAuth();
 	const displayCommunityRules = activeTab === 'all' || activeTab === 'community';
 	const displayRoleplayRules = activeTab === 'all' || activeTab === 'roleplay';
-	const [debouncedSearchValue] = useDebouncedValue(searchInput, 300);
+	const [debouncedSearchValue] = useDebouncedValue(searchQuery, 300);
 
 	useEffect(() => {
 		setSearchQuery(debouncedSearchValue);
@@ -54,33 +46,12 @@ export default function RulesPage() {
 		fetchRules();
 	}, []);
 
-	useEffect(() => {
-		if (!rules) return;
-
-		const filterRulesByQuery = (rulesArray: Rule[], query: string) => {
-			if (query.trim() === '') return rulesArray;
-
-			const lowerCaseQuery = query.toLowerCase();
-			return rulesArray.filter((rule) => rule.title.toLowerCase().includes(lowerCaseQuery) || (rule.content && rule.content.toLowerCase().includes(lowerCaseQuery)) || rule.tags.some((tag) => tag.toLowerCase().includes(lowerCaseQuery)) || rule.badge.toLowerCase().includes(lowerCaseQuery));
-		};
-
-		setFilteredRules({
-			community: filterRulesByQuery(rules.community, searchQuery),
-			roleplay: filterRulesByQuery(rules.roleplay, searchQuery),
-		});
-	}, [searchQuery, rules]);
-
 	const fetchRules = async () => {
 		setIsLoading(true);
 		try {
 			const data = await RuleApiService.getRulesList();
 
 			setRules(data);
-			setFilteredRules({
-				community: data.community,
-				roleplay: data.roleplay,
-			});
-
 			setError(null);
 		} catch (err) {
 			setError('Der opstod en fejl ved indlæsning af regler. Prøv venligst igen senere.');
@@ -188,31 +159,6 @@ export default function RulesPage() {
 		setHistoryModalOpen(true);
 	}, []);
 
-	const renderPinnedRules = () => {
-		return rules.pinned.length > 0 ? (
-			rules.pinned.map((rule) => (
-				<List.Item key={rule.id}>
-					<Group gap='xs' onClick={() => scrollToRule(rule.id)} style={{ cursor: 'pointer' }}>
-						<Badge size='sm' variant='light' color={rule.category === 'community' ? 'blue' : 'green'}>
-							{rule.badge}
-						</Badge>
-						<Text>{rule.title}</Text>
-					</Group>
-				</List.Item>
-			))
-		) : (
-			<Text c='dimmed'>Ingen fastgjorte regler endnu. Admin kan fastgøre regler for at vise dem her.</Text>
-		);
-	};
-
-	const renderRecentlyUpdatedRules = () => {
-		return rules.recentlyUpdated.map((rule) => (
-			<Chip key={rule.id} checked={false} onClick={() => scrollToRule(rule.id)}>
-				{rule.badge}: {rule.title}
-			</Chip>
-		));
-	};
-
 	return (
 		<MainLayout requireAuth={false}>
 			<Box
@@ -251,102 +197,9 @@ export default function RulesPage() {
 							boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
 						}}
 					>
-						<Box
-							style={{
-								background: 'linear-gradient(to right, rgba(225, 29, 72, 0.1), rgba(225, 29, 72, 0.02))',
-								padding: '16px',
-								borderRadius: '8px',
-								marginBottom: '24px',
-								borderLeft: '4px solid #e11d48',
-							}}
-						>
-							<Badge color='red' size='lg' radius='sm' mb='md'>
-								VIGTIGT
-							</Badge>
-							<Text size='lg' fw={700} c='red.4'>
-								DET ER ENHVER SPILLERS EGET ANSVAR AT HOLDE SIG OPDATERET PÅ ODESSA'S REGELSÆT - NYE/ÆNDREDE REGLER VIL ALTID BLIVE MELDT UD I DISCORD
-							</Text>
-						</Box>
+						<RulesHeader searchInput={searchQuery} onSearchChange={setSearchQuery} activeTab={activeTab} onTabChange={setActiveTab} isAuthorized={isAuthorized} onCreateRule={() => setCreateModalOpen(true)} onExportRules={exportRules} />
 
-						<Group justify='space-between' mb='lg'>
-							<Title order={1} c='gray.3' fw={800}>
-								OdessaRP Regelsæt
-							</Title>
-
-							{isAuthorized && (
-								<Group>
-									<Button leftSection={<Plus size={16} />} onClick={() => setCreateModalOpen(true)}>
-										Opret ny regel
-									</Button>
-									<Button variant='outline' leftSection={<FileArrowDown size={16} />} onClick={exportRules}>
-										Eksporter regler
-									</Button>
-								</Group>
-							)}
-						</Group>
-
-						{error && (
-							<Alert color='red' mb='lg'>
-								{error}
-							</Alert>
-						)}
-
-						<Box mb='xl'>
-							<Group justify='space-between' mb='md'>
-								<TextInput
-									leftSection={<MagnifyingGlass size={18} />}
-									placeholder='Søg efter regler...'
-									value={searchInput}
-									onChange={(event) => setSearchInput(event.currentTarget.value)}
-									style={{ flexGrow: 1 }}
-									rightSection={
-										searchInput ? (
-											<ActionIcon
-												onClick={() => {
-													setSearchInput('');
-												}}
-											>
-												<X size={16} />
-											</ActionIcon>
-										) : null
-									}
-								/>
-							</Group>
-
-							<Tabs value={activeTab} onChange={setActiveTab}>
-								<Tabs.List>
-									<Tabs.Tab value='all'>Alle Regler</Tabs.Tab>
-									<Tabs.Tab value='community'>Discord & Community Regler</Tabs.Tab>
-									<Tabs.Tab value='roleplay'>Rollespils Regler</Tabs.Tab>
-								</Tabs.List>
-							</Tabs>
-						</Box>
-
-						<Paper withBorder p='md' radius='md' mb='xl' style={{ backgroundColor: 'rgba(30, 30, 30, 0.6)', height: '100%' }}>
-							<Group mb='sm'>
-								<Lightbulb size={24} color='#FFD700' />
-								<Title order={4}>Hurtigt Overblik - Vigtigste Regler</Title>
-							</Group>
-							<List spacing='xs' size='sm'>
-								{renderPinnedRules()}
-							</List>
-						</Paper>
-						{rules.recentlyUpdated.length > 0 ? (
-							<Alert mb='xl' icon={<Info size={24} />} title='Nyligt Opdaterede Regler' color='blue' style={{ height: '100%' }} variant='outline'>
-								<Text size='sm' mb='xs'>
-									Følgende regler er blevet opdateret inden for de sidste 14 dage:
-								</Text>
-								<Group>{renderRecentlyUpdatedRules()}</Group>
-							</Alert>
-						) : (
-							<Paper withBorder p='md' radius='md' mb='xl' style={{ backgroundColor: 'rgba(30, 30, 30, 0.6)', height: '100%' }}>
-								<Group mb='sm'>
-									<Info size={24} color='#3b82f6' />
-									<Title order={4}>Nyligt Opdaterede Regler</Title>
-								</Group>
-								<Text c='dimmed'>Ingen regler er blevet opdateret inden for de sidste 14 dage.</Text>
-							</Paper>
-						)}
+						<RulesSidebar pinnedRules={rules.pinned} recentlyUpdatedRules={rules.recentlyUpdated} onRuleClick={scrollToRule} />
 
 						{isLoading ? (
 							<Center p='xl'>

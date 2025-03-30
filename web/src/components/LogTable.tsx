@@ -1,10 +1,13 @@
 import { useMemo, useState, useEffect } from 'react';
-import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel, getFacetedRowModel, getFacetedUniqueValues, ColumnDef, flexRender, SortingState, ColumnFiltersState } from '@tanstack/react-table';
-import { Table, ScrollArea, Paper, TextInput, Group, Box, Text, ActionIcon, Pagination, Center, Badge, Button, Modal } from '@mantine/core';
-import { ArrowUp, ArrowDown, X, Eye, MagnifyingGlass } from '@phosphor-icons/react';
-import { Log, SearchFilters } from '../pages/Logs';
+import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel, getFacetedRowModel, getFacetedUniqueValues, ColumnDef, flexRender } from '@tanstack/react-table';
+import { Table, ScrollArea, Paper, TextInput, Group, Box, Text, Pagination, Center, Badge, Button } from '@mantine/core';
+import { ArrowUp, ArrowDown, Eye, MagnifyingGlass } from '@phosphor-icons/react';
+import { Log } from '../pages/Logs';
+import { SearchFilters } from '../hooks/useLogsSearch';
 import { format } from 'date-fns';
-import { DateTimePicker } from '@mantine/dates';
+import { DateFilter } from '../filters/DateFilter';
+import { LogDetailsModal } from './LogDetailsModal';
+import { useTableSorting } from '../hooks/useTableSorting';
 
 const dateRangeFilterFn = (row: any, columnId: string, filterValue: [string, string]) => {
 	if (!filterValue || !Array.isArray(filterValue) || filterValue.length !== 2) {
@@ -40,88 +43,6 @@ const playerFilterFn = (row: any, filterValue: any) => {
 	return playerName.includes(searchTerm) || serverId.includes(searchTerm) || playerId.includes(searchTerm) || discordId.includes(searchTerm);
 };
 
-function DateFilter({ onDateRangeChange }: { column: any; onDateRangeChange: (range: { start: string; end: string } | null) => void }) {
-	const [startDate, setStartDate] = useState<Date | null>(null);
-	const [endDate, setEndDate] = useState<Date | null>(null);
-
-	const handleStartDateChange = (date: Date | null) => {
-		setStartDate(date);
-		if (date && endDate) {
-			onDateRangeChange({
-				start: date.toISOString(),
-				end: endDate.toISOString(),
-			});
-		} else if (!date && !endDate) {
-			onDateRangeChange(null);
-		}
-	};
-
-	const handleEndDateChange = (date: Date | null) => {
-		setEndDate(date);
-		if (startDate && date) {
-			onDateRangeChange({
-				start: startDate.toISOString(),
-				end: date.toISOString(),
-			});
-		} else if (!startDate && !date) {
-			onDateRangeChange(null);
-		}
-	};
-
-	return (
-		<Group gap='xs'>
-			<DateTimePicker
-				placeholder='Start date'
-				valueFormat='DD MMM YYYY HH:mm'
-				clearable
-				size='sm'
-				value={startDate}
-				onChange={handleStartDateChange}
-				rightSection={
-					startDate ? (
-						<ActionIcon
-							size='xs'
-							onClick={(e) => {
-								e.stopPropagation();
-								setStartDate(null);
-								if (!endDate) {
-									onDateRangeChange(null);
-								}
-							}}
-						>
-							<X size={12} />
-						</ActionIcon>
-					) : null
-				}
-			/>
-			<DateTimePicker
-				placeholder='End date'
-				valueFormat='DD MMM YYYY HH:mm'
-				clearable
-				size='sm'
-				value={endDate}
-				onChange={handleEndDateChange}
-				rightSection={
-					endDate ? (
-						<ActionIcon
-							size='xs'
-							onClick={(e) => {
-								e.stopPropagation();
-								setEndDate(null);
-								if (!startDate) {
-									onDateRangeChange(null);
-								}
-							}}
-						>
-							<X size={12} />
-						</ActionIcon>
-					) : null
-				}
-			/>
-		</Group>
-	);
-}
-
 function SortingIndicator({ column }: { column: any }) {
 	if (!column.getIsSorted()) {
 		return null;
@@ -143,15 +64,13 @@ interface LogTableProps {
 }
 
 export default function LogTable({ data, isLoading, pagination, extraColumns = [], onSearch }: LogTableProps) {
-	const [sorting, setSorting] = useState<SortingState>([{ id: 'timestamp', desc: true }]);
-	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-	const [globalFilter, setGlobalFilter] = useState('');
 	const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
 	const [selectedLog, setSelectedLog] = useState<Log | null>(null);
 	const [modalOpen, setModalOpen] = useState(false);
 	const [playerSearchTerm, setPlayerSearchTerm] = useState('');
 	const [eventTypeSearchTerm, setEventTypeSearchTerm] = useState('');
 	const [dateRange, setDateRange] = useState<{ start: string; end: string } | null>(null);
+	const { sorting, setSorting, columnFilters, setColumnFilters, globalFilter, setGlobalFilter } = useTableSorting();
 
 	useEffect(() => {
 		setHasAttemptedLoad(true);
@@ -191,17 +110,6 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 			});
 		}
 	};
-
-	const formattedDetails = useMemo(() => {
-		if (!selectedLog) return '';
-
-		try {
-			return typeof selectedLog.details === 'object' ? JSON.stringify(selectedLog.details, null, 2) : String(selectedLog.details || '');
-		} catch (e) {
-			console.error('Error formatting log details:', e);
-			return '';
-		}
-	}, [selectedLog]);
 
 	const commonColumns: ColumnDef<Log>[] = [
 		{
@@ -436,71 +344,7 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 				)}
 			</Paper>
 
-			<Modal opened={modalOpen} onClose={handleCloseModal} title={<Text fw={700}>Log Details</Text>} size='lg'>
-				{selectedLog && (
-					<>
-						<Box mb='md'>
-							<Group mb='xs'>
-								<Text fw={500}>Category:</Text>
-								<Badge color='indigo'>{selectedLog.category || 'N/A'}</Badge>
-							</Group>
-
-							<Group mb='xs'>
-								<Text fw={500}>Type:</Text>
-								<Badge color='teal'>{selectedLog.type || 'N/A'}</Badge>
-							</Group>
-
-							<Group mb='xs'>
-								<Text fw={500}>Event Type:</Text>
-								<Badge color='blue'>{selectedLog.event_type}</Badge>
-							</Group>
-
-							<Group mb='xs'>
-								<Text fw={500}>Player:</Text>
-								<Text>{selectedLog.player_name || 'System'}</Text>
-							</Group>
-
-							<Group mb='xs'>
-								<Text fw={500}>Server ID:</Text>
-								<Text>{selectedLog.server_id || 'N/A'}</Text>
-							</Group>
-
-							<Group mb='xs'>
-								<Text fw={500}>Steam ID:</Text>
-								<Text>{selectedLog.player_id || 'N/A'}</Text>
-							</Group>
-
-							<Group mb='xs'>
-								<Text fw={500}>Discord ID:</Text>
-								<Text>{selectedLog.discord_id || 'N/A'}</Text>
-							</Group>
-
-							<Group mb='xs'>
-								<Text fw={500}>Time:</Text>
-								<Text>{selectedLog.created_at ? format(new Date(selectedLog.created_at), 'MMM d, yyyy HH:mm:ss') : 'Unknown'}</Text>
-							</Group>
-						</Box>
-
-						<Text fw={500} mb='xs'>
-							Details:
-						</Text>
-						<Box
-							style={(theme) => ({
-								fontFamily: 'monospace',
-								whiteSpace: 'pre-wrap',
-								maxHeight: '400px',
-								overflow: 'auto',
-								backgroundColor: theme.colors.dark[7],
-								padding: theme.spacing.md,
-								borderRadius: theme.radius.sm,
-								fontSize: theme.fontSizes.sm,
-							})}
-						>
-							{formattedDetails}
-						</Box>
-					</>
-				)}
-			</Modal>
+			<LogDetailsModal opened={modalOpen} onClose={handleCloseModal} selectedLog={selectedLog} />
 		</Box>
 	);
 }

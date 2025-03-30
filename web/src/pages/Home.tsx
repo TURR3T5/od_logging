@@ -6,7 +6,7 @@ import MainLayout from '../layouts/MainLayout';
 import { Users, Car, Buildings, Calendar, ShieldCheck, GameController, ArrowRight, DiscordLogo, Bell, Star, CalendarCheck, PushPin, Megaphone } from '@phosphor-icons/react';
 import { format } from 'date-fns';
 import { da } from 'date-fns/locale';
-import { useUpcomingContent, convertToPinnedItems, convertToNewsItems } from '../lib/NewsHooks';
+import { useUpcomingContent, convertToPinnedItems, convertToNewsItems } from '../hooks/NewsHooks';
 
 interface PinnedItem {
 	id: string;
