@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Container, Title, Text, Box, Grid, Tabs, Group, Paper, Badge, Card, Avatar, Button, Modal, Divider, TextInput, Textarea, Stack, List, ThemeIcon, Accordion } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import MainLayout from '../layouts/MainLayout';
 import { CheckCircle, FileText, ClockCounterClockwise, ShieldStar, Heartbeat, Users, Clock, ArrowRight } from '@phosphor-icons/react';
 import { useAuth } from '../components/AuthProvider';
 import { EmptyState } from '../components/common/EmptyState';
+import { useModalState } from '../hooks/useModalState';
 
 interface Question {
 	id: string;
@@ -241,9 +241,7 @@ function ApplicationsList({ applications, isAdmin = false, onUpdateStatus }: { a
 	const [feedbackText, setFeedbackText] = useState<Record<string, string>>({});
 
 	if (applications.length === 0) {
-		return (
-			<EmptyState title='Ingen ansøgninger' message='Der er ingen ansøgninger at vise.' icon={<ClockCounterClockwise size={48} />} />
-		);
+		return <EmptyState title='Ingen ansøgninger' message='Der er ingen ansøgninger at vise.' icon={<ClockCounterClockwise size={48} />} />;
 	}
 
 	return (
@@ -375,13 +373,11 @@ export default function WhitelistApplicationPage() {
 	const { isAuthorized } = useAuth();
 	const [applications, setApplications] = useState<JobApplication[]>(isAuthorized ? mockAllApplications : mockUserApplications);
 	const [userApplications, setUserApplications] = useState<JobApplication[]>(mockUserApplications);
-	const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 	const [activeTab, setActiveTab] = useState<string | null>('jobs');
-	const [opened, { open, close }] = useDisclosure(false);
+	const applicationModal = useModalState<Job>();
 
 	const handleOpenApplication = (job: Job) => {
-		setSelectedJob(job);
-		open();
+		applicationModal.open(job);
 	};
 
 	const handleSubmitApplication = (application: Omit<JobApplication, 'id'>) => {
@@ -482,7 +478,7 @@ export default function WhitelistApplicationPage() {
 					)}
 				</Tabs>
 
-				<ApplicationModal isOpen={opened} onClose={close} job={selectedJob} onSubmit={handleSubmitApplication} />
+				<ApplicationModal isOpen={applicationModal.isOpen} onClose={applicationModal.close} job={applicationModal.data} onSubmit={handleSubmitApplication} />
 			</Container>
 		</MainLayout>
 	);

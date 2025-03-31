@@ -5,6 +5,7 @@ import { useAuth } from '../AuthProvider';
 import { supabase } from '../../lib/supabase';
 import MainLayout from '../../layouts/MainLayout';
 import { notifications } from '@mantine/notifications';
+import { usePermission } from '../../hooks/usePermissions';
 
 interface PermissionRole {
 	id: string;
@@ -21,7 +22,8 @@ interface EmailRole {
 }
 
 export default function RoleManagement() {
-	const { isAuthorized, hasPermission, user } = useAuth();
+	const { user } = useAuth();
+	const { hasPermission: isAuthorized, isChecking: checkingPermission } = usePermission('admin');
 	const [isLoading, setIsLoading] = useState(true);
 	const [roles, setRoles] = useState<PermissionRole[]>([]);
 	const [emailRoles, setEmailRoles] = useState<EmailRole[]>([]);
@@ -38,7 +40,7 @@ export default function RoleManagement() {
 
 	useEffect(() => {
 		const checkPermission = async () => {
-			if (isAuthorized && (await hasPermission('admin'))) {
+			if (isAuthorized && (await usePermission('admin'))) {
 				fetchRoles();
 				fetchEmailRoles();
 			} else {
@@ -308,7 +310,7 @@ export default function RoleManagement() {
 	const filteredRoles = roles.filter((role) => role.name.toLowerCase().includes(searchTerm.toLowerCase()) || role.id.includes(searchTerm));
 	const filteredEmailRoles = emailRoles.filter((role) => role.email.toLowerCase().includes(searchTerm.toLowerCase()));
 
-	if (!isAuthorized || !hasPermission('admin')) {
+	if (!isAuthorized) {
 		return (
 			<MainLayout>
 				<Container size='md' py='xl'>
@@ -323,7 +325,7 @@ export default function RoleManagement() {
 		);
 	}
 
-	if (isLoading) {
+	if (isLoading || checkingPermission) {
 		return (
 			<MainLayout>
 				<Center style={{ height: 'calc(100vh - 200px)' }}>

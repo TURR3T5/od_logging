@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import cacheService from './CacheService';
+import { apiClient } from './ApiClient';
 
 export interface Rule {
   id: string;
@@ -61,49 +62,54 @@ export const RuleApiService = {
   },
 
   async getRulesList(): Promise<RulesResponse> {
-    const cachedRules = cacheService.get<RulesResponse>(RULES_CACHE_KEY);
-    if (cachedRules) {
-      return cachedRules;
-    }
-
-    const { data, error } = await supabase
-      .from('rules')
-      .select('id, badge, title, content, category, tags, is_pinned, created_at, updated_at, updated_by, version, order_index')
-      .order('order_index');
-
-    if (error) throw error;
-
-    if (data) {
+    try {
+      const query = supabase
+        .from('rules')
+        .select('id, badge, title, content, category, tags, is_pinned, created_at, updated_at, updated_by, version, order_index')
+        .order('order_index');
+        
+      const { data } = await apiClient.get<{ data: Rule[] }>(
+        'rules', 
+        query, 
+        { cacheKey: RULES_CACHE_KEY, expiryInMinutes: 15 }
+      );
+      
+      if (!data) {
+        return {
+          community: [],
+          roleplay: [],
+          pinned: [],
+          recentlyUpdated: [],
+        };
+      }
+      
       const communityRules = data.filter((rule) => rule.category === 'community');
       const roleplayRules = data.filter((rule) => rule.category === 'roleplay');
       const pinnedRules = data.filter((rule) => rule.is_pinned);
-
+  
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 14);
-
+  
       const recentlyUpdated = data
         .filter((rule) => new Date(rule.updated_at) > thirtyDaysAgo)
         .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
         .slice(0, 10);
-
-      const response: RulesResponse = {
+  
+      return {
         community: communityRules,
         roleplay: roleplayRules,
         pinned: pinnedRules,
         recentlyUpdated,
       };
-
-      cacheService.set(RULES_CACHE_KEY, response, { expiryInMinutes: 15 });
-
-      return response;
+    } catch (error) {
+      console.error('Error fetching rules list:', error);
+      return {
+        community: [],
+        roleplay: [],
+        pinned: [],
+        recentlyUpdated: [],
+      };
     }
-
-    return {
-      community: [],
-      roleplay: [],
-      pinned: [],
-      recentlyUpdated: [],
-    };
   },
 
   async getRuleContent(ruleId: string): Promise<string> {

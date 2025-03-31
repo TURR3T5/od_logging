@@ -8,10 +8,11 @@ import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import '@mantine/notifications/styles.css';
 import './styles/index.css';
+import { appTheme } from './styles/theme';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
 	<React.StrictMode>
-		<MantineProvider defaultColorScheme='dark'>
+		<MantineProvider defaultColorScheme='dark' theme={appTheme}>
 			<Notifications />
 			<RouterProvider router={router} />
 		</MantineProvider>

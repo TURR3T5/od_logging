@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel, getFacetedRowModel, getFacetedUniqueValues, ColumnDef, flexRender } from '@tanstack/react-table';
 import { Table, ScrollArea, Paper, TextInput, Group, Box, Text, Pagination, Center, Badge, Button } from '@mantine/core';
 import { ArrowUp, ArrowDown, Eye, MagnifyingGlass } from '@phosphor-icons/react';
@@ -10,6 +10,7 @@ import { DateFilter } from '../filters/DateFilter';
 import { LogDetailsModal } from './LogDetailsModal';
 import { EmptyState } from '../components/common/EmptyState';
 import { LoadingState } from '../components/common/LoadingState';
+import { useModalState } from '../hooks/useModalState';
 
 const dateRangeFilterFn = (row: any, columnId: string, filterValue: [string, string]) => {
 	if (!filterValue || !Array.isArray(filterValue) || filterValue.length !== 2) {
@@ -66,9 +67,7 @@ interface LogTableProps {
 }
 
 export default function LogTable({ data, isLoading, pagination, extraColumns = [], onSearch }: LogTableProps) {
-	const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
-	const [selectedLog, setSelectedLog] = useState<Log | null>(null);
-	const [modalOpen, setModalOpen] = useState(false);
+	const logDetailsModal = useModalState<Log>();
 	const [playerSearchTerm, setPlayerSearchTerm] = useState('');
 	const [eventTypeSearchTerm, setEventTypeSearchTerm] = useState('');
 	const [dateRange, setDateRange] = useState<{ start: string; end: string } | null>(null);
@@ -76,20 +75,12 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 		initialSorting: [{ id: 'timestamp', desc: true }],
 	});
 
-	useEffect(() => {
-		setHasAttemptedLoad(true);
-	}, []);
-
 	const handleOpenModal = (log: Log) => {
-		setSelectedLog(log);
-		setModalOpen(true);
+		logDetailsModal.open(log);
 	};
 
 	const handleCloseModal = () => {
-		setModalOpen(false);
-		setTimeout(() => {
-			setSelectedLog(null);
-		}, 300);
+		logDetailsModal.close();
 	};
 
 	const handleSearchSubmit = () => {
@@ -346,7 +337,7 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 				)}
 			</Paper>
 
-			<LogDetailsModal opened={modalOpen} onClose={handleCloseModal} selectedLog={selectedLog} />
+			<LogDetailsModal opened={logDetailsModal.isOpen} onClose={handleCloseModal} selectedLog={logDetailsModal.data} />
 		</Box>
 	);
 }

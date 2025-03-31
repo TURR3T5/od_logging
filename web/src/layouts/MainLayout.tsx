@@ -5,6 +5,7 @@ import { useAuth } from '../components/AuthProvider';
 import { useNavigate, useRouter } from '@tanstack/react-router';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
+import { usePermission } from '../hooks/usePermissions';
 
 interface MainLayoutProps {
 	children: React.ReactNode;
@@ -17,7 +18,8 @@ export default function MainLayout({ children, requireAuth = true, requiredPermi
 	const [sidebarOpened, setSidebarOpened] = useState(false);
 	const isMobile = useMediaQuery(`(max-width: ${theme.breakpoints.sm})`);
 	const isTablet = useMediaQuery(`(max-width: ${theme.breakpoints.md})`);
-	const { isAuthorized, isLoading, permissionLevel, hasPermission } = useAuth();
+	const { isAuthorized, isLoading, permissionLevel } = useAuth();
+	const { hasPermission, isChecking } = usePermission(requiredPermission);
 	const navigate = useNavigate();
 	const router = useRouter();
 
@@ -34,10 +36,8 @@ export default function MainLayout({ children, requireAuth = true, requiredPermi
 			if (!isAuthorized) {
 				navigate({ to: '/login' });
 			} else if (requiredPermission) {
-				setCheckingPermission(true);
-				const permitted = hasPermission(requiredPermission);
-				setHasPermissionState(permitted);
-				setCheckingPermission(false);
+				setCheckingPermission(isChecking);
+				setHasPermissionState(hasPermission);
 			} else {
 				setHasPermissionState(true);
 				setCheckingPermission(false);
@@ -46,7 +46,7 @@ export default function MainLayout({ children, requireAuth = true, requiredPermi
 			setHasPermissionState(true);
 			setCheckingPermission(false);
 		}
-	}, [requireAuth, isAuthorized, isLoading, navigate, requiredPermission, hasPermission]);
+	}, [requireAuth, isAuthorized, isLoading, navigate, requiredPermission, hasPermission, isChecking]);
 
 	useEffect(() => {
 		document.body.style.backgroundColor = '#111';

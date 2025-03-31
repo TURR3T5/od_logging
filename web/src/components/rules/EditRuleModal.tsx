@@ -4,7 +4,7 @@ import { notifications } from '@mantine/notifications';
 import { Pencil, Eye, Trash } from '@phosphor-icons/react';
 import RuleApiService, { Rule } from '../../lib/RuleApiService';
 import { ConfirmationModal } from '../common/ConfirmationModal';
-import { useDisclosure } from '@mantine/hooks';
+import { useModalState } from '../../hooks/useModalState';
 
 interface EditRuleModalProps {
 	currentRule: Rule | null;
@@ -24,7 +24,7 @@ export default function EditRuleModal({ currentRule, opened, onClose, onRuleUpda
 	const [isSaving, setIsSaving] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
 	const [itemToDelete, setItemToDelete] = useState<string | null>(null);
-	const [confirmModalOpened, { open: openConfirmModal, close: closeConfirmModal }] = useDisclosure(false);
+	const confirmModal = useModalState();
 
 	useEffect(() => {
 		if (opened && currentRule) {
@@ -77,7 +77,7 @@ export default function EditRuleModal({ currentRule, opened, onClose, onRuleUpda
 
 	const handleDeleteClick = (id: string) => {
 		setItemToDelete(id);
-		openConfirmModal();
+		confirmModal.open();
 	};
 
 	const handleConfirmDelete = async () => {
@@ -104,7 +104,7 @@ export default function EditRuleModal({ currentRule, opened, onClose, onRuleUpda
 			});
 		} finally {
 			setIsDeleting(false);
-			closeConfirmModal();
+			confirmModal.close();
 		}
 	};
 
@@ -183,7 +183,7 @@ export default function EditRuleModal({ currentRule, opened, onClose, onRuleUpda
 				)}
 			</Modal>
 
-			<ConfirmationModal opened={confirmModalOpened} onClose={closeConfirmModal} onConfirm={handleConfirmDelete} title='Bekræft sletning' message='Er du sikker på, at du vil slette dette element? Denne handling kan ikke fortrydes.' confirmLabel='Slet' variant='danger' isLoading={isDeleting} />
+			<ConfirmationModal opened={confirmModal.isOpen} onClose={confirmModal.close} onConfirm={handleConfirmDelete} title='Bekræft sletning' message='Er du sikker på, at du vil slette dette element? Denne handling kan ikke fortrydes.' confirmLabel='Slet' variant='danger' isLoading={isDeleting} />
 		</>
 	);
 }

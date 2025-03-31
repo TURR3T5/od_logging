@@ -9,6 +9,8 @@ import RuleList from '../components/rules/RuleList';
 import { useRulesFilter } from '../hooks/useRulesFilter';
 import { RulesSidebar } from '../components/rules/RulesSidebar';
 import { RulesHeader } from '../components/rules/RulesHeader';
+import { usePermission } from '../hooks/usePermissions';
+import { useModalState } from '../hooks/useModalState';
 import '../styles/RulesPage.css';
 
 const EditRuleModal = lazy(() => import('../components/rules/EditRuleModal'));
@@ -20,11 +22,6 @@ export default function RulesPage() {
 	const [activeRoleplayRule, setActiveRoleplayRule] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [_error, setError] = useState<string | null>(null);
-	const [editModalOpen, setEditModalOpen] = useState(false);
-	const [currentRule, setCurrentRule] = useState<Rule | null>(null);
-	const [createModalOpen, setCreateModalOpen] = useState(false);
-	const [historyModalOpen, setHistoryModalOpen] = useState(false);
-	const [selectedRuleId, setSelectedRuleId] = useState<string>('');
 	const [rules, setRules] = useState<RulesResponse>({
 		community: [],
 		roleplay: [],
@@ -33,10 +30,14 @@ export default function RulesPage() {
 	});
 	const { searchQuery, setSearchQuery, activeTab, setActiveTab, filteredRules } = useRulesFilter(rules);
 	const rulesRef = useRef<HTMLDivElement>(null);
-	const { isAuthorized, user } = useAuth();
+	const { user } = useAuth();
+	const { hasPermission: isAuthorized } = usePermission('content');
 	const displayCommunityRules = activeTab === 'all' || activeTab === 'community';
 	const displayRoleplayRules = activeTab === 'all' || activeTab === 'roleplay';
 	const [debouncedSearchValue] = useDebouncedValue(searchQuery, 300);
+	const editModal = useModalState<Rule>();
+	const createModal = useModalState();
+	const historyModal = useModalState<string>();
 
 	useEffect(() => {
 		setSearchQuery(debouncedSearchValue);
@@ -124,10 +125,12 @@ export default function RulesPage() {
 		[rules.community, rules.roleplay]
 	);
 
-	const openEditModal = useCallback((rule: Rule) => {
-		setCurrentRule(rule);
-		setEditModalOpen(true);
-	}, []);
+	const openEditModal = useCallback(
+		(rule: Rule) => {
+			editModal.open(rule);
+		},
+		[editModal]
+	);
 
 	const exportRules = useCallback(() => {
 		const data = {
@@ -154,10 +157,12 @@ export default function RulesPage() {
 		});
 	}, [rules.community, rules.roleplay]);
 
-	const openHistoryModal = useCallback((ruleId: string) => {
-		setSelectedRuleId(ruleId);
-		setHistoryModalOpen(true);
-	}, []);
+	const openHistoryModal = useCallback(
+		(ruleId: string) => {
+			historyModal.open(ruleId);
+		},
+		[historyModal]
+	);
 
 	return (
 		<MainLayout requireAuth={false}>
@@ -197,7 +202,7 @@ export default function RulesPage() {
 							boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
 						}}
 					>
-						<RulesHeader searchInput={searchQuery} onSearchChange={setSearchQuery} activeTab={activeTab} onTabChange={setActiveTab} isAuthorized={isAuthorized} onCreateRule={() => setCreateModalOpen(true)} onExportRules={exportRules} />
+						<RulesHeader searchInput={searchQuery} onSearchChange={setSearchQuery} activeTab={activeTab} onTabChange={setActiveTab} isAuthorized={isAuthorized} onCreateRule={createModal.open} onExportRules={exportRules} />
 
 						<RulesSidebar pinnedRules={rules.pinned} recentlyUpdatedRules={rules.recentlyUpdated} onRuleClick={scrollToRule} />
 
@@ -309,11 +314,9 @@ export default function RulesPage() {
 					</Center>
 				}
 			>
-				{editModalOpen && <EditRuleModal currentRule={currentRule} opened={editModalOpen} onClose={() => setEditModalOpen(false)} onRuleUpdated={fetchRules} username={user?.username} />}
-
-				{createModalOpen && <CreateRuleModal opened={createModalOpen} onClose={() => setCreateModalOpen(false)} onRuleCreated={fetchRules} />}
-
-				{historyModalOpen && <RuleHistoryModal ruleId={selectedRuleId} opened={historyModalOpen} onClose={() => setHistoryModalOpen(false)} />}
+				<EditRuleModal currentRule={editModal.data} opened={editModal.isOpen} onClose={editModal.close} onRuleUpdated={fetchRules} username={user?.username} />
+				<CreateRuleModal opened={createModal.isOpen} onClose={createModal.close} onRuleCreated={fetchRules} />
+				<RuleHistoryModal ruleId={historyModal.data || ''} opened={historyModal.isOpen} onClose={historyModal.close} />
 			</Suspense>
 		</MainLayout>
 	);

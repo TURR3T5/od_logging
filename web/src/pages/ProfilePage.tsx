@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Container, Title, Text, Box, Paper, Group, Avatar, TextInput, Button, Tabs, Card, Timeline, Badge, Divider, PasswordInput, Switch, Grid, SimpleGrid } from '@mantine/core';
+import { Container, Title, Text, Box, Paper, Group, Avatar, TextInput, Button, Tabs, Divider, PasswordInput, Switch, Grid } from '@mantine/core';
 import { useAuth } from '../components/AuthProvider';
 import MainLayout from '../layouts/MainLayout';
-import { Shield, Trash, PencilSimple, User, ClockCounterClockwise, CreditCard, Clock, Gear } from '@phosphor-icons/react';
+import { PencilSimple, Gear } from '@phosphor-icons/react';
 import { notifications } from '@mantine/notifications';
+import { usePermission } from '../hooks/usePermissions';
 
 interface UserProfile {
 	id: string;
@@ -11,52 +12,16 @@ interface UserProfile {
 	email: string;
 	avatar: string;
 	joinDate: string;
-	characters: Character[];
 	preferences: {
 		notifications: boolean;
 		twoFactorAuth: boolean;
 		emailUpdates: boolean;
 	};
-	stats: {
-		playTime: number;
-		charactersCreated: number;
-		jobsCompleted: number;
-		crimesCommitted: number;
-		moneyEarned: number;
-		reputation: number;
-	};
-	recentActivity: Activity[];
-	achievements: Achievement[];
-}
-
-interface Character {
-	id: string;
-	name: string;
-	job: string;
-	level: number;
-	money: number;
-	createdAt: string;
-	lastPlayed: string;
-}
-
-interface Activity {
-	id: string;
-	type: string;
-	description: string;
-	timestamp: string;
-}
-
-interface Achievement {
-	id: string;
-	name: string;
-	description: string;
-	completed: boolean;
-	progress: number;
-	maxProgress: number;
 }
 
 export default function ProfilePage() {
-	const { user, isAuthorized } = useAuth();
+	const { user } = useAuth();
+	const { hasPermission: isAuthorized, isChecking: checkingPermission } = usePermission('viewer');
 	const [profile, setProfile] = useState<UserProfile | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isEditing, setIsEditing] = useState(false);
@@ -74,99 +39,11 @@ export default function ProfilePage() {
 						email: 'john.doe@example.com',
 						avatar: user?.avatar_url || '/api/placeholder/100/100',
 						joinDate: '2023-06-15',
-						characters: [
-							{
-								id: 'char1',
-								name: 'Marcus Jensen',
-								job: 'Police Officer',
-								level: 28,
-								money: 342500,
-								createdAt: '2023-06-16',
-								lastPlayed: '2025-03-25',
-							},
-							{
-								id: 'char2',
-								name: 'Alex Smith',
-								job: 'Criminal',
-								level: 19,
-								money: 175300,
-								createdAt: '2023-08-22',
-								lastPlayed: '2025-03-27',
-							},
-						],
 						preferences: {
 							notifications: true,
 							twoFactorAuth: false,
 							emailUpdates: true,
 						},
-						stats: {
-							playTime: 347,
-							charactersCreated: 2,
-							jobsCompleted: 156,
-							crimesCommitted: 89,
-							moneyEarned: 1456785,
-							reputation: 78,
-						},
-						recentActivity: [
-							{
-								id: 'act1',
-								type: 'login',
-								description: 'Logged in to the server',
-								timestamp: '2025-03-27T18:45:23',
-							},
-							{
-								id: 'act2',
-								type: 'job',
-								description: 'Completed police patrol job',
-								timestamp: '2025-03-27T19:12:56',
-							},
-							{
-								id: 'act3',
-								type: 'purchase',
-								description: 'Purchased vehicle: Police Cruiser',
-								timestamp: '2025-03-27T20:05:12',
-							},
-							{
-								id: 'act4',
-								type: 'login',
-								description: 'Logged in to the server',
-								timestamp: '2025-03-25T17:32:45',
-							},
-						],
-						achievements: [
-							{
-								id: 'ach1',
-								name: 'First Day on the Job',
-								description: 'Complete your first job',
-								completed: true,
-								progress: 1,
-								maxProgress: 1,
-							},
-							{
-								id: 'ach2',
-								name: 'Seasoned Officer',
-								description: 'Complete 200 police jobs',
-								completed: false,
-								progress: 156,
-								maxProgress: 200,
-							},
-							{
-								id: 'ach3',
-								name: 'Property Tycoon',
-								description: 'Own 5 properties',
-								completed: false,
-								progress: 2,
-								maxProgress: 5,
-							},
-							{
-								id: 'ach4',
-								name: 'High Roller',
-								description: 'Accumulate $1,000,000 across all characters',
-								completed: false,
-								progress: 517800,
-								maxProgress: 1000000,
-							},
-						],
 					});
 					setIsLoading(false);
 				}, 1000);
@@ -224,27 +101,8 @@ export default function ProfilePage() {
 		});
 	};
 
-	const formatCurrency = (amount: number): string => {
-		return new Intl.NumberFormat('da-DK', { style: 'currency', currency: 'DKK' }).format(amount);
-	};
-
 	const formatDate = (dateString: string): string => {
 		return new Date(dateString).toLocaleDateString('da-DK');
-	};
-
-	const formatDateTime = (dateTimeString: string): string => {
-		return new Date(dateTimeString).toLocaleString('da-DK');
-	};
-
-	const formatPlayTime = (hours: number): string => {
-		const days = Math.floor(hours / 24);
-		const remainingHours = Math.floor(hours % 24);
-
-		if (days > 0) {
-			return `${days} dage, ${remainingHours} timer`;
-		} else {
-			return `${hours} timer`;
-		}
 	};
 
 	if (!isAuthorized) {
@@ -262,7 +120,7 @@ export default function ProfilePage() {
 		);
 	}
 
-	if (isLoading || !profile) {
+	if (isLoading || checkingPermission) {
 		return (
 			<MainLayout>
 				<Container size='xl' py='xl'>
@@ -283,7 +141,7 @@ export default function ProfilePage() {
 					<Grid.Col span={{ base: 12, md: 4 }}>
 						<Paper withBorder p='md' radius='md' mb='md'>
 							<Box ta='center' mb='md'>
-								<Avatar src={profile.avatar} size={120} radius={120} mx='auto' mb='md' />
+								<Avatar src={profile?.avatar} size={120} radius={120} mx='auto' mb='md' />
 
 								{isEditing ? (
 									<>
@@ -298,50 +156,16 @@ export default function ProfilePage() {
 									</>
 								) : (
 									<>
-										<Title order={3}>{profile.username}</Title>
-										<Text c='dimmed'>{profile.email}</Text>
+										<Title order={3}>{profile?.username}</Title>
+										<Text c='dimmed'>{profile?.email}</Text>
 										<Text size='sm' c='dimmed' mt='xs'>
-											Medlem siden {formatDate(profile.joinDate)}
+											Medlem siden {formatDate(profile?.joinDate || '')}
 										</Text>
 										<Button leftSection={<PencilSimple size={16} />} variant='outline' mt='md' onClick={() => setIsEditing(true)}>
 											Rediger profil
 										</Button>
 									</>
 								)}
-							</Box>
-
-							<Divider my='md' label='Statistik' labelPosition='center' />
-
-							<Box>
-								<Group mb='xs'>
-									<Clock size={18} />
-									<Text fw={500}>Spilletid</Text>
-									<Text ml='auto'>{formatPlayTime(profile.stats.playTime)}</Text>
-								</Group>
-
-								<Group mb='xs'>
-									<User size={18} />
-									<Text fw={500}>Karakterer</Text>
-									<Text ml='auto'>{profile.stats.charactersCreated}</Text>
-								</Group>
-
-								<Group mb='xs'>
-									<Shield size={18} />
-									<Text fw={500}>Jobs gennemført</Text>
-									<Text ml='auto'>{profile.stats.jobsCompleted}</Text>
-								</Group>
-
-								<Group mb='xs'>
-									<Trash size={18} />
-									<Text fw={500}>Kriminalitet</Text>
-									<Text ml='auto'>{profile.stats.crimesCommitted}</Text>
-								</Group>
-
-								<Group mb='xs'>
-									<CreditCard size={18} />
-									<Text fw={500}>Tjent i alt</Text>
-									<Text ml='auto'>{formatCurrency(profile.stats.moneyEarned)}</Text>
-								</Group>
 							</Box>
 						</Paper>
 					</Grid.Col>
@@ -350,67 +174,10 @@ export default function ProfilePage() {
 						<Paper withBorder p='md' radius='md' mb='md'>
 							<Tabs defaultValue='characters'>
 								<Tabs.List mb='md'>
-									<Tabs.Tab value='characters' leftSection={<User size={16} />}>
-										Karakterer
-									</Tabs.Tab>
-									<Tabs.Tab value='activity' leftSection={<ClockCounterClockwise size={16} />}>
-										Aktivitet
-									</Tabs.Tab>
 									<Tabs.Tab value='settings' leftSection={<Gear size={16} />}>
 										Indstillinger
 									</Tabs.Tab>
 								</Tabs.List>
-
-								<Tabs.Panel value='characters'>
-									<SimpleGrid cols={{ base: 1, sm: 2 }} spacing='md'>
-										{profile.characters.map((character) => (
-											<Card key={character.id} withBorder shadow='sm' p='md' radius='md'>
-												<Group justify='space-between' mb='xs'>
-													<Text fw={700} size='lg'>
-														{character.name}
-													</Text>
-													<Badge color='blue'>{character.job}</Badge>
-												</Group>
-
-												<Group mb='xs'>
-													<Text fw={500}>Level:</Text>
-													<Text>{character.level}</Text>
-												</Group>
-
-												<Group mb='xs'>
-													<Text fw={500}>Penge:</Text>
-													<Text>{formatCurrency(character.money)}</Text>
-												</Group>
-
-												<Group mb='xs'>
-													<Text fw={500}>Oprettet:</Text>
-													<Text>{formatDate(character.createdAt)}</Text>
-												</Group>
-
-												<Group mb='xs'>
-													<Text fw={500}>Sidst spillet:</Text>
-													<Text>{formatDate(character.lastPlayed)}</Text>
-												</Group>
-
-												<Button variant='light' fullWidth mt='md'>
-													Se detaljer
-												</Button>
-											</Card>
-										))}
-									</SimpleGrid>
-								</Tabs.Panel>
-
-								<Tabs.Panel value='activity'>
-									<Timeline active={0} bulletSize={24} lineWidth={2}>
-										{profile.recentActivity.map((activity) => (
-											<Timeline.Item key={activity.id} bullet={activity.type === 'login' ? <User size={12} /> : activity.type === 'job' ? <Shield size={12} /> : <CreditCard size={12} />} title={activity.description}>
-												<Text size='sm' c='dimmed'>
-													{formatDateTime(activity.timestamp)}
-												</Text>
-											</Timeline.Item>
-										))}
-									</Timeline>
-								</Tabs.Panel>
 
 								<Tabs.Panel value='settings'>
 									<Box mb='xl'>
@@ -419,7 +186,7 @@ export default function ProfilePage() {
 										</Title>
 
 										<Box mb='md'>
-											<TextInput label='Email' value={profile.email} disabled mb='xs' />
+											<TextInput label='Email' value={profile?.email} disabled mb='xs' />
 											<Text size='xs' c='dimmed'>
 												Kontakt en administrator for at ændre din email
 											</Text>
@@ -440,11 +207,11 @@ export default function ProfilePage() {
 											Notifikationer
 										</Title>
 
-										<Switch label='Discord Notifikationer' description='Modtag notifikationer på Discord om server events og nyheder' checked={profile.preferences.notifications} onChange={() => handleTogglePreference('notifications')} mb='md' />
+										<Switch label='Discord Notifikationer' description='Modtag notifikationer på Discord om server events og nyheder' checked={profile?.preferences.notifications} onChange={() => handleTogglePreference('notifications')} mb='md' />
 
-										<Switch label='Email Opdateringer' description='Modtag email opdateringer om store server ændringer' checked={profile.preferences.emailUpdates} onChange={() => handleTogglePreference('emailUpdates')} mb='md' />
+										<Switch label='Email Opdateringer' description='Modtag email opdateringer om store server ændringer' checked={profile?.preferences.emailUpdates} onChange={() => handleTogglePreference('emailUpdates')} mb='md' />
 
-										<Switch label='To-Faktor Autentificering' description='Forøg sikkerheden på din konto med 2FA' checked={profile.preferences.twoFactorAuth} onChange={() => handleTogglePreference('twoFactorAuth')} mb='md' />
+										<Switch label='To-Faktor Autentificering' description='Forøg sikkerheden på din konto med 2FA' checked={profile?.preferences.twoFactorAuth} onChange={() => handleTogglePreference('twoFactorAuth')} mb='md' />
 									</Box>
 								</Tabs.Panel>
 							</Tabs>
