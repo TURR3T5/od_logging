@@ -1,5 +1,5 @@
 import { List, Text, Paper, Badge, Group, Chip, Alert, Title } from '@mantine/core';
-import { Info, Lightbulb } from '@phosphor-icons/react';
+import { Info, Lightbulb } from '../icons';
 import { Rule } from '../../lib/RuleApiService';
 
 interface RulesSidebarProps {

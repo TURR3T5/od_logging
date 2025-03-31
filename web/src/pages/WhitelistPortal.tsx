@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Container, Title, Text, Box, Grid, Tabs, Group, Paper, Badge, Card, Avatar, Button, Modal, Divider, TextInput, Textarea, Stack, List, ThemeIcon, Accordion } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import MainLayout from '../layouts/MainLayout';
-import { CheckCircle, FileText, ClockCounterClockwise, ShieldStar, Heartbeat, Users, Clock, ArrowRight } from '@phosphor-icons/react';
+import { CheckCircle, FileText, ClockCounterClockwise, ShieldStar, Heartbeat, Users, Clock, ArrowRight } from '../components/icons';
 import { useAuth } from '../components/AuthProvider';
 import { EmptyState } from '../components/common/EmptyState';
 import { useModalState } from '../hooks/useModalState';

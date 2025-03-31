@@ -1,5 +1,5 @@
 import { Group, Tabs, SegmentedControl, Text, Switch } from '@mantine/core';
-import { Bell, FileText, Calendar } from '@phosphor-icons/react';
+import { Bell, FileText, Calendar } from '../icons';
 
 interface ContentFiltersProps {
 	activeTab: string | null;

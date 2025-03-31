@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Container, Title, Text, Box, Paper, Group, SimpleGrid, Card, RingProgress, Tabs, Loader, Center, SegmentedControl, Badge } from '@mantine/core';
 import MainLayout from '../layouts/MainLayout';
 import { useAuth } from '../components/AuthProvider';
-import { Users, Car, DoorOpen, Clock, ShoppingBag, CreditCard, Handshake, Siren, Heartbeat, Money } from '@phosphor-icons/react';
+import { Users, Car, DoorOpen, Clock, ShoppingBag, CreditCard, Handshake, Siren, Heartbeat, Money } from '../components/icons';
 import { format, subDays } from 'date-fns';
 
 interface ServerStats {

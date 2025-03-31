@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Group, ActionIcon } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
-import { X } from '@phosphor-icons/react';
+import { X } from '../components/icons';
 
 interface DateFilterProps {
 	column?: any;

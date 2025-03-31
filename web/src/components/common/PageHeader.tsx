@@ -1,5 +1,5 @@
 import { Box, Title, Text, Group, Button, ActionIcon, Divider, Paper } from '@mantine/core';
-import { ArrowLeft, DotsThree } from '@phosphor-icons/react';
+import { ArrowLeft, DotsThree } from '../icons';
 import { ReactNode } from 'react';
 
 interface Action {

@@ -4,7 +4,7 @@ import { Container, Text, Box, Group, Button, Paper, Badge, ActionIcon, Card, Di
 import { notifications } from '@mantine/notifications';
 import { useAuth } from '../components/AuthProvider';
 import MainLayout from '../layouts/MainLayout';
-import { Plus, CalendarCheck, Calendar as CalendarIcon, Star, Bell, PushPin, FileText, Megaphone } from '@phosphor-icons/react';
+import { Plus, CalendarCheck, Calendar as CalendarIcon, Star, Bell, PushPin, FileText, Megaphone } from '../components/icons';
 import 'dayjs/locale/da';
 import { format } from 'date-fns';
 import { ContentItem } from '../lib/NewsEventsService';

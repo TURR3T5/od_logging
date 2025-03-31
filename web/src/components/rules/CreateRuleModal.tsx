@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Box, Group, TextInput, Tabs, Textarea, MultiSelect, Switch, Button, Text, Paper, Modal, SegmentedControl } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { Pencil, Eye } from '@phosphor-icons/react';
+import { Pencil, Eye } from '../icons';
 import RuleApiService from '../../lib/RuleApiService';
 
 interface CreateRuleModalProps {

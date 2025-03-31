@@ -3,9 +3,9 @@ import { Container, Box, Title, Text, Button, Group, Grid, Card, Badge, Center, 
 import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '../components/AuthProvider';
 import MainLayout from '../layouts/MainLayout';
-import { Users, Car, Buildings, Calendar, ShieldCheck, GameController, ArrowRight, DiscordLogo, Bell, Star, CalendarCheck, PushPin, Megaphone } from '@phosphor-icons/react';
-import { format } from 'date-fns';
-import { da } from 'date-fns/locale';
+import { Users, Car, Buildings, Calendar, ShieldCheck, GameController, ArrowRight, DiscordLogo, Bell, Star, CalendarCheck, PushPin, Megaphone } from '../components/icons';
+import { format } from 'date-fns/format';
+import { da } from 'date-fns/locale/da';
 import { useUpcomingContent, convertToPinnedItems, convertToNewsItems } from '../hooks/NewsHooks';
 
 interface PinnedItem {

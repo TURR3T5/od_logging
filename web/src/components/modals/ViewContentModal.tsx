@@ -1,5 +1,5 @@
 import { Box, Group, Text, Badge, Modal, Button, Divider, ActionIcon } from '@mantine/core';
-import { CalendarCheck, Calendar, PushPin, Pencil, Trash } from '@phosphor-icons/react';
+import { CalendarCheck, Calendar, PushPin, Pencil, Trash } from '../icons';
 import { format } from 'date-fns';
 import { ContentItem } from '../../lib/NewsEventsService';
 

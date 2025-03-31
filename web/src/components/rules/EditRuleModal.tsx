@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Box, Group, TextInput, Tabs, Textarea, MultiSelect, Switch, Button, Text, Paper, Modal } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { Pencil, Eye, Trash } from '@phosphor-icons/react';
+import { Pencil, Eye, Trash } from '../icons';
 import RuleApiService, { Rule } from '../../lib/RuleApiService';
 import { ConfirmationModal } from '../common/ConfirmationModal';
 import { useModalState } from '../../hooks/useModalState';

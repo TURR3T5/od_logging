@@ -1,5 +1,5 @@
 import { Paper, Stack, Title, Text, Button, Group, Box } from '@mantine/core';
-import { Folder, Plus } from '@phosphor-icons/react';
+import { Folder, Plus } from '../icons';
 
 interface EmptyStateProps {
 	title?: string;

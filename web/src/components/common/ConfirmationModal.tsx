@@ -1,5 +1,5 @@
 import { Modal, Text, Button, Group, Stack, Alert, ThemeIcon } from '@mantine/core';
-import { Warning, Check } from '@phosphor-icons/react';
+import { Warning, Check } from '../icons';
 import { ReactNode } from 'react';
 
 export type ConfirmationVariant = 'danger' | 'warning' | 'info' | 'success';

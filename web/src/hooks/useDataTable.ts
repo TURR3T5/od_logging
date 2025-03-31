@@ -7,7 +7,7 @@ interface UseDataTableOptions {
     pageIndex: number;
   };
 }
-export function useDataTable<T>({ 
+export function useDataTable<_T>({ 
   initialSorting = [{ id: 'createdAt', desc: true }],
   initialPagination = { pageSize: 10, pageIndex: 0 }
 }: UseDataTableOptions = {}) {

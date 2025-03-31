@@ -1,5 +1,5 @@
 import { Center, Paper, Group, Title, Text, Button, Stack } from '@mantine/core';
-import { WarningCircle, ArrowsClockwise } from '@phosphor-icons/react';
+import { WarningCircle, ArrowsClockwise } from '../icons';
 
 interface ErrorStateProps {
 	title?: string;

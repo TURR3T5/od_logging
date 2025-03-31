@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { useRouter } from '@tanstack/react-router';
 import { Container, Title, Text, Paper, Group, Box, Tabs, Menu, Button, Tooltip, SimpleGrid, Card, Badge } from '@mantine/core';
-import { DownloadSimple, ChartPie, ListBullets, BookmarkSimple } from '@phosphor-icons/react';
+import { DownloadSimple, ChartPie, ListBullets, BookmarkSimple } from '../components/icons';
 import MainLayout from '../layouts/MainLayout';
 import LogTable from '../components/LogTable';
 import { useLogsSearch, SearchFilters } from '../hooks/useLogsSearch';

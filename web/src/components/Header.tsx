@@ -1,7 +1,7 @@
 import { Group, Text, Button, Box, Container, Menu, Badge } from '@mantine/core';
 import { useAuth } from '../components/AuthProvider';
 import { useNavigate } from '@tanstack/react-router';
-import { SignOut, House, ListBullets, Book, Calendar, User, CaretDown, ChartBar, ShieldStar, Bug, Wrench } from '@phosphor-icons/react';
+import { House, SignOut, ListBullets, Book, Calendar, User, CaretDown, ChartBar, ShieldStar, Bug, Wrench } from '../components/icons';
 
 export default function Header() {
 	const { isAuthorized, isLoading, user, signOut, permissionLevel } = useAuth();

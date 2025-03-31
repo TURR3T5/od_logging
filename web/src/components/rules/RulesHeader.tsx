@@ -1,5 +1,5 @@
 import { Title, Text, Box, Group, TextInput, ActionIcon, Button, Tabs } from '@mantine/core';
-import { MagnifyingGlass, X, Plus, FileArrowDown } from '@phosphor-icons/react';
+import { MagnifyingGlass, X, Plus, FileArrowDown } from '../icons';
 
 interface RulesHeaderProps {
 	searchInput: string;
