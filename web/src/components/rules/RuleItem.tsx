@@ -1,30 +1,45 @@
-import { memo, useCallback, useEffect } from 'react';
-import { Box, Text, Group, Badge, Paper, ActionIcon, Tooltip, Loader, Collapse, Transition } from '../mantine';
+import { memo, useCallback, useState, useEffect } from 'react';
+import { Box, Text, Group, Badge, Paper, ActionIcon, Tooltip, Loader, Collapse } from '@mantine/core';
 import { Pencil, PushPin, ClockCounterClockwise } from '../icons';
 import { Rule } from '../../lib/RuleApiService';
-import { useDisclosure } from '@mantine/hooks';
 
 interface RuleItemProps {
 	rule: Rule;
 	isActive: boolean;
+	onSelect: (ruleId: string) => void;
 	onEdit: (rule: Rule) => void;
 	onPin: (rule: Rule) => void;
 	onHistory: (ruleId: string) => void;
 	onBadgeClick: (ruleId: string) => void;
-	onSelect: (ruleId: string) => void;
 	isAuthorized: boolean;
 	content: string | null;
 	isLoading: boolean;
 }
 
-export const RuleItem = memo(function RuleItem({ rule, isActive, onEdit, onPin, onHistory, onBadgeClick, onSelect, isAuthorized, content, isLoading }: RuleItemProps) {
-	const [opened, { toggle }] = useDisclosure(isActive);
+function useRuleContent(rule: Rule, isActive: boolean) {
+	const [content, setContent] = useState<string | null>(null);
+	const [isLoading, setIsLoading] = useState(false);
 
 	useEffect(() => {
-		if (isActive !== opened) {
-			toggle();
+		if (isActive && !content) {
+			setIsLoading(true);
+
+			if (rule.content) {
+				setContent(rule.content);
+				setIsLoading(false);
+				return;
+			}
+
+			setContent(rule.content || 'Content not available');
+			setIsLoading(false);
 		}
-	}, [isActive, opened, toggle]);
+	}, [isActive, rule, content]);
+
+	return { content, isLoading };
+}
+
+const RuleItem = memo(function RuleItem({ rule, isActive, onSelect, onEdit, onPin, onHistory, onBadgeClick, isAuthorized }: RuleItemProps) {
+	const { content, isLoading } = useRuleContent(rule, isActive);
 
 	const handleClick = useCallback(() => {
 		onSelect(rule.id);
@@ -67,7 +82,6 @@ export const RuleItem = memo(function RuleItem({ rule, isActive, onEdit, onPin, 
 			<Paper
 				withBorder
 				id={`rule-${rule.id}`}
-				className={isActive ? 'active-rule' : ''}
 				style={(theme) => ({
 					borderRadius: theme.radius.md,
 					overflow: 'hidden',
@@ -95,10 +109,9 @@ export const RuleItem = memo(function RuleItem({ rule, isActive, onEdit, onPin, 
 								variant='light'
 								style={{
 									cursor: 'pointer',
-									transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+									transition: 'transform 0.2s ease',
 									'&:hover': {
 										transform: 'scale(1.05)',
-										boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
 									},
 								}}
 								onClick={handleBadgeClick}
@@ -107,11 +120,11 @@ export const RuleItem = memo(function RuleItem({ rule, isActive, onEdit, onPin, 
 							</Badge>
 							<Text fw={500}>{rule.title}</Text>
 							{rule.is_pinned && (
-								<Badge color='yellow' size='sm' variant='light' className='pinned-badge'>
+								<Badge color='yellow' size='sm' variant='light'>
 									Fastgjort
 								</Badge>
 							)}
-							{new Date(rule.updated_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) && (
+							{new Date(rule.updated_at) > new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) && (
 								<Badge color='cyan' size='sm' variant='light'>
 									Opdateret
 								</Badge>
@@ -126,12 +139,12 @@ export const RuleItem = memo(function RuleItem({ rule, isActive, onEdit, onPin, 
 									</ActionIcon>
 								</Tooltip>
 								<Tooltip label={rule.is_pinned ? 'Fjern fra oversigt' : 'Fastgør til oversigt'}>
-									<ActionIcon variant='light' size='sm' color={rule.is_pinned ? 'lime.8' : 'gray.7'} onClick={handlePinClick}>
-										<PushPin size={16} weight={rule.is_pinned ? 'fill' : 'regular'} />
+									<ActionIcon variant='light' size='sm' color={rule.is_pinned ? 'yellow' : 'gray'} onClick={handlePinClick}>
+										<PushPin size={16} />
 									</ActionIcon>
 								</Tooltip>
 								<Tooltip label='Vis historie'>
-									<ActionIcon variant='light' size='sm' color='gray.7' onClick={handleHistoryClick}>
+									<ActionIcon variant='light' size='sm' color='gray' onClick={handleHistoryClick}>
 										<ClockCounterClockwise size={16} />
 									</ActionIcon>
 								</Tooltip>
@@ -140,7 +153,7 @@ export const RuleItem = memo(function RuleItem({ rule, isActive, onEdit, onPin, 
 					</Group>
 				</Box>
 
-				<Collapse in={opened} transitionDuration={300} transitionTimingFunction='ease'>
+				<Collapse in={isActive} transitionDuration={200}>
 					<Box
 						p='md'
 						style={(theme) => ({
@@ -148,30 +161,23 @@ export const RuleItem = memo(function RuleItem({ rule, isActive, onEdit, onPin, 
 							borderTop: `1px solid ${theme.colors.dark[5]}`,
 							whiteSpace: 'pre-line',
 							lineHeight: 1.6,
-							wordWrap: 'break-word',
-							overflow: 'auto',
-							maxWidth: '100%',
 						})}
 					>
-						<Transition mounted={isActive} transition='fade' duration={200} timingFunction='ease'>
-							{(styles) => (
-								<div style={styles}>
-									{isLoading ? (
-										<Group justify='center' p='md'>
-											<Loader size='sm' />
-											<Text size='sm' c='dimmed'>
-												Indlæser indhold...
-											</Text>
-										</Group>
-									) : (
-										<Text style={{ whiteSpace: 'pre-wrap', maxWidth: '100%' }}>{content || 'Indhold kunne ikke indlæses.'}</Text>
-									)}
-								</div>
-							)}
-						</Transition>
+						{isLoading ? (
+							<Group justify='center' p='md'>
+								<Loader size='sm' />
+								<Text size='sm' c='dimmed'>
+									Indlæser indhold...
+								</Text>
+							</Group>
+						) : (
+							<Text style={{ whiteSpace: 'pre-wrap' }}>{content}</Text>
+						)}
 					</Box>
 				</Collapse>
 			</Paper>
 		</Box>
 	);
 });
+
+export default RuleItem;

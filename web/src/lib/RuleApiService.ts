@@ -1,6 +1,5 @@
 import { supabase } from './supabase';
 import cacheService from './CacheService';
-import { apiClient } from './ApiClient';
 
 export interface Rule {
   id: string;
@@ -63,16 +62,20 @@ export const RuleApiService = {
 
   async getRulesList(): Promise<RulesResponse> {
     try {
-      const query = supabase
+      const { data, error } = await supabase
         .from('rules')
         .select('id, badge, title, content, category, tags, is_pinned, created_at, updated_at, updated_by, version, order_index')
         .order('order_index');
-        
-      const { data } = await apiClient.get<{ data: Rule[] }>(
-        'rules', 
-        query, 
-        { cacheKey: RULES_CACHE_KEY, expiryInMinutes: 15 }
-      );
+
+      if (error) {
+        console.error('Error fetching rules list from Supabase:', error);
+        return {
+          community: [],
+          roleplay: [],
+          pinned: [],
+          recentlyUpdated: [],
+        };
+      }
       
       if (!data) {
         return {

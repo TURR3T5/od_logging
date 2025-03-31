@@ -1,16 +1,20 @@
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
+import { lazy, Suspense } from 'react';
 import App from '../App';
-import HomePage from '../pages/Home';
-import LoginPage from '../pages/Login';
-import LogsPage from '../pages/Logs';
-import AuthCallbackPage from '../pages/AuthCallback';
-import RulesPage from '../pages/Rules';
-import NewsAndEventsPage from '../pages/NewsAndEventsPage';
-import WhitelistApplicationPage from '../pages/WhitelistPortal';
-import PlayerStatisticsPage from '../pages/PlayerStatisticsPage';
-import ProfilePage from '../pages/ProfilePage';
-import RoleManagementPage from '../pages/RoleManagement';
-import DiscordBotTestPage from '../pages/DiscordBotTestPage';
+import { LoadingState } from '../components/common/LoadingState';
+
+const HomePage = lazy(() => import('../pages/Home'));
+const LoginPage = lazy(() => import('../pages/Login'));
+const LogsPage = lazy(() => import('../pages/Logs'));
+const AuthCallbackPage = lazy(() => import('../pages/AuthCallback'));
+const RulesPage = lazy(() => import('../pages/Rules'));
+const NewsAndEventsPage = lazy(() => import('../pages/NewsAndEventsPage'));
+const WhitelistApplicationPage = lazy(() => import('../pages/WhitelistPortal'));
+const PlayerStatisticsPage = lazy(() => import('../pages/PlayerStatisticsPage'));
+const ProfilePage = lazy(() => import('../pages/ProfilePage'));
+const RoleManagementPage = lazy(() => import('../pages/RoleManagement'));
+
+const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => <Suspense fallback={<LoadingState fullPage />}>{children}</Suspense>;
 
 const rootRoute = createRootRoute({
 	component: App,
@@ -19,70 +23,104 @@ const rootRoute = createRootRoute({
 const homeRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: '/',
-	component: HomePage,
+	component: () => (
+		<SuspenseWrapper>
+			<HomePage />
+		</SuspenseWrapper>
+	),
 });
 
 const loginRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: '/login',
-	component: LoginPage,
+	component: () => (
+		<SuspenseWrapper>
+			<LoginPage />
+		</SuspenseWrapper>
+	),
 });
 
 const rulesRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: '/rules',
-	component: RulesPage,
+	component: () => (
+		<SuspenseWrapper>
+			<RulesPage />
+		</SuspenseWrapper>
+	),
 });
 
 const authCallbackRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: '/auth/callback',
-	component: AuthCallbackPage,
+	component: () => (
+		<SuspenseWrapper>
+			<AuthCallbackPage />
+		</SuspenseWrapper>
+	),
 });
 
 const logsRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: '/logs',
-	component: LogsPage,
+	component: () => (
+		<SuspenseWrapper>
+			<LogsPage />
+		</SuspenseWrapper>
+	),
 });
 
 const eventsCalendarRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: '/events',
-	component: NewsAndEventsPage,
+	component: () => (
+		<SuspenseWrapper>
+			<NewsAndEventsPage />
+		</SuspenseWrapper>
+	),
 });
 
 const whitelistApplicationRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: '/whitelist',
-	component: WhitelistApplicationPage,
+	component: () => (
+		<SuspenseWrapper>
+			<WhitelistApplicationPage />
+		</SuspenseWrapper>
+	),
 });
 
 const playerStatsRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: '/stats',
-	component: PlayerStatisticsPage,
+	component: () => (
+		<SuspenseWrapper>
+			<PlayerStatisticsPage />
+		</SuspenseWrapper>
+	),
 });
 
 const profileRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: '/profile',
-	component: ProfilePage,
+	component: () => (
+		<SuspenseWrapper>
+			<ProfilePage />
+		</SuspenseWrapper>
+	),
 });
 
 const roleManagementRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: '/admin/roles',
-	component: RoleManagementPage,
+	component: () => (
+		<SuspenseWrapper>
+			<RoleManagementPage />
+		</SuspenseWrapper>
+	),
 });
 
-const discordBotTestRoute = createRoute({
-	getParentRoute: () => rootRoute,
-	path: '/admin/discord-bot-test',
-	component: DiscordBotTestPage,
-});
-
-const routeTree = rootRoute.addChildren([homeRoute, loginRoute, authCallbackRoute, logsRoute, rulesRoute, eventsCalendarRoute, whitelistApplicationRoute, playerStatsRoute, profileRoute, roleManagementRoute, discordBotTestRoute]);
+const routeTree = rootRoute.addChildren([homeRoute, loginRoute, authCallbackRoute, logsRoute, rulesRoute, eventsCalendarRoute, whitelistApplicationRoute, playerStatsRoute, profileRoute, roleManagementRoute]);
 
 export const router = createRouter({ routeTree });
 
