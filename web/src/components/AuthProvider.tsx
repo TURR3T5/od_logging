@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import { PermissionLevel } from '../lib/discord';
-
 interface AuthContextType {
 	user: any;
 	session: any;
@@ -15,7 +14,6 @@ interface AuthContextType {
 	hasPermission: (requiredLevel: PermissionLevel) => boolean;
 	debugInfo: string;
 }
-
 const AuthContext = createContext<AuthContextType>({
 	user: null,
 	session: null,
@@ -29,9 +27,7 @@ const AuthContext = createContext<AuthContextType>({
 	hasPermission: () => false,
 	debugInfo: '',
 });
-
 const ADMIN_EMAILS = ['casper.truberg@outlook.dk'];
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const [user, setUser] = useState<any>(null);
 	const [session, setSession] = useState<any>(null);
@@ -39,51 +35,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const [isAuthorized, setIsAuthorized] = useState(false);
 	const [permissionLevel, setPermissionLevel] = useState<PermissionLevel>('none');
 	const [debugInfo, setDebugInfo] = useState<string>('');
-
-	// Improved hasPermission function - works with current permissions
 	const hasPermission = (requiredLevel: PermissionLevel): boolean => {
-		// Sort permission levels by hierarchy
 		const permissionHierarchy: PermissionLevel[] = ['none', 'viewer', 'content', 'staff', 'admin'];
-
 		const userPermissionIndex = permissionHierarchy.indexOf(permissionLevel);
 		const requiredPermissionIndex = permissionHierarchy.indexOf(requiredLevel);
-
-		// Higher index means higher permission level
 		return userPermissionIndex >= requiredPermissionIndex;
 	};
-
 	useEffect(() => {
 		let isMounted = true;
 		let debugLog = 'Session check started\n';
-
 		const initializeAuth = async () => {
 			try {
-				// Get initial session
-				const { data: sessionData } = await supabase.auth.getSession();
+								const { data: sessionData } = await supabase.auth.getSession();
 				debugLog += `Got session data: ${sessionData.session ? 'session exists' : 'no session'}\n`;
-
 				if (sessionData.session) {
 					if (isMounted) {
 						setSession(sessionData.session);
 						setUser(sessionData.session.user);
 						debugLog += `User set: ${sessionData.session.user.email}\n`;
-
-						// Check if user's email is in admin list
-						const userEmail = sessionData.session.user.email?.toLowerCase();
+												const userEmail = sessionData.session.user.email?.toLowerCase();
 						if (userEmail) {
 							if (ADMIN_EMAILS.includes(userEmail)) {
 								debugLog += `Admin email match found: ${userEmail}\n`;
 								setPermissionLevel('admin');
 								setIsAuthorized(true);
 							} else {
-								// Try to get role from database
-								try {
+																try {
 									const { data: roleData, error } = await supabase.from('user_roles_email').select('role').eq('email', userEmail).single();
-
 									if (error) {
 										debugLog += `Error fetching role: ${error.message}\n`;
-										// Default to 'viewer' if no role found
-										setPermissionLevel('viewer');
+																				setPermissionLevel('viewer');
 										setIsAuthorized(true);
 									} else if (roleData) {
 										debugLog += `Role found in database: ${roleData.role}\n`;
@@ -112,31 +93,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 				}
 			}
 		};
-
 		initializeAuth();
-
-		// Set up auth state change listener
-		const { data: authListener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+				const { data: authListener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
 			debugLog += `Auth state change: ${event}\n`;
-
 			if (event === 'SIGNED_IN' && newSession) {
 				if (isMounted) {
 					setSession(newSession);
 					setUser(newSession.user);
 					debugLog += `Signed in: ${newSession.user.email}\n`;
-
-					// Check for admin email
-					const userEmail = newSession.user.email?.toLowerCase();
+										const userEmail = newSession.user.email?.toLowerCase();
 					if (userEmail) {
 						if (ADMIN_EMAILS.includes(userEmail)) {
 							debugLog += `Admin email match: ${userEmail}\n`;
 							setPermissionLevel('admin');
 							setIsAuthorized(true);
 						} else {
-							// Get role from database
-							try {
+														try {
 								const { data: roleData, error } = await supabase.from('user_roles_email').select('role').eq('email', userEmail).single();
-
 								if (error) {
 									debugLog += `Error fetching role: ${error.message}\n`;
 									setPermissionLevel('viewer');
@@ -172,12 +145,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 					debugLog += 'Token refreshed\n';
 				}
 			}
-
 			if (isMounted) {
 				setDebugInfo(debugLog);
 			}
 		});
-
 		return () => {
 			isMounted = false;
 			if (authListener && authListener.subscription) {
@@ -185,71 +156,52 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			}
 		};
 	}, []);
-
 	const signInWithDiscord = async () => {
 		window.location.href = '/login';
 	};
-
 	const signUpWithEmail = async (email: string, password: string) => {
 		try {
 			const normalizedEmail = email.toLowerCase();
-
-			// Create the user account
-			const { data, error } = await supabase.auth.signUp({
+						const { data, error } = await supabase.auth.signUp({
 				email: normalizedEmail,
 				password,
 			});
-
 			if (error) throw error;
-
-			// If it's an admin email, set admin role
-			if (ADMIN_EMAILS.includes(normalizedEmail)) {
+						if (ADMIN_EMAILS.includes(normalizedEmail)) {
 				const { error: roleError } = await supabase.from('user_roles_email').upsert({ email: normalizedEmail, role: 'admin' });
-
 				if (roleError) console.error('Error setting admin role:', roleError);
 			} else {
-				// Otherwise set default viewer role
-				const { error: roleError } = await supabase.from('user_roles_email').upsert({ email: normalizedEmail, role: 'viewer' });
-
+								const { error: roleError } = await supabase.from('user_roles_email').upsert({ email: normalizedEmail, role: 'viewer' });
 				if (roleError) console.error('Error setting viewer role:', roleError);
 			}
-
 			return data;
 		} catch (error) {
 			console.error('Signup error:', error);
 			throw error;
 		}
 	};
-
 	const signInWithEmail = async (email: string, password: string) => {
 		try {
 			const normalizedEmail = email.toLowerCase();
-
 			const { data, error } = await supabase.auth.signInWithPassword({
 				email: normalizedEmail,
 				password,
 			});
-
 			if (error) throw error;
-
-			// Set admin permission if it's an admin email
-			if (ADMIN_EMAILS.includes(normalizedEmail)) {
+						if (ADMIN_EMAILS.includes(normalizedEmail)) {
 				setPermissionLevel('admin');
 				setIsAuthorized(true);
 			}
-
 			return data;
 		} catch (error) {
 			console.error('Signin error:', error);
 			throw error;
 		}
 	};
-
 	const signOut = async () => {
 		try {
 			const { error } = await supabase.auth.signOut();
 			if (error) throw error;
-
 			setUser(null);
 			setSession(null);
 			setPermissionLevel('none');
@@ -259,7 +211,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			throw error;
 		}
 	};
-
 	return (
 		<AuthContext.Provider
 			value={{
@@ -280,5 +231,4 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		</AuthContext.Provider>
 	);
 };
-
 export const useAuth = () => useContext(AuthContext);

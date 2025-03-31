@@ -2,7 +2,6 @@ import { Card, Text, Badge, Group, Button, ActionIcon, Menu } from '@mantine/cor
 import { DotsThree, PushPin, Pencil, Trash, CheckCircle, CalendarCheck, Bell, Star, FileText, Megaphone } from '@phosphor-icons/react';
 import { format } from 'date-fns';
 import { ContentItem } from '../../lib/NewsEventsService';
-
 interface ContentCardProps {
 	item: ContentItem;
 	viewMode?: 'list' | 'grid';
@@ -12,7 +11,6 @@ interface ContentCardProps {
 	onDelete?: (id: string) => void;
 	isAuthorized?: boolean;
 }
-
 export function ContentCard({ item, viewMode = 'list', onView, onPin, onEdit, onDelete, isAuthorized = false }: ContentCardProps) {
 	const getTypeDetails = (contentItem: ContentItem) => {
 		if (contentItem.type === 'news') {
@@ -39,9 +37,7 @@ export function ContentCard({ item, viewMode = 'list', onView, onPin, onEdit, on
 			}
 		}
 	};
-
 	const typeDetails = getTypeDetails(item);
-
 	if (viewMode === 'grid') {
 		return (
 			<Card withBorder shadow='sm' padding='md' radius='md' style={{ height: '100%' }}>
@@ -57,28 +53,23 @@ export function ContentCard({ item, viewMode = 'list', onView, onPin, onEdit, on
 						)}
 					</Group>
 				</Card.Section>
-
 				<Text fw={700} size='lg' mt='md' mb='xs' lineClamp={1}>
 					{item.title}
 				</Text>
-
 				{item.type === 'event' && (
 					<Text size='sm' c='dimmed' mb='xs'>
 						{item.event_date ? format(new Date(item.event_date), 'd. MMMM yyyy, HH:mm') : 'Dato ikke tilgængelig'}
 					</Text>
 				)}
-
 				{item.type === 'news' && (
 					<Text size='sm' c='dimmed' mb='xs'>
 						{format(new Date(item.created_at), 'd. MMMM yyyy')}
 						{item.last_updated && new Date(item.last_updated) > new Date(item.created_at) && <> (opdateret {format(new Date(item.last_updated), 'd. MMMM')})</>}
 					</Text>
 				)}
-
 				<Text size='sm' lineClamp={3} mb='md'>
 					{item.description}
 				</Text>
-
 				<Group mt='auto' justify='space-between'>
 					<Button variant='light' onClick={() => onView(item)}>
 						Læs mere
@@ -113,9 +104,7 @@ export function ContentCard({ item, viewMode = 'list', onView, onPin, onEdit, on
 			</Card>
 		);
 	}
-
-	// List view
-	return (
+		return (
 		<Card mb='md' padding='md' radius='md' withBorder>
 			<Group justify='space-between' mb='xs'>
 				<Group>
