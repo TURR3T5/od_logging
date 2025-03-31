@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Container, Box, Title, Text, Button, Group, Grid, Card, Badge, Center, Avatar, Timeline, Modal, Divider, SimpleGrid, ActionIcon } from '../components/mantine';
+import { Container, Box, Title, Text, Button, Group, Grid, Card, Badge, Center, Avatar, Timeline, Modal, Divider, SimpleGrid, ActionIcon, Image } from '../components/mantine';
 import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '../components/AuthProvider';
 import MainLayout from '../layouts/MainLayout';
@@ -223,20 +223,7 @@ export default function HomePage() {
 									maxWidth: '1800px',
 								}}
 							>
-								<Box
-									style={{
-										position: 'absolute',
-										inset: 0,
-										width: '100%',
-										height: '100%',
-										backgroundImage: `url(${slide.image})`,
-										backgroundSize: 'cover',
-										backgroundPosition: 'center',
-										filter: 'brightness(0.5) blur(2px)',
-										transition: 'transform 6s ease-in-out',
-										transform: currentSlide === index ? 'scale(1.05)' : 'scale(1)',
-									}}
-								/>
+								<Image src={slide.image} alt={slide.title} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.5)', transition: 'transform 6s ease-in-out', transform: currentSlide === index ? 'scale(1.05)' : 'scale(1)' }} radius='md' loading='lazy'/>
 							</Box>
 
 							<Container size='xl' style={{ position: 'relative', zIndex: 10 }}>

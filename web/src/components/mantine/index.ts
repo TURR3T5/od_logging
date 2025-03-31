@@ -52,7 +52,8 @@ import {
     Transition,
     Chip,
     useMantineTheme,
-    MantineThemeOverride
+    MantineThemeOverride,
+    Image
 } from '@mantine/core';
 
 import { Calendar as DateCalendar, DatePicker, DatePickerInput, DateTimePicker } from '@mantine/dates';
@@ -119,6 +120,7 @@ export {
   Transition,
   Chip,
   useMantineTheme,
+  Image
 };
 
 export type {

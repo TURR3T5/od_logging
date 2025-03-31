@@ -222,7 +222,6 @@ export default function RulesPage() {
 						right: 0,
 						bottom: 0,
 						backgroundColor: '#0a0a0a',
-						backgroundImage: 'radial-gradient(#1a1a1a 1px, transparent 1px)',
 						backgroundSize: '30px 30px',
 						opacity: 0.6,
 						pointerEvents: 'none',
