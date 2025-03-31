@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import { visualizer } from 'rollup-plugin-visualizer'
+import compression from 'vite-plugin-compression'
 
 export default defineConfig({
   plugins: [react(), visualizer({
@@ -8,7 +9,11 @@ export default defineConfig({
     gzipSize: true,
     brotliSize: true,
     filename: 'bundle-analysis.html'
-  })],
+  }), 
+  compression({
+    algorithm: 'gzip',
+    ext: '.gz',
+  }),],
   optimizeDeps: {
     include: [
       '@mantine/core', 
@@ -17,6 +22,8 @@ export default defineConfig({
     ]
   },
   build: {
+    cssCodeSplit: true,
+    cssMinify: true,
     rollupOptions: {
       output: {
         manualChunks: {

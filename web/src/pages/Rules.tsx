@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
-import { Container, Title, Box, Paper, Badge, Divider, Loader, Center } from '../components/mantine';
+import { useState, useEffect, useCallback, lazy, Suspense, useRef } from 'react';
+import { Container, Title, Box, Paper, Badge, Divider } from '../components/mantine';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { notifications } from '@mantine/notifications';
 import { useDebouncedValue } from '@mantine/hooks';
 import MainLayout from '../layouts/MainLayout';
@@ -8,10 +9,11 @@ import RuleApiService, { Rule, RulesResponse } from '../lib/RuleApiService';
 import { useRulesFilter } from '../hooks/useRulesFilter';
 import { usePermission } from '../hooks/usePermissions';
 import { useModalState } from '../hooks/useModalState';
+import { LoadingState } from '../components/common/LoadingState';
+import { RuleItem } from '../components/rules/RuleItem';
 
 const RulesHeader = lazy(() => import('../components/rules/RulesHeader'));
 const RulesSidebar = lazy(() => import('../components/rules/RulesSidebar'));
-const RuleList = lazy(() => import('../components/rules/RuleList'));
 const EditRuleModal = lazy(() => import('../components/rules/EditRuleModal'));
 const CreateRuleModal = lazy(() => import('../components/rules/CreateRuleModal'));
 const RuleHistoryModal = lazy(() => import('../components/rules/RuleHistoryModal'));
@@ -28,7 +30,8 @@ export default function RulesPage() {
 		recentlyUpdated: [],
 	});
 	const { searchQuery, setSearchQuery, activeTab, setActiveTab, filteredRules } = useRulesFilter(rules);
-	const rulesRef = useRef<HTMLDivElement>(null);
+	const communityRulesRef = useRef<HTMLDivElement>(null);
+	const roleplayRulesRef = useRef<HTMLDivElement>(null);
 	const { user } = useAuth();
 	const { hasPermission: isAuthorized } = usePermission('content');
 	const displayCommunityRules = activeTab === 'all' || activeTab === 'community';
@@ -38,19 +41,70 @@ export default function RulesPage() {
 	const createModal = useModalState();
 	const historyModal = useModalState<string>();
 
+	// Custom hook for rule content
+	const useRuleContent = (activeRuleId: string | null, rules: Rule[]) => {
+		const [ruleContents, setRuleContents] = useState<Record<string, { content: string | null; loading: boolean }>>({});
+
+		useEffect(() => {
+			if (activeRuleId && !ruleContents[activeRuleId]) {
+				setRuleContents((prev) => ({
+					...prev,
+					[activeRuleId]: { content: null, loading: true },
+				}));
+
+				const loadContent = async () => {
+					try {
+						const activeRule = rules.find((r) => r.id === activeRuleId);
+						const content = activeRule?.content || 'Content could not be loaded.';
+
+						setRuleContents((prev) => ({
+							...prev,
+							[activeRuleId as string]: { content, loading: false },
+						}));
+					} catch (error) {
+						console.error('Error loading rule content:', error);
+						setRuleContents((prev) => ({
+							...prev,
+							[activeRuleId as string]: { content: null, loading: false },
+						}));
+					}
+				};
+
+				loadContent();
+			}
+		}, [activeRuleId, ruleContents, rules]);
+
+		const getContent = (ruleId: string) => ruleContents[ruleId]?.content || null;
+		const isLoading = (ruleId: string) => ruleContents[ruleId]?.loading || false;
+
+		return { getContent, isLoading };
+	};
+
+	const { getContent: getCommunityRuleContent, isLoading: isCommunityRuleContentLoading } = useRuleContent(activeCommunityRule, filteredRules.community);
+	const { getContent: getRoleplayRuleContent, isLoading: isRoleplayRuleContentLoading } = useRuleContent(activeRoleplayRule, filteredRules.roleplay);
+
 	useEffect(() => {
 		setSearchQuery(debouncedSearchValue);
 	}, [debouncedSearchValue, setSearchQuery]);
 
-	useEffect(() => {
-		fetchRules();
-	}, []);
+	const communityRowVirtualizer = useVirtualizer({
+		count: filteredRules.community.length,
+		getScrollElement: () => communityRulesRef.current,
+		estimateSize: () => 150, // Increased to account for variable rule content height
+		overscan: 5,
+	});
 
-	const fetchRules = async () => {
+	const roleplayRowVirtualizer = useVirtualizer({
+		count: filteredRules.roleplay.length,
+		getScrollElement: () => roleplayRulesRef.current,
+		estimateSize: () => 150, // Increased to account for variable rule content height
+		overscan: 5,
+	});
+
+	const fetchRules = useCallback(async () => {
 		setIsLoading(true);
 		try {
 			const data = await RuleApiService.getRulesList();
-
 			setRules(data);
 			setError(null);
 		} catch (err) {
@@ -58,7 +112,11 @@ export default function RulesPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, []);
+
+	useEffect(() => {
+		fetchRules();
+	}, [fetchRules]);
 
 	const togglePinnedRule = useCallback(
 		async (rule: Rule) => {
@@ -201,20 +259,22 @@ export default function RulesPage() {
 							boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
 						}}
 					>
-						<RulesHeader searchInput={searchQuery} onSearchChange={setSearchQuery} activeTab={activeTab} onTabChange={setActiveTab} isAuthorized={isAuthorized} onCreateRule={createModal.open} onExportRules={exportRules} />
+						<Suspense fallback={<LoadingState />}>
+							<RulesHeader searchInput={searchQuery} onSearchChange={setSearchQuery} activeTab={activeTab} onTabChange={setActiveTab} isAuthorized={isAuthorized} onCreateRule={createModal.open} onExportRules={exportRules} />
+						</Suspense>
 
-						<RulesSidebar pinnedRules={rules.pinned} recentlyUpdatedRules={rules.recentlyUpdated} onRuleClick={scrollToRule} />
+						<Suspense fallback={<LoadingState />}>
+							<RulesSidebar pinnedRules={rules.pinned} recentlyUpdatedRules={rules.recentlyUpdated} onRuleClick={scrollToRule} />
+						</Suspense>
 
 						{isLoading ? (
-							<Center p='xl'>
-								<Loader size='lg' />
-							</Center>
+							<LoadingState />
 						) : (
 							<>
 								{activeTab === 'all' && displayCommunityRules && displayRoleplayRules ? (
 									<Box style={{ gap: '20px', position: 'relative' }}>
-										{/* Community Rules Section */}
-										<Box ref={rulesRef}>
+										{/* Community Rules Section with Virtualization */}
+										<Box ref={communityRulesRef} style={{ height: '400px', overflow: 'auto' }}>
 											<Title
 												order={3}
 												mb='md'
@@ -230,13 +290,35 @@ export default function RulesPage() {
 												DISCORD & COMMUNITY GUIDELINES
 											</Title>
 
-											<RuleList rules={filteredRules.community} activeRuleId={activeCommunityRule} isLoading={isLoading} onRuleExpanded={setActiveCommunityRule} onEditRule={openEditModal} onPinRule={togglePinnedRule} onViewHistory={openHistoryModal} onBadgeClick={scrollToRule} isAuthorized={isAuthorized} />
+											<div
+												style={{
+													height: `${communityRowVirtualizer.getTotalSize()}px`,
+													width: '100%',
+													position: 'relative',
+												}}
+											>
+												{communityRowVirtualizer.getVirtualItems().map((virtualRow) => (
+													<div
+														key={virtualRow.key}
+														style={{
+															position: 'absolute',
+															top: 0,
+															left: 0,
+															width: '100%',
+															height: `${virtualRow.size}px`,
+															transform: `translateY(${virtualRow.start}px)`,
+														}}
+													>
+														<RuleItem rule={filteredRules.community[virtualRow.index]} isActive={activeCommunityRule === filteredRules.community[virtualRow.index].id} onSelect={setActiveCommunityRule} onEditRule={openEditModal} onPinRule={togglePinnedRule} onViewHistory={openHistoryModal} onBadgeClick={scrollToRule} isAuthorized={isAuthorized} content={getCommunityRuleContent(filteredRules.community[virtualRow.index].id)} isLoading={isCommunityRuleContentLoading(filteredRules.community[virtualRow.index].id)} />
+													</div>
+												))}
+											</div>
 										</Box>
 
 										<Divider size='sm' labelPosition='center' label={<Badge variant='light'>OdessaRP</Badge>} my={24} />
 
-										{/* Roleplay Rules Section */}
-										<Box>
+										{/* Roleplay Rules Section with Virtualization */}
+										<Box ref={roleplayRulesRef} style={{ height: '400px', overflow: 'auto' }}>
 											<Title
 												order={3}
 												mb='md'
@@ -252,13 +334,35 @@ export default function RulesPage() {
 												ROLLESPILS REGLER
 											</Title>
 
-											<RuleList rules={filteredRules.roleplay} activeRuleId={activeRoleplayRule} isLoading={isLoading} onRuleExpanded={setActiveRoleplayRule} onEditRule={openEditModal} onPinRule={togglePinnedRule} onViewHistory={openHistoryModal} onBadgeClick={scrollToRule} isAuthorized={isAuthorized} />
+											<div
+												style={{
+													height: `${roleplayRowVirtualizer.getTotalSize()}px`,
+													width: '100%',
+													position: 'relative',
+												}}
+											>
+												{roleplayRowVirtualizer.getVirtualItems().map((virtualRow) => (
+													<div
+														key={virtualRow.key}
+														style={{
+															position: 'absolute',
+															top: 0,
+															left: 0,
+															width: '100%',
+															height: `${virtualRow.size}px`,
+															transform: `translateY(${virtualRow.start}px)`,
+														}}
+													>
+														<RuleItem rule={filteredRules.roleplay[virtualRow.index]} onSelect={setActiveRoleplayRule} onEditRule={openEditModal} onPinRule={togglePinnedRule} onViewHistory={openHistoryModal} onBadgeClick={scrollToRule} isAuthorized={isAuthorized} content={getRoleplayRuleContent(filteredRules.roleplay[virtualRow.index].id)} isLoading={isRoleplayRuleContentLoading(filteredRules.roleplay[virtualRow.index].id)} />
+													</div>
+												))}
+											</div>
 										</Box>
 									</Box>
 								) : (
 									<Box>
 										{displayCommunityRules && (
-											<Box mb='xl' ref={rulesRef}>
+											<Box mb='xl' ref={communityRulesRef}>
 												<Title
 													order={3}
 													mb='md'
@@ -274,7 +378,13 @@ export default function RulesPage() {
 													DISCORD & COMMUNITY GUIDELINES
 												</Title>
 
-												<RuleList rules={filteredRules.community} activeRuleId={activeCommunityRule} isLoading={isLoading} onRuleExpanded={setActiveCommunityRule} onEditRule={openEditModal} onPinRule={togglePinnedRule} onViewHistory={openHistoryModal} onBadgeClick={scrollToRule} isAuthorized={isAuthorized} />
+												<Suspense fallback={<LoadingState />}>
+													<div ref={communityRulesRef}>
+														{filteredRules.community.map((rule) => (
+															<RuleItem key={rule.id} rule={rule} isActive={activeCommunityRule === rule.id} onSelect={setActiveCommunityRule} onEditRule={openEditModal} onPinRule={togglePinnedRule} onViewHistory={openHistoryModal} onBadgeClick={scrollToRule} isAuthorized={isAuthorized} content={getCommunityRuleContent(rule.id)} isLoading={isCommunityRuleContentLoading(rule.id)} />
+														))}
+													</div>
+												</Suspense>
 											</Box>
 										)}
 
@@ -295,7 +405,13 @@ export default function RulesPage() {
 													ROLLESPILS REGLER
 												</Title>
 
-												<RuleList rules={filteredRules.roleplay} activeRuleId={activeRoleplayRule} isLoading={isLoading} onRuleExpanded={setActiveRoleplayRule} onEditRule={openEditModal} onPinRule={togglePinnedRule} onViewHistory={openHistoryModal} onBadgeClick={scrollToRule} isAuthorized={isAuthorized} />
+												<Suspense fallback={<LoadingState />}>
+													<div ref={roleplayRulesRef}>
+														{filteredRules.roleplay.map((rule) => (
+															<RuleItem key={rule.id} rule={rule} isActive={activeRoleplayRule === rule.id} onSelect={setActiveRoleplayRule} onEditRule={openEditModal} onPinRule={togglePinnedRule} onViewHistory={openHistoryModal} onBadgeClick={scrollToRule} isAuthorized={isAuthorized} content={getRoleplayRuleContent(rule.id)} isLoading={isRoleplayRuleContentLoading(rule.id)} />
+														))}
+													</div>
+												</Suspense>
 											</Box>
 										)}
 									</Box>
@@ -306,13 +422,7 @@ export default function RulesPage() {
 				</Container>
 			</Box>
 
-			<Suspense
-				fallback={
-					<Center p='xl'>
-						<Loader />
-					</Center>
-				}
-			>
+			<Suspense fallback={<LoadingState />}>
 				<EditRuleModal currentRule={editModal.data} opened={editModal.isOpen} onClose={editModal.close} onRuleUpdated={fetchRules} username={user?.username} />
 				<CreateRuleModal opened={createModal.isOpen} onClose={createModal.close} onRuleCreated={fetchRules} />
 				<RuleHistoryModal ruleId={historyModal.data || ''} opened={historyModal.isOpen} onClose={historyModal.close} />

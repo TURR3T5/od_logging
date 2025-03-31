@@ -17,7 +17,7 @@ interface RuleItemProps {
 	isLoading: boolean;
 }
 
-export const RuleItem = memo(({ rule, isActive, onEdit, onPin, onHistory, onBadgeClick, onSelect, isAuthorized, content, isLoading }: RuleItemProps) => {
+export const RuleItem = memo(function RuleItem({ rule, isActive, onEdit, onPin, onHistory, onBadgeClick, onSelect, isAuthorized, content, isLoading }: RuleItemProps) {
 	const [opened, { toggle }] = useDisclosure(isActive);
 
 	useEffect(() => {
