@@ -1,4 +1,4 @@
-import { Group, Text, Button, Box, Container, Menu, Badge } from '@mantine/core';
+import { Group, Text, Button, Box, Container, Menu, Badge } from '../components/mantine';
 import { useAuth } from '../components/AuthProvider';
 import { useNavigate } from '@tanstack/react-router';
 import { House, SignOut, ListBullets, Book, Calendar, User, CaretDown, ChartBar, ShieldStar, Bug, Wrench } from '../components/icons';

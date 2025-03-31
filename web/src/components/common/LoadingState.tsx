@@ -1,4 +1,4 @@
-import { Center, Loader, Text, Stack, Group, Paper } from '@mantine/core';
+import { Center, Loader, Text, Stack, Group, Paper } from '../mantine';
 interface LoadingStateProps {
 	text?: string;
 	compact?: boolean;

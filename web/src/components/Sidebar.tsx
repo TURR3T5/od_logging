@@ -1,5 +1,5 @@
 import { useState, useEffect, memo, useMemo, useCallback } from 'react';
-import { Box, ScrollArea, Text, Collapse, Group } from '@mantine/core';
+import { Box, ScrollArea, Text, Collapse, Group } from '../components/mantine';
 import { CaretRight } from './icons';
 import { useNavigate, useRouter } from '@tanstack/react-router';
 

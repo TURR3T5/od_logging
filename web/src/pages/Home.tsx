@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Container, Box, Title, Text, Button, Group, Grid, Card, Badge, Center, Avatar, Timeline, Modal, Divider, SimpleGrid, ActionIcon } from '@mantine/core';
+import { Container, Box, Title, Text, Button, Group, Grid, Card, Badge, Center, Avatar, Timeline, Modal, Divider, SimpleGrid, ActionIcon } from '../components/mantine';
 import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '../components/AuthProvider';
 import MainLayout from '../layouts/MainLayout';

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Box, Group, Text, Badge, Modal } from '@mantine/core';
+import { Box, Group, Text, Badge, Modal } from '../components/mantine';
 import { format } from 'date-fns';
 import { Log } from '../pages/Logs';
 

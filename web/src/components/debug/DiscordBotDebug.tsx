@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Paper, Title, Text, Group, Button, TextInput, Code, Accordion, Divider, Alert, Badge } from '@mantine/core';
+import { Paper, Title, Text, Group, Button, TextInput, Code, Accordion, Divider, Alert, Badge } from '../mantine';
 import { useAuth } from '../AuthProvider';
 import discordBotService from '../../lib/discordBot';
 

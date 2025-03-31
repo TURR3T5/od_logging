@@ -1,4 +1,4 @@
-import { Card, Text, Badge, Group, Button, ActionIcon, Menu } from '@mantine/core';
+import { Card, Text, Badge, Group, Button, ActionIcon, Menu } from '../mantine';
 import { DotsThree, PushPin, Pencil, Trash, CheckCircle, CalendarCheck, Bell, Star, FileText, Megaphone } from '../icons';
 import { format } from 'date-fns';
 import { ContentItem } from '../../lib/NewsEventsService';

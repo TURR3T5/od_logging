@@ -1,9 +1,8 @@
-import { Grid, Box, Paper, Title, Group, Card, Badge, Text, Menu, ActionIcon, Button } from '@mantine/core';
+import { Grid, Box, Paper, Title, Group, Card, Badge, Text, Menu, ActionIcon, Button, Indicator } from '../mantine';
 import { Calendar } from '@mantine/dates';
 import { DotsThree, CheckCircle, PushPin, Pencil, Trash, CalendarCheck } from '../icons';
 import { format, isSameDay } from 'date-fns';
 import { ContentItem } from '../../lib/NewsEventsService';
-import { Indicator } from '@mantine/core';
 
 interface EventCalendarViewProps {
 	selectedDate: Date | null;

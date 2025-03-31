@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Navigate } from '@tanstack/react-router';
 import { useAuth } from '../components/AuthProvider';
-import { Center, Loader, Text } from '@mantine/core';
+import { Center, Loader, Text } from '../components/mantine';
 import { supabase } from '../lib/supabase';
 
 export default function AuthCallbackPage() {

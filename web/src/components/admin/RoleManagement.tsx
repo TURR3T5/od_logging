@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Container, Title, Text, Box, Paper, Group, Table, Badge, Button, TextInput, ActionIcon, Modal, Divider, Loader, Center, Tabs } from '@mantine/core';
+import { Container, Title, Text, Box, Paper, Group, Table, Badge, Button, TextInput, ActionIcon, Modal, Divider, Loader, Center, Tabs, notifications } from '../mantine';
 import { Trash, Plus, FloppyDisk, UserPlus, UserMinus, Users, MagnifyingGlass, At } from '../icons';
 import { useAuth } from '../AuthProvider';
 import { supabase } from '../../lib/supabase';
 import MainLayout from '../../layouts/MainLayout';
-import { notifications } from '@mantine/notifications';
 import { usePermission } from '../../hooks/usePermissions';
 
 interface PermissionRole {

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Box, Button, Group, TextInput, Textarea, Modal, SegmentedControl, Tabs, Text, Checkbox } from '@mantine/core';
+import { Box, Button, Group, TextInput, Textarea, Modal, SegmentedControl, Tabs, Text, Checkbox, notifications } from '../mantine';
 import { DatePickerInput } from '@mantine/dates';
-import { notifications } from '@mantine/notifications';
 import { FileText, Calendar } from '../icons';
 import { ContentItem } from '../../lib/NewsEventsService';
 

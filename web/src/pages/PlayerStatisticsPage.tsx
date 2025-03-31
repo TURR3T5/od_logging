@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Container, Title, Text, Box, Paper, Group, SimpleGrid, Card, RingProgress, Tabs, Loader, Center, SegmentedControl, Badge } from '@mantine/core';
+import { Container, Title, Text, Box, Paper, Group, SimpleGrid, Card, RingProgress, Tabs, Loader, Center, SegmentedControl, Badge } from '../components/mantine';
 import MainLayout from '../layouts/MainLayout';
 import { useAuth } from '../components/AuthProvider';
 import { Users, Car, DoorOpen, Clock, ShoppingBag, CreditCard, Handshake, Siren, Heartbeat, Money } from '../components/icons';

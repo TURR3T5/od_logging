@@ -1,8 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider } from '@tanstack/react-router';
-import { MantineProvider } from '@mantine/core';
-import { Notifications } from '@mantine/notifications';
+import { MantineProvider, Notifications } from '../src/components/mantine';
 import { router } from './routes';
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';

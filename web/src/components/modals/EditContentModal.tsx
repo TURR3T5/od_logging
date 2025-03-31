@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Button, Group, TextInput, Textarea, Modal, SegmentedControl, Switch, Text, Box } from '@mantine/core';
-import { DateTimePicker } from '@mantine/dates';
-import { notifications } from '@mantine/notifications';
+import { Button, Group, TextInput, Textarea, Modal, SegmentedControl, Switch, Text, Box, DateTimePicker, notifications } from '../mantine';
 import { ContentItem } from '../../lib/NewsEventsService';
 
 interface EditContentModalProps {

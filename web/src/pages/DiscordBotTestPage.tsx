@@ -1,4 +1,4 @@
-import { Container, Title } from '@mantine/core';
+import { Container, Title } from '../components/mantine';
 import MainLayout from '../layouts/MainLayout';
 import DiscordBotDebug from '../components/debug/DiscordBotDebug';
 

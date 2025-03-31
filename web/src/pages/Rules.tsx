@@ -1,18 +1,17 @@
 import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
-import { Container, Title, Box, Paper, Badge, Divider, Loader, Center } from '@mantine/core';
+import { Container, Title, Box, Paper, Badge, Divider, Loader, Center } from '../components/mantine';
 import { notifications } from '@mantine/notifications';
 import { useDebouncedValue } from '@mantine/hooks';
 import MainLayout from '../layouts/MainLayout';
 import { useAuth } from '../components/AuthProvider';
 import RuleApiService, { Rule, RulesResponse } from '../lib/RuleApiService';
-import RuleList from '../components/rules/RuleList';
 import { useRulesFilter } from '../hooks/useRulesFilter';
-import { RulesSidebar } from '../components/rules/RulesSidebar';
-import { RulesHeader } from '../components/rules/RulesHeader';
 import { usePermission } from '../hooks/usePermissions';
 import { useModalState } from '../hooks/useModalState';
-import '../styles/RulesPage.css';
 
+const RulesHeader = lazy(() => import('../components/rules/RulesHeader'));
+const RulesSidebar = lazy(() => import('../components/rules/RulesSidebar'));
+const RuleList = lazy(() => import('../components/rules/RuleList'));
 const EditRuleModal = lazy(() => import('../components/rules/EditRuleModal'));
 const CreateRuleModal = lazy(() => import('../components/rules/CreateRuleModal'));
 const RuleHistoryModal = lazy(() => import('../components/rules/RuleHistoryModal'));

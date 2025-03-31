@@ -1,6 +1,6 @@
 import { AuthProvider } from './components/AuthProvider';
 import { Outlet } from '@tanstack/react-router';
-import { Box } from '@mantine/core';
+import { Box } from '../src/components/mantine';
 
 export default function App() {
 	return (

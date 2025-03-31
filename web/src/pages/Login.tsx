@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../components/AuthProvider';
-import { Container, Title, Text, Button, Paper, Box, TextInput, PasswordInput, Tabs } from '@mantine/core';
+import { Container, Title, Text, Button, Paper, Box, TextInput, PasswordInput, Tabs } from '../components/mantine';
 import { Navigate } from '@tanstack/react-router';
 import { Envelope, Lock } from '../components/icons';
 import MainLayout from '../layouts/MainLayout';

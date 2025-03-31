@@ -1,4 +1,4 @@
-import { Center, Paper, Group, Title, Text, Button, Stack } from '@mantine/core';
+import { Center, Paper, Group, Title, Text, Button, Stack } from '../mantine';
 import { WarningCircle, ArrowsClockwise } from '../icons';
 
 interface ErrorStateProps {

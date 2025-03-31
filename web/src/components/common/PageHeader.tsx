@@ -1,4 +1,4 @@
-import { Box, Title, Text, Group, Button, ActionIcon, Divider, Paper } from '@mantine/core';
+import { Box, Title, Text, Group, Button, ActionIcon, Divider, Paper } from '../mantine';
 import { ArrowLeft, DotsThree } from '../icons';
 import { ReactNode } from 'react';
 

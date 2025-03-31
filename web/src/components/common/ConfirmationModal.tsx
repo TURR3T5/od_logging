@@ -1,4 +1,4 @@
-import { Modal, Text, Button, Group, Stack, Alert, ThemeIcon } from '@mantine/core';
+import { Modal, Text, Button, Group, Stack, Alert, ThemeIcon } from '../mantine';
 import { Warning, Check } from '../icons';
 import { ReactNode } from 'react';
 

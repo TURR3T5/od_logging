@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel, getFacetedRowModel, getFacetedUniqueValues, ColumnDef, flexRender } from '@tanstack/react-table';
-import { Table, ScrollArea, Paper, TextInput, Group, Box, Text, Pagination, Center, Badge, Button } from '@mantine/core';
+import { Table, ScrollArea, Paper, TextInput, Group, Box, Text, Pagination, Center, Badge, Button } from '../components/mantine';
 import { ArrowUp, ArrowDown, Eye, MagnifyingGlass } from './icons';
 import { Log } from '../pages/Logs';
 import { SearchFilters } from '../hooks/useLogsSearch';

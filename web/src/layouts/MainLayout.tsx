@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AppShell, useMantineTheme, Box, Container, Alert, Button, Center, Loader } from '@mantine/core';
+import { AppShell, useMantineTheme, Box, Container, Alert, Button, Center, Loader } from '../components/mantine';
 import { useMediaQuery } from '@mantine/hooks';
 import { useAuth } from '../components/AuthProvider';
 import { useNavigate, useRouter } from '@tanstack/react-router';

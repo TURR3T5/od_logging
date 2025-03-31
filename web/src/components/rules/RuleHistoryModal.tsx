@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Center, Text, Group, Badge, Card, Tabs, Paper, Timeline, Modal, Accordion, Loader } from '@mantine/core';
+import { Box, Center, Text, Group, Badge, Card, Tabs, Paper, Timeline, Modal, Accordion, Loader } from '../mantine';
 import { ArrowRight, Check } from '../icons';
 import RuleApiService, { RuleChange } from '../../lib/RuleApiService';
 import { EmptyState } from '../common/EmptyState';

@@ -1,4 +1,4 @@
-import { Group, Tabs, SegmentedControl, Text, Switch } from '@mantine/core';
+import { Group, Tabs, SegmentedControl, Text, Switch } from '../mantine';
 import { Bell, FileText, Calendar } from '../icons';
 
 interface ContentFiltersProps {

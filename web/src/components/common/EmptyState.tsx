@@ -1,4 +1,4 @@
-import { Paper, Stack, Title, Text, Button, Group, Box } from '@mantine/core';
+import { Paper, Stack, Title, Text, Button, Group, Box } from '../mantine';
 import { Folder, Plus } from '../icons';
 
 interface EmptyStateProps {

@@ -1,6 +1,6 @@
 import { EditContentModal } from '../components/modals/EditContentModal';
 import { useState, useEffect } from 'react';
-import { Container, Text, Box, Group, Button, Paper, Badge, ActionIcon, Card, Divider, Grid } from '@mantine/core';
+import { Container, Text, Box, Group, Button, Paper, Badge, ActionIcon, Card, Divider, Grid } from '../components/mantine';
 import { notifications } from '@mantine/notifications';
 import { useAuth } from '../components/AuthProvider';
 import MainLayout from '../layouts/MainLayout';

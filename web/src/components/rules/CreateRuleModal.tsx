@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Group, TextInput, Tabs, Textarea, MultiSelect, Switch, Button, Text, Paper, Modal, SegmentedControl } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
+import { Box, Group, TextInput, Tabs, Textarea, MultiSelect, Switch, Button, Text, Paper, Modal, SegmentedControl, notifications } from '../mantine';
 import { Pencil, Eye } from '../icons';
 import RuleApiService from '../../lib/RuleApiService';
 

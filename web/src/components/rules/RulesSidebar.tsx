@@ -1,4 +1,4 @@
-import { List, Text, Paper, Badge, Group, Chip, Alert, Title } from '@mantine/core';
+import { List, Text, Paper, Badge, Group, Chip, Alert, Title } from '../mantine';
 import { Info, Lightbulb } from '../icons';
 import { Rule } from '../../lib/RuleApiService';
 
@@ -65,3 +65,5 @@ export function RulesSidebar({ pinnedRules, recentlyUpdatedRules, onRuleClick }:
 		</>
 	);
 }
+
+export default RulesSidebar;

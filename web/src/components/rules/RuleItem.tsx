@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect } from 'react';
-import { Box, Text, Group, Badge, Paper, ActionIcon, Tooltip, Loader, Collapse, Transition } from '@mantine/core';
+import { Box, Text, Group, Badge, Paper, ActionIcon, Tooltip, Loader, Collapse, Transition } from '../mantine';
 import { Pencil, PushPin, ClockCounterClockwise } from '../icons';
 import { Rule } from '../../lib/RuleApiService';
 import { useDisclosure } from '@mantine/hooks';

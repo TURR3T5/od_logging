@@ -1,4 +1,4 @@
-import { Title, Text, Box, Group, TextInput, ActionIcon, Button, Tabs } from '@mantine/core';
+import { Title, Text, Box, Group, TextInput, ActionIcon, Button, Tabs } from '../mantine';
 import { MagnifyingGlass, X, Plus, FileArrowDown } from '../icons';
 
 interface RulesHeaderProps {
@@ -78,3 +78,5 @@ export function RulesHeader({ searchInput, onSearchChange, activeTab, onTabChang
 		</>
 	);
 }
+
+export default RulesHeader;
