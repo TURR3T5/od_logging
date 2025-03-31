@@ -223,7 +223,7 @@ export default function HomePage() {
 									maxWidth: '1800px',
 								}}
 							>
-								<Image src={slide.image} alt={slide.title} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.5)', transition: 'transform 6s ease-in-out', transform: currentSlide === index ? 'scale(1.05)' : 'scale(1)' }} radius='md' loading='lazy'/>
+								<Image src={slide.image} alt={slide.title} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.5)', transition: 'transform 6s ease-in-out', transform: currentSlide === index ? 'scale(1.05)' : 'scale(1)' }} radius='md' loading='lazy' />
 							</Box>
 
 							<Container size='xl' style={{ position: 'relative', zIndex: 10 }}>
