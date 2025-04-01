@@ -1,7 +1,7 @@
 import { Group, Text, Button, Box, Container, Menu, Badge } from '../components/mantine';
 import { useAuth } from '../components/AuthProvider';
 import { useNavigate } from '@tanstack/react-router';
-import { House, LogOut, List, Book, Calendar, User, ChevronDown, ChartBar, ShieldUser, Wrench } from 'lucide-react';
+import { House, LogOut, List, Book, Calendar, User, ChevronDown, ShieldUser, Wrench } from 'lucide-react';
 
 export default function Header() {
 	const { isAuthorized, isLoading, user, signOut, permissionLevel } = useAuth();
@@ -17,7 +17,6 @@ export default function Header() {
 
 	const wipMenuItems = [
 		{ label: 'Nyheder og Events', icon: Calendar, onClick: () => navigate({ to: '/events' }) },
-		{ label: 'Statistik', icon: ChartBar, onClick: () => navigate({ to: '/stats' }) },
 		{ label: 'Ansøgninger', icon: User, onClick: () => navigate({ to: '/whitelist' }) },
 	];
 

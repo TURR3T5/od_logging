@@ -10,7 +10,6 @@ const AuthCallbackPage = lazy(() => import('../pages/AuthCallback'));
 const RulesPage = lazy(() => import('../pages/Rules'));
 const NewsAndEventsPage = lazy(() => import('../pages/NewsAndEventsPage'));
 const WhitelistApplicationPage = lazy(() => import('../pages/WhitelistPortal'));
-const PlayerStatisticsPage = lazy(() => import('../pages/PlayerStatisticsPage'));
 const ProfilePage = lazy(() => import('../pages/ProfilePage'));
 const RoleManagementPage = lazy(() => import('../pages/RoleManagement'));
 
@@ -90,16 +89,6 @@ const whitelistApplicationRoute = createRoute({
 	),
 });
 
-const playerStatsRoute = createRoute({
-	getParentRoute: () => rootRoute,
-	path: '/stats',
-	component: () => (
-		<SuspenseWrapper>
-			<PlayerStatisticsPage />
-		</SuspenseWrapper>
-	),
-});
-
 const profileRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: '/profile',
@@ -120,7 +109,7 @@ const roleManagementRoute = createRoute({
 	),
 });
 
-const routeTree = rootRoute.addChildren([homeRoute, loginRoute, authCallbackRoute, logsRoute, rulesRoute, eventsCalendarRoute, whitelistApplicationRoute, playerStatsRoute, profileRoute, roleManagementRoute]);
+const routeTree = rootRoute.addChildren([homeRoute, loginRoute, authCallbackRoute, logsRoute, rulesRoute, eventsCalendarRoute, whitelistApplicationRoute, profileRoute, roleManagementRoute]);
 
 export const router = createRouter({ routeTree });
 
