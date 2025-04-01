@@ -33,7 +33,6 @@ export function ContentFilters({ activeTab, setActiveTab, viewMode, setViewMode,
 						value={viewMode}
 						onChange={(value) => setViewMode(value as any)}
 						data={[
-							{ label: 'Liste', value: 'list' },
 							{ label: 'Kalender', value: 'calendar' },
 							{ label: 'Grid', value: 'grid' },
 						]}

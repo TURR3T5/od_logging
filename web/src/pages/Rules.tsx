@@ -257,15 +257,7 @@ export default function RulesPage() {
 								{activeTab === 'all' && displayCommunityRules && displayRoleplayRules ? (
 									<Box style={{ gap: '20px', position: 'relative' }}>
 										{/* Community Rules Section */}
-										<Box
-											ref={communityRulesRef}
-											style={{
-												height: 'auto',
-												maxHeight: '600px',
-												overflow: 'auto',
-												width: '100%',
-											}}
-										>
+										<Box>
 											<Title
 												order={3}
 												mb='md'
@@ -276,32 +268,30 @@ export default function RulesPage() {
 													borderRadius: '8px',
 													borderLeft: '4px solid #3b82f6',
 													fontWeight: 700,
-													position: 'sticky',
-													top: 0,
-													zIndex: 2,
-													backgroundColor: 'rgba(25, 25, 25, 0.95)',
 												}}
 											>
 												DISCORD & COMMUNITY GUIDELINES
 											</Title>
 
-											{filteredRules.community.map((rule) => (
-												<RuleItem key={rule.id} rule={rule} isActive={activeCommunityRule === rule.id} onSelect={(ruleId: string) => setActiveCommunityRule((prev) => (prev === ruleId ? null : ruleId))} onEdit={openEditModal} onPin={togglePinnedRule} onHistory={openHistoryModal} onBadgeClick={scrollToRule} isAuthorized={isAuthorized} content={getCommunityRuleContent(rule.id)} isLoading={isCommunityRuleContentLoading(rule.id)} />
-											))}
+											<Box
+												ref={communityRulesRef}
+												style={{
+													height: 'auto',
+													maxHeight: '600px',
+													overflow: 'auto',
+													width: '100%',
+												}}
+											>
+												{filteredRules.community.map((rule) => (
+													<RuleItem key={rule.id} rule={rule} isActive={activeCommunityRule === rule.id} onSelect={(ruleId: string) => setActiveCommunityRule((prev) => (prev === ruleId ? null : ruleId))} onEdit={openEditModal} onPin={togglePinnedRule} onHistory={openHistoryModal} onBadgeClick={scrollToRule} isAuthorized={isAuthorized} content={getCommunityRuleContent(rule.id)} isLoading={isCommunityRuleContentLoading(rule.id)} />
+												))}
+											</Box>
 										</Box>
 
 										<Divider size='sm' labelPosition='center' label={<Badge variant='light'>OdessaRP</Badge>} my={24} />
 
 										{/* Roleplay Rules Section */}
-										<Box
-											ref={roleplayRulesRef}
-											style={{
-												height: 'auto',
-												maxHeight: '600px',
-												overflow: 'auto',
-												width: '100%',
-											}}
-										>
+										<Box>
 											<Title
 												order={3}
 												mb='md'
@@ -312,33 +302,30 @@ export default function RulesPage() {
 													borderRadius: '8px',
 													borderLeft: '4px solid #22c55e',
 													fontWeight: 700,
-													position: 'sticky',
-													top: 0,
-													zIndex: 2,
-													backgroundColor: 'rgba(25, 25, 25, 0.95)',
 												}}
 											>
 												ROLLESPILS REGLER
 											</Title>
 
-											{filteredRules.roleplay.map((rule) => (
-												<RuleItem key={rule.id} rule={rule} isActive={activeRoleplayRule === rule.id} onSelect={(ruleId: string) => setActiveRoleplayRule((prev) => (prev === ruleId ? null : ruleId))} onEdit={openEditModal} onPin={togglePinnedRule} onHistory={openHistoryModal} onBadgeClick={scrollToRule} isAuthorized={isAuthorized} content={getRoleplayRuleContent(rule.id)} isLoading={isRoleplayRuleContentLoading(rule.id)} />
-											))}
+											<Box
+												ref={roleplayRulesRef}
+												style={{
+													height: 'auto',
+													maxHeight: '600px',
+													overflow: 'auto',
+													width: '100%',
+												}}
+											>
+												{filteredRules.roleplay.map((rule) => (
+													<RuleItem key={rule.id} rule={rule} isActive={activeRoleplayRule === rule.id} onSelect={(ruleId: string) => setActiveRoleplayRule((prev) => (prev === ruleId ? null : ruleId))} onEdit={openEditModal} onPin={togglePinnedRule} onHistory={openHistoryModal} onBadgeClick={scrollToRule} isAuthorized={isAuthorized} content={getRoleplayRuleContent(rule.id)} isLoading={isRoleplayRuleContentLoading(rule.id)} />
+												))}
+											</Box>
 										</Box>
 									</Box>
 								) : (
 									<Box>
 										{displayCommunityRules && (
-											<Box
-												mb='xl'
-												style={{
-													height: 'auto',
-													maxHeight: '800px',
-													overflow: 'auto',
-													width: '100%',
-												}}
-												ref={communityRulesRef}
-											>
+											<Box mb='xl'>
 												<Title
 													order={3}
 													mb='md'
@@ -349,33 +336,31 @@ export default function RulesPage() {
 														borderRadius: '8px',
 														borderLeft: '4px solid #3b82f6',
 														fontWeight: 700,
-														position: 'sticky',
-														top: 0,
-														zIndex: 2,
-														backgroundColor: 'rgba(25, 25, 25, 0.95)',
 													}}
 												>
 													DISCORD & COMMUNITY GUIDELINES
 												</Title>
 
-												<Suspense fallback={<LoadingState />}>
-													{filteredRules.community.map((rule) => (
-														<RuleItem key={rule.id} rule={rule} isActive={activeCommunityRule === rule.id} onSelect={(ruleId: string) => setActiveCommunityRule((prev) => (prev === ruleId ? null : ruleId))} onEdit={openEditModal} onPin={togglePinnedRule} onHistory={openHistoryModal} onBadgeClick={scrollToRule} isAuthorized={isAuthorized} content={getCommunityRuleContent(rule.id)} isLoading={isCommunityRuleContentLoading(rule.id)} />
-													))}
-												</Suspense>
+												<Box
+													ref={communityRulesRef}
+													style={{
+														height: 'auto',
+														maxHeight: '800px',
+														overflow: 'auto',
+														width: '100%',
+													}}
+												>
+													<Suspense fallback={<LoadingState />}>
+														{filteredRules.community.map((rule) => (
+															<RuleItem key={rule.id} rule={rule} isActive={activeCommunityRule === rule.id} onSelect={(ruleId: string) => setActiveCommunityRule((prev) => (prev === ruleId ? null : ruleId))} onEdit={openEditModal} onPin={togglePinnedRule} onHistory={openHistoryModal} onBadgeClick={scrollToRule} isAuthorized={isAuthorized} content={getCommunityRuleContent(rule.id)} isLoading={isCommunityRuleContentLoading(rule.id)} />
+														))}
+													</Suspense>
+												</Box>
 											</Box>
 										)}
 
 										{displayRoleplayRules && (
-											<Box
-												style={{
-													height: 'auto',
-													maxHeight: '800px',
-													overflow: 'auto',
-													width: '100%',
-												}}
-												ref={roleplayRulesRef}
-											>
+											<Box>
 												<Title
 													order={3}
 													mb='md'
@@ -386,20 +371,26 @@ export default function RulesPage() {
 														borderRadius: '8px',
 														borderLeft: '4px solid #22c55e',
 														fontWeight: 700,
-														position: 'sticky',
-														top: 0,
-														zIndex: 2,
-														backgroundColor: 'rgba(25, 25, 25, 0.95)',
 													}}
 												>
 													ROLLESPILS REGLER
 												</Title>
 
-												<Suspense fallback={<LoadingState />}>
-													{filteredRules.roleplay.map((rule) => (
-														<RuleItem key={rule.id} rule={rule} isActive={activeRoleplayRule === rule.id} onSelect={(ruleId: string) => setActiveRoleplayRule((prev) => (prev === ruleId ? null : ruleId))} onEdit={openEditModal} onPin={togglePinnedRule} onHistory={openHistoryModal} onBadgeClick={scrollToRule} isAuthorized={isAuthorized} content={getRoleplayRuleContent(rule.id)} isLoading={isRoleplayRuleContentLoading(rule.id)} />
-													))}
-												</Suspense>
+												<Box
+													ref={roleplayRulesRef}
+													style={{
+														height: 'auto',
+														maxHeight: '800px',
+														overflow: 'auto',
+														width: '100%',
+													}}
+												>
+													<Suspense fallback={<LoadingState />}>
+														{filteredRules.roleplay.map((rule) => (
+															<RuleItem key={rule.id} rule={rule} isActive={activeRoleplayRule === rule.id} onSelect={(ruleId: string) => setActiveRoleplayRule((prev) => (prev === ruleId ? null : ruleId))} onEdit={openEditModal} onPin={togglePinnedRule} onHistory={openHistoryModal} onBadgeClick={scrollToRule} isAuthorized={isAuthorized} content={getRoleplayRuleContent(rule.id)} isLoading={isRoleplayRuleContentLoading(rule.id)} />
+														))}
+													</Suspense>
+												</Box>
 											</Box>
 										)}
 									</Box>

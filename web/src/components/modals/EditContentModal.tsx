@@ -157,7 +157,7 @@ export function EditContentModal({ item, opened, onClose, onUpdate }: EditConten
 				<Button variant='outline' onClick={onClose}>
 					Annuller
 				</Button>
-				<Button onClick={handleSubmit} loading={isSubmitting}>
+				<Button onClick={handleSubmit} color='blue' loading={isSubmitting}>
 					Gem ændringer
 				</Button>
 			</Group>

@@ -228,7 +228,7 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 								<Button size='xs' variant='outline' color='gray' onClick={handleClearSearch}>
 									Clear
 								</Button>
-								<Button size='xs' leftSection={<Search size={14} />} onClick={handleSearchSubmit}>
+								<Button size='xs' color='blue' leftSection={<Search size={14} />} onClick={handleSearchSubmit}>
 									Search
 								</Button>
 							</Group>
@@ -262,7 +262,7 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 							<Button size='xs' variant='outline' color='gray' onClick={handleClearSearch}>
 								Clear
 							</Button>
-							<Button size='xs' leftSection={<Search size={14} />} onClick={handleSearchSubmit}>
+							<Button size='xs' color='blue' leftSection={<Search size={14} />} onClick={handleSearchSubmit}>
 								Search
 							</Button>
 						</Group>

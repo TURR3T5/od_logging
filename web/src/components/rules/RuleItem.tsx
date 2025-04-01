@@ -135,17 +135,17 @@ const RuleItem = memo(function RuleItem({ rule, isActive, onSelect, onEdit, onPi
 							<Group>
 								<Tooltip label='Rediger'>
 									<ActionIcon variant='light' size='sm' color='blue' onClick={handleEditClick}>
-										<Pencil size={16} />
+										<Pencil size={14} />
 									</ActionIcon>
 								</Tooltip>
 								<Tooltip label={rule.is_pinned ? 'Fjern fra oversigt' : 'Fastgør til oversigt'}>
 									<ActionIcon variant='light' size='sm' color={rule.is_pinned ? 'yellow' : 'gray'} onClick={handlePinClick}>
-										<Pin size={16} />
+										<Pin size={14} />
 									</ActionIcon>
 								</Tooltip>
 								<Tooltip label='Vis historie'>
 									<ActionIcon variant='light' size='sm' color='gray' onClick={handleHistoryClick}>
-										<Clock size={16} />
+										<Clock size={14	} />
 									</ActionIcon>
 								</Tooltip>
 							</Group>

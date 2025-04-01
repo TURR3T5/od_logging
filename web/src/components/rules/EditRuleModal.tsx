@@ -174,7 +174,7 @@ export default function EditRuleModal({ currentRule, opened, onClose, onRuleUpda
 								<Button variant='outline' onClick={onClose}>
 									Annuller
 								</Button>
-								<Button onClick={handleSaveRule} loading={isSaving}>
+								<Button onClick={handleSaveRule} color='blue' loading={isSaving}>
 									Gem Ændringer
 								</Button>
 							</Group>

@@ -414,6 +414,7 @@ export default function HomePage() {
 														</Badge>
 													</Group>
 												}
+												color='blue'
 											>
 												<Text size='sm' c='dimmed' mt={4}>
 													{new Date(item.date).toLocaleDateString('da-DK', {

@@ -35,7 +35,7 @@ export function RulesHeader({ searchInput, onSearchChange, activeTab, onTabChang
 
 				{isAuthorized && (
 					<Group>
-						<Button leftSection={<Plus size={16} />} onClick={onCreateRule}>
+						<Button leftSection={<Plus size={16} />} color='blue' onClick={onCreateRule}>
 							Opret ny regel
 						</Button>
 						<Button variant='outline' leftSection={<FileDown size={16} />} onClick={onExportRules}>

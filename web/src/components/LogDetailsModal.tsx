@@ -76,9 +76,10 @@ export function LogDetailsModal({ opened, onClose, selectedLog }: LogDetailsModa
 					whiteSpace: 'pre-wrap',
 					maxHeight: '400px',
 					overflow: 'auto',
-					backgroundColor: theme.colors.dark[7],
+					backgroundColor: theme.colors.dark[8],
 					padding: theme.spacing.md,
 					borderRadius: theme.radius.sm,
+					border: `1px solid ${theme.colors.dark[6]}`,
 					fontSize: theme.fontSizes.sm,
 				})}
 			>

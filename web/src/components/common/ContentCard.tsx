@@ -40,8 +40,8 @@ export function ContentCard({ item, viewMode = 'list', onView, onPin, onEdit, on
 	const typeDetails = getTypeDetails(item);
 	if (viewMode === 'grid') {
 		return (
-			<Card withBorder shadow='sm' padding='md' radius='md' style={{ height: '100%' }}>
-				<Card.Section withBorder inheritPadding py='xs'>
+			<Card withBorder shadow='sm' padding='md' radius='md' w={350} mr={8}>
+				<Card.Section withBorder py='xs'>
 					<Group justify='space-between'>
 						<Badge color={typeDetails.color} leftSection={typeDetails.icon}>
 							{typeDetails.label}
@@ -104,7 +104,7 @@ export function ContentCard({ item, viewMode = 'list', onView, onPin, onEdit, on
 			</Card>
 		);
 	}
-		return (
+	return (
 		<Card mb='md' padding='md' radius='md' withBorder>
 			<Group justify='space-between' mb='xs'>
 				<Group>
