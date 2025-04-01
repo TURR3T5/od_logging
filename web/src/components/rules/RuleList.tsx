@@ -2,7 +2,7 @@ import { memo, useState, useCallback, useEffect } from 'react';
 import { Box, Text, Loader, Center, Stack } from '../mantine';
 import { Rule } from '../../lib/RuleApiService';
 import { useInView } from 'react-intersection-observer';
-import { RuleItem } from './RuleItem';
+import RuleItem from './RuleItem';
 import { useRuleContent } from '../../hooks/useRuleContent';
 import { EmptyState } from '../common/EmptyState';
 
