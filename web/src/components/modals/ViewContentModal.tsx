@@ -137,3 +137,5 @@ export function ViewContentModal({ opened, onClose, item, isAuthorized, onPin, o
 		</Modal>
 	);
 }
+
+export default ViewContentModal;

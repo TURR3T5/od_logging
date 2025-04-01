@@ -88,3 +88,5 @@ export function LogDetailsModal({ opened, onClose, selectedLog }: LogDetailsModa
 		</Modal>
 	);
 }
+
+export default LogDetailsModal;

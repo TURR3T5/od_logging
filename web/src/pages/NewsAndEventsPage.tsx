@@ -1,5 +1,4 @@
-import { EditContentModal } from '../components/modals/EditContentModal';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Container, Text, Box, Group, Button, Paper, Badge, ActionIcon, Card, Divider, Grid } from '../components/mantine';
 import { notifications } from '@mantine/notifications';
 import { useAuth } from '../components/AuthProvider';
@@ -8,9 +7,6 @@ import { Plus, CalendarCheck, Calendar as CalendarIcon, Star, Bell, Pin, FileTex
 import 'dayjs/locale/da';
 import { format } from 'date-fns';
 import { ContentItem } from '../lib/NewsEventsService';
-
-import { CreateContentModal } from '../components/modals/CreateContentModal';
-import { ViewContentModal } from '../components/modals/ViewContentModal';
 import { useContentManagement } from '../hooks/useContentManagement';
 import { PageHeader } from '../components/common/PageHeader';
 import { LoadingState } from '../components/common/LoadingState';
@@ -20,6 +16,10 @@ import { EventCalendarView } from '../components/news/EventCalendarView';
 import { MemoizedContentCard } from '../components/common/MemoizedContentCard';
 import { usePermission } from '../hooks/usePermissions';
 import { useModalState } from '../hooks/useModalState';
+
+const EditContentModal = lazy(() => import('../components/modals/EditContentModal'));
+const CreateContentModal = lazy(() => import('../components/modals/CreateContentModal'));
+const ViewContentModal = lazy(() => import('../components/modals/ViewContentModal'));
 
 export default function NewsAndEventsPage() {
 	const [activeTab, setActiveTab] = useState<string | null>('news');
@@ -239,11 +239,17 @@ export default function NewsAndEventsPage() {
 					{activeTab === 'events' && viewMode === 'calendar' ? <EventCalendarView selectedDate={selectedDate} setSelectedDate={handleDateChange} filteredItems={filteredItems} items={items} isAuthorized={isAuthorized} handleOpenItemModal={handleOpenItemModal} togglePinItem={togglePinItem} handleOpenEditModal={handleOpenEditModal} handleDeleteItem={handleDeleteItem} /> : renderItems()}
 				</Paper>
 
-				<CreateContentModal opened={createModal.isOpen} onClose={createModal.close} onCreate={createItem} />
+				<Suspense fallback={<LoadingState text='Indlæser oprettelsesmodal...' />}>
+					<CreateContentModal opened={createModal.isOpen} onClose={createModal.close} onCreate={createItem} />
+				</Suspense>
 
-				<ViewContentModal opened={viewModal.isOpen} onClose={viewModal.close} item={viewModal.data} isAuthorized={isAuthorized} onPin={togglePinItem} onEdit={handleOpenEditModal} onDelete={handleDeleteItem} />
+				<Suspense fallback={<LoadingState text='Indlæser visningsmodal...' />}>
+					<ViewContentModal opened={viewModal.isOpen} onClose={viewModal.close} item={viewModal.data} isAuthorized={isAuthorized} onPin={togglePinItem} onEdit={handleOpenEditModal} onDelete={handleDeleteItem} />
+				</Suspense>
 
-				<EditContentModal item={editModal.data} opened={editModal.isOpen} onClose={editModal.close} onUpdate={handleUpdateItem} />
+				<Suspense fallback={<LoadingState text='Indlæser redigeringsmodal...' />}>
+					<EditContentModal item={editModal.data} opened={editModal.isOpen} onClose={editModal.close} onUpdate={handleUpdateItem} />
+				</Suspense>
 			</Container>
 		</MainLayout>
 	);

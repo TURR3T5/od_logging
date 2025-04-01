@@ -510,7 +510,6 @@ export default function RoleManagement() {
 					</Tabs>
 				</Paper>
 
-				{/* Add Discord Role Modal */}
 				<Modal opened={roleModalOpen} onClose={() => setRoleModalOpen(false)} title='Add Discord Role Permission' size='md'>
 					<Box>
 						<TextInput label='Discord Role ID' placeholder='Enter Discord role ID (e.g., 123456789012345678)' value={newRoleId} onChange={(e) => setNewRoleId(e.currentTarget.value)} mb='md' required />
@@ -548,7 +547,6 @@ export default function RoleManagement() {
 					</Box>
 				</Modal>
 
-				{/* Add Email Role Modal */}
 				<Modal opened={emailRoleModalOpen} onClose={() => setEmailRoleModalOpen(false)} title='Add Email Role Permission' size='md'>
 					<Box>
 						<TextInput label='Email Address' placeholder='Enter email address to assign role' value={newEmail} onChange={(e) => setNewEmail(e.currentTarget.value)} mb='md' required type='email' />

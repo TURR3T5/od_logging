@@ -164,3 +164,5 @@ export function EditContentModal({ item, opened, onClose, onUpdate }: EditConten
 		</Modal>
 	);
 }
+
+export default EditContentModal;

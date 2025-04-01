@@ -168,3 +168,5 @@ export function CreateContentModal({ opened, onClose, onCreate }: CreateContentM
 		</Modal>
 	);
 }
+
+export default CreateContentModal;

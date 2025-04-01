@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, lazy, Suspense } from 'react';
 import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel, getFacetedRowModel, getFacetedUniqueValues, ColumnDef, flexRender } from '@tanstack/react-table';
 import { Table, ScrollArea, Paper, TextInput, Group, Box, Text, Pagination, Center, Badge, Button } from '../components/mantine';
 import { ArrowUp, ArrowDown, Eye, Search } from 'lucide-react';
@@ -7,10 +7,11 @@ import { SearchFilters } from '../hooks/useLogsSearch';
 import { format } from 'date-fns';
 import { useDataTable } from '../hooks/useDataTable';
 import { DateFilter } from '../filters/DateFilter';
-import { LogDetailsModal } from './LogDetailsModal';
 import { EmptyState } from '../components/common/EmptyState';
 import { LoadingState } from '../components/common/LoadingState';
 import { useModalState } from '../hooks/useModalState';
+
+const LogDetailsModal = lazy(() => import('./LogDetailsModal'));
 
 const dateRangeFilterFn = (row: any, columnId: string, filterValue: [string, string]) => {
 	if (!filterValue || !Array.isArray(filterValue) || filterValue.length !== 2) {
@@ -337,7 +338,9 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 				)}
 			</Paper>
 
-			<LogDetailsModal opened={logDetailsModal.isOpen} onClose={handleCloseModal} selectedLog={logDetailsModal.data} />
+			<Suspense>
+				<LogDetailsModal opened={logDetailsModal.isOpen} onClose={handleCloseModal} selectedLog={logDetailsModal.data} />
+			</Suspense>
 		</Box>
 	);
 }
