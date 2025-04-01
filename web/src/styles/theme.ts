@@ -15,7 +15,7 @@ export const appTheme: MantineThemeOverride = {
       '#002766', // 9
     ],
   },
-  primaryColor: 'brand',
+  primaryColor: 'blue',
   defaultRadius: 'md',
   fontSizes: {
     xs: '0.75rem',

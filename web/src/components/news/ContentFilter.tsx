@@ -4,8 +4,8 @@ import { Bell, FileText, Calendar } from 'lucide-react';
 interface ContentFiltersProps {
 	activeTab: string | null;
 	setActiveTab: (value: string | null) => void;
-	viewMode: 'list' | 'calendar' | 'grid';
-	setViewMode: (value: 'list' | 'calendar' | 'grid') => void;
+	viewMode: 'calendar' | 'grid';
+	setViewMode: (value: 'calendar' | 'grid') => void;
 	showPinnedOnly: boolean;
 	setShowPinnedOnly: (value: boolean) => void;
 }
@@ -31,7 +31,7 @@ export function ContentFilters({ activeTab, setActiveTab, viewMode, setViewMode,
 				{activeTab === 'events' && (
 					<SegmentedControl
 						value={viewMode}
-						onChange={(value) => setViewMode(value as any)}
+						onChange={(value) => setViewMode(value as 'calendar' | 'grid')}
 						data={[
 							{ label: 'Kalender', value: 'calendar' },
 							{ label: 'Grid', value: 'grid' },

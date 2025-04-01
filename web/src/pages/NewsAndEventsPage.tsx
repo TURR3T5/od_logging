@@ -11,7 +11,6 @@ import { ContentItem } from '../lib/NewsEventsService';
 
 import { CreateContentModal } from '../components/modals/CreateContentModal';
 import { ViewContentModal } from '../components/modals/ViewContentModal';
-import { ContentCard } from '../components/common/ContentCard';
 import { useContentManagement } from '../hooks/useContentManagement';
 import { PageHeader } from '../components/common/PageHeader';
 import { LoadingState } from '../components/common/LoadingState';
@@ -25,7 +24,7 @@ import { useModalState } from '../hooks/useModalState';
 export default function NewsAndEventsPage() {
 	const [activeTab, setActiveTab] = useState<string | null>('news');
 	const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
-	const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'grid'>('list');
+	const [viewMode, setViewMode] = useState<'calendar' | 'grid'>('grid');
 	const [showPinnedOnly, setShowPinnedOnly] = useState(false);
 	const { user } = useAuth();
 	const { hasPermission: isAuthorized, isChecking: checkingPermission } = usePermission('content');
@@ -33,6 +32,15 @@ export default function NewsAndEventsPage() {
 	const editModal = useModalState<ContentItem>();
 	const viewModal = useModalState<ContentItem>();
 	const createModal = useModalState();
+
+	// Set to calendar view by default when on events tab
+	useEffect(() => {
+		if (activeTab === 'events' && viewMode !== 'calendar') {
+			setViewMode('calendar');
+		} else if (activeTab !== 'events' && viewMode !== 'grid') {
+			setViewMode('grid');
+		}
+	}, [activeTab, viewMode]);
 
 	const handleOpenItemModal = (item: ContentItem) => {
 		viewModal.open(item);
@@ -105,20 +113,20 @@ export default function NewsAndEventsPage() {
 		if (item.type === 'news') {
 			switch (item.news_type) {
 				case 'update':
-					return { color: 'blue', label: 'Update', icon: <Bell size={16} /> };
+					return { color: 'blue', label: 'Opdatering', icon: <Bell size={16} /> };
 				case 'announcement':
-					return { color: 'orange', label: 'Announcement', icon: <Megaphone size={16} /> };
+					return { color: 'orange', label: 'Meddelelse', icon: <Megaphone size={16} /> };
 				case 'changelog':
 					return { color: 'green', label: 'Changelog', icon: <FileText size={16} /> };
 				default:
-					return { color: 'gray', label: 'News', icon: <Bell size={16} /> };
+					return { color: 'gray', label: 'Nyhed', icon: <Bell size={16} /> };
 			}
 		} else {
 			switch (item.event_type) {
 				case 'official':
-					return { color: 'blue', label: 'Official', icon: <CalendarCheck size={16} /> };
+					return { color: 'blue', label: 'Officiel', icon: <CalendarCheck size={16} /> };
 				case 'community':
-					return { color: 'green', label: 'Community', icon: <CalendarCheck size={16} /> };
+					return { color: 'green', label: 'Fællesskab', icon: <CalendarCheck size={16} /> };
 				case 'special':
 					return { color: 'purple', label: 'Special', icon: <Star size={16} /> };
 				default:
@@ -145,17 +153,15 @@ export default function NewsAndEventsPage() {
 			return <EmptyState title='Ingen indhold fundet' message='Der er ingen indhold at vise med de valgte filtre.' actionLabel={isAuthorized ? 'Opret nyt' : undefined} onAction={isAuthorized ? createModal.open : undefined} />;
 		}
 
-		if (viewMode === 'grid') {
-			return (
-				<Grid>
-					{filteredItems.map((item) => (
-						<MemoizedContentCard key={item.id} item={item} viewMode='list' onView={handleOpenItemModal} onPin={isAuthorized ? togglePinItem : undefined} onEdit={isAuthorized ? handleOpenEditModal : undefined} onDelete={isAuthorized ? handleDeleteItem : undefined} isAuthorized={isAuthorized} />
-					))}
-				</Grid>
-			);
-		}
-
-		return filteredItems.map((item) => <ContentCard key={item.id} item={item} viewMode='list' onView={handleOpenItemModal} onPin={isAuthorized ? togglePinItem : undefined} onEdit={isAuthorized ? handleOpenEditModal : undefined} onDelete={isAuthorized ? handleDeleteItem : undefined} isAuthorized={isAuthorized} />);
+		return (
+			<Grid gutter='md'>
+				{filteredItems.map((item) => (
+					<Grid.Col key={item.id} span={{ base: 12, sm: 6, md: 4, lg: 3 }}>
+						<MemoizedContentCard item={item} viewMode='grid' onView={handleOpenItemModal} onPin={isAuthorized ? togglePinItem : undefined} onEdit={isAuthorized ? handleOpenEditModal : undefined} onDelete={isAuthorized ? handleDeleteItem : undefined} isAuthorized={isAuthorized} />
+					</Grid.Col>
+				))}
+			</Grid>
+		);
 	};
 
 	return (
@@ -191,16 +197,16 @@ export default function NewsAndEventsPage() {
 								mb='md'
 							/>
 
-							<Grid>
+							<Grid gutter='md'>
 								{pinnedItems.map((item) => (
 									<Grid.Col span={{ base: 12, sm: 6, md: 3 }} key={item.id}>
 										<Card withBorder shadow='sm' padding='md' radius='md' style={{ height: '100%' }}>
 											<Card.Section withBorder inheritPadding py='xs'>
 												<Group justify='space-between'>
-													<Badge color={getTypeDetails(item).color} leftSection={getTypeDetails(item).icon}>
+													<Badge color={getTypeDetails(item).color} variant='light' leftSection={getTypeDetails(item).icon}>
 														{getTypeDetails(item).label}
 													</Badge>
-													<ActionIcon color='blue' variant='subtle' onClick={() => togglePinItem(item.id)}>
+													<ActionIcon color='blue' variant='subtle' onClick={() => togglePinItem(item.id)} radius={4}>
 														<Pin size={16} />
 													</ActionIcon>
 												</Group>
@@ -230,9 +236,7 @@ export default function NewsAndEventsPage() {
 						</Box>
 					)}
 
-					{activeTab === 'events' && viewMode === 'calendar' && <EventCalendarView selectedDate={selectedDate} setSelectedDate={handleDateChange} filteredItems={filteredItems} items={items} isAuthorized={isAuthorized} handleOpenItemModal={handleOpenItemModal} togglePinItem={togglePinItem} handleOpenEditModal={handleOpenEditModal} handleDeleteItem={handleDeleteItem} />}
-
-					{(activeTab !== 'events' || (activeTab === 'events' && viewMode !== 'calendar')) && <>{renderItems()}</>}
+					{activeTab === 'events' && viewMode === 'calendar' ? <EventCalendarView selectedDate={selectedDate} setSelectedDate={handleDateChange} filteredItems={filteredItems} items={items} isAuthorized={isAuthorized} handleOpenItemModal={handleOpenItemModal} togglePinItem={togglePinItem} handleOpenEditModal={handleOpenEditModal} handleDeleteItem={handleDeleteItem} /> : renderItems()}
 				</Paper>
 
 				<CreateContentModal opened={createModal.isOpen} onClose={createModal.close} onCreate={createItem} />

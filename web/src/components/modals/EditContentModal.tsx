@@ -14,7 +14,7 @@ export function EditContentModal({ item, opened, onClose, onUpdate }: EditConten
 	const [description, setDescription] = useState('');
 	const [content, setContent] = useState('');
 	const [isPinned, setIsPinned] = useState(false);
-	const [newsType, setNewsType] = useState<'update' | 'announcement' | 'changelog'>('announcement');
+	const [newsType, setNewsType] = useState<'changelog' | 'update' | 'announcement'>('announcement');
 	const [eventType, setEventType] = useState<'community' | 'official' | 'special'>('community');
 	const [eventDate, setEventDate] = useState<Date | null>(null);
 	const [location, setLocation] = useState('');

@@ -4,7 +4,7 @@ import { ContentItem } from '../../lib/NewsEventsService';
 
 interface MemoizedContentCardProps {
 	item: ContentItem;
-	viewMode?: 'list' | 'grid';
+	viewMode?: 'grid';
 	onView: (item: ContentItem) => void;
 	onPin?: (id: string) => void;
 	onEdit?: (item: ContentItem) => void;
