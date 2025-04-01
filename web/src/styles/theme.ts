@@ -16,7 +16,7 @@ export const appTheme: MantineThemeOverride = {
     ],
   },
   primaryColor: 'blue',
-  defaultRadius: 'md',
+  defaultRadius: '4px',
   fontSizes: {
     xs: '0.75rem',
     sm: '0.875rem',
@@ -27,17 +27,17 @@ export const appTheme: MantineThemeOverride = {
   components: {
     Button: {
       defaultProps: {
-        radius: 'md',
+        radius: '4px',
       },
     },
     Card: {
       defaultProps: {
-        radius: 'md',
+        radius: '4px',
       },
     },
     Paper: {
       defaultProps: {
-        radius: 'md',
+        radius: '4px',
       },
     },
   },
