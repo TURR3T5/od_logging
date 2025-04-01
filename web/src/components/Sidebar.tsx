@@ -1,6 +1,6 @@
 import { useState, useEffect, memo, useMemo, useCallback } from 'react';
 import { Box, ScrollArea, Text, Collapse, Group } from '../components/mantine';
-import { CaretRight } from './icons';
+import { ChevronRight } from 'lucide-react';
 import { useNavigate, useRouter } from '@tanstack/react-router';
 
 interface SidebarItem {
@@ -263,7 +263,7 @@ const SidebarSection = memo(({ sectionIndex, item, expanded, toggle, hasActiveCh
 								transition: 'transform 0.2s ease',
 							}}
 						>
-							<CaretRight size={16} color={hasActiveChild ? '#0099e6' : '#a3a3a3'} />
+							<ChevronRight size={16} color={hasActiveChild ? '#0099e6' : '#a3a3a3'} />
 						</Box>
 					)}
 				</Group>

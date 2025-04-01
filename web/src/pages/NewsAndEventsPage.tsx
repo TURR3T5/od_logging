@@ -4,7 +4,7 @@ import { Container, Text, Box, Group, Button, Paper, Badge, ActionIcon, Card, Di
 import { notifications } from '@mantine/notifications';
 import { useAuth } from '../components/AuthProvider';
 import MainLayout from '../layouts/MainLayout';
-import { Plus, CalendarCheck, Calendar as CalendarIcon, Star, Bell, PushPin, FileText, Megaphone } from '../components/icons';
+import { Plus, CalendarCheck, Calendar as CalendarIcon, Star, Bell, Pin, FileText, Megaphone } from 'lucide-react';
 import 'dayjs/locale/da';
 import { format } from 'date-fns';
 import { ContentItem } from '../lib/NewsEventsService';
@@ -105,24 +105,24 @@ export default function NewsAndEventsPage() {
 		if (item.type === 'news') {
 			switch (item.news_type) {
 				case 'update':
-					return { color: 'blue', label: 'Update', icon: <Bell size={16} weight='fill' /> };
+					return { color: 'blue', label: 'Update', icon: <Bell size={16} /> };
 				case 'announcement':
-					return { color: 'orange', label: 'Announcement', icon: <Megaphone size={16} weight='fill' /> };
+					return { color: 'orange', label: 'Announcement', icon: <Megaphone size={16} /> };
 				case 'changelog':
-					return { color: 'green', label: 'Changelog', icon: <FileText size={16} weight='fill' /> };
+					return { color: 'green', label: 'Changelog', icon: <FileText size={16} /> };
 				default:
-					return { color: 'gray', label: 'News', icon: <Bell size={16} weight='fill' /> };
+					return { color: 'gray', label: 'News', icon: <Bell size={16} /> };
 			}
 		} else {
 			switch (item.event_type) {
 				case 'official':
-					return { color: 'blue', label: 'Official', icon: <CalendarCheck size={16} weight='fill' /> };
+					return { color: 'blue', label: 'Official', icon: <CalendarCheck size={16} /> };
 				case 'community':
-					return { color: 'green', label: 'Community', icon: <CalendarCheck size={16} weight='fill' /> };
+					return { color: 'green', label: 'Community', icon: <CalendarCheck size={16} /> };
 				case 'special':
-					return { color: 'purple', label: 'Special', icon: <Star size={16} weight='fill' /> };
+					return { color: 'purple', label: 'Special', icon: <Star size={16} /> };
 				default:
-					return { color: 'gray', label: 'Event', icon: <CalendarIcon size={16} weight='fill' /> };
+					return { color: 'gray', label: 'Event', icon: <CalendarIcon size={16} /> };
 			}
 		}
 	};
@@ -183,7 +183,7 @@ export default function NewsAndEventsPage() {
 							<Divider
 								label={
 									<Group gap='xs'>
-										<PushPin size={16} />
+										<Pin size={16} />
 										<Text fw={500}>FASTGJORTE</Text>
 									</Group>
 								}
@@ -201,7 +201,7 @@ export default function NewsAndEventsPage() {
 														{getTypeDetails(item).label}
 													</Badge>
 													<ActionIcon color='blue' variant='subtle' onClick={() => togglePinItem(item.id)}>
-														<PushPin size={16} weight='fill' />
+														<Pin size={16} />
 													</ActionIcon>
 												</Group>
 											</Card.Section>

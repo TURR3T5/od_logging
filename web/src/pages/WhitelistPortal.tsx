@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Container, Title, Text, Box, Grid, Tabs, Group, Paper, Badge, Card, Avatar, Button, Modal, Divider, TextInput, Textarea, Stack, List, ThemeIcon, Accordion } from '../components/mantine';
 import { notifications } from '@mantine/notifications';
 import MainLayout from '../layouts/MainLayout';
-import { CheckCircle, FileText, ClockCounterClockwise, ShieldStar, Heartbeat, Users, Clock, ArrowRight } from '../components/icons';
+import { CheckCircle, FileText, Clock, ShieldUser, HeartPulse, Users, ArrowRight } from 'lucide-react';
 import { useAuth } from '../components/AuthProvider';
 import { EmptyState } from '../components/common/EmptyState';
 import { useModalState } from '../hooks/useModalState';
@@ -42,7 +42,7 @@ const availableJobs: Job[] = [
 		description: 'Beskyt og tjen borgerne i Los Santos. Oprethold lov og orden, efterforsk forbrydelser, og sørg for at byen er sikker for alle borgere.',
 		requirements: ['18+ år', 'Minimum 25 timer på serveren', 'God mikrofon og kommunikation', 'Ingen aktive bans eller advarsler', 'Evne til at håndtere stressende situationer'],
 		isRecruiting: true,
-		icon: <ShieldStar size={36} weight='duotone' />,
+		icon: <ShieldUser size={36} />,
 		color: 'blue',
 		members: 18,
 		questions: [
@@ -58,7 +58,7 @@ const availableJobs: Job[] = [
 		description: 'Red liv som paramedic i Los Santos. Reagér på nødsituationer, behandl skader, og sørg for at patienter overlever, så de kan fortsætte deres rollespil.',
 		requirements: ['18+ år', 'Minimum 15 timer på serveren', 'God mikrofon og kommunikation', 'Tålmodighed og evne til at håndtere stressende situationer', 'Villighed til at lære medicinske procedurer'],
 		isRecruiting: true,
-		icon: <Heartbeat size={36} weight='duotone' />,
+		icon: <HeartPulse size={36} />,
 		color: 'red',
 		members: 12,
 		questions: [
@@ -241,7 +241,7 @@ function ApplicationsList({ applications, isAdmin = false, onUpdateStatus }: { a
 	const [feedbackText, setFeedbackText] = useState<Record<string, string>>({});
 
 	if (applications.length === 0) {
-		return <EmptyState title='Ingen ansøgninger' message='Der er ingen ansøgninger at vise.' icon={<ClockCounterClockwise size={48} />} />;
+		return <EmptyState title='Ingen ansøgninger' message='Der er ingen ansøgninger at vise.' icon={<Clock size={48} />} />;
 	}
 
 	return (
@@ -434,11 +434,11 @@ export default function WhitelistApplicationPage() {
 						<Tabs.Tab value='jobs' leftSection={<FileText size={16} />}>
 							Tilgængelige jobs
 						</Tabs.Tab>
-						<Tabs.Tab value='applications' leftSection={<ClockCounterClockwise size={16} />}>
+						<Tabs.Tab value='applications' leftSection={<Clock size={16} />}>
 							{isAuthorized ? 'Alle ansøgninger' : 'Dine ansøgninger'}
 						</Tabs.Tab>
 						{isAuthorized && (
-							<Tabs.Tab value='your-applications' leftSection={<ClockCounterClockwise size={16} />}>
+							<Tabs.Tab value='your-applications' leftSection={<Clock size={16} />}>
 								Dine ansøgninger
 							</Tabs.Tab>
 						)}
@@ -459,7 +459,7 @@ export default function WhitelistApplicationPage() {
 							<>
 								<Paper withBorder p='md' mb='xl' bg='rgba(0, 0, 0, 0.03)'>
 									<Group gap='sm'>
-										<ShieldStar size={24} />
+										<ShieldUser size={24} />
 										<Text fw={500}>Administrator Panel</Text>
 									</Group>
 									<Text size='sm'>Som administrator kan du gennemgå og håndtere alle jobansøgninger her.</Text>

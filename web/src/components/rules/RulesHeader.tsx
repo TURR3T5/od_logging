@@ -1,5 +1,5 @@
 import { Title, Text, Box, Group, TextInput, ActionIcon, Button, Tabs } from '../mantine';
-import { MagnifyingGlass, X, Plus, FileArrowDown } from '../icons';
+import { Search, X, Plus, FileDown } from 'lucide-react';
 
 interface RulesHeaderProps {
 	searchInput: string;
@@ -38,7 +38,7 @@ export function RulesHeader({ searchInput, onSearchChange, activeTab, onTabChang
 						<Button leftSection={<Plus size={16} />} onClick={onCreateRule}>
 							Opret ny regel
 						</Button>
-						<Button variant='outline' leftSection={<FileArrowDown size={16} />} onClick={onExportRules}>
+						<Button variant='outline' leftSection={<FileDown size={16} />} onClick={onExportRules}>
 							Eksporter regler
 						</Button>
 					</Group>
@@ -48,7 +48,7 @@ export function RulesHeader({ searchInput, onSearchChange, activeTab, onTabChang
 			<Box mb='xl'>
 				<Group justify='space-between' mb='md'>
 					<TextInput
-						leftSection={<MagnifyingGlass size={18} />}
+						leftSection={<Search size={18} />}
 						placeholder='Søg efter regler...'
 						value={searchInput}
 						onChange={(event) => onSearchChange(event.currentTarget.value)}

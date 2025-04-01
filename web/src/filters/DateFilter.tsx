@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Group, ActionIcon, DateTimePicker } from '../components/mantine';
-import { X } from '../components/icons';
+import { X } from 'lucide-react';
 
 interface DateFilterProps {
 	column?: any;

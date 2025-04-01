@@ -1,6 +1,6 @@
 import { memo, useCallback, useState, useEffect } from 'react';
 import { Box, Text, Group, Badge, Paper, ActionIcon, Tooltip, Loader, Collapse } from '@mantine/core';
-import { Pencil, PushPin, ClockCounterClockwise } from '../icons';
+import { Pencil, Pin, Clock } from 'lucide-react';
 import { Rule } from '../../lib/RuleApiService';
 
 interface RuleItemProps {
@@ -140,12 +140,12 @@ const RuleItem = memo(function RuleItem({ rule, isActive, onSelect, onEdit, onPi
 								</Tooltip>
 								<Tooltip label={rule.is_pinned ? 'Fjern fra oversigt' : 'Fastgør til oversigt'}>
 									<ActionIcon variant='light' size='sm' color={rule.is_pinned ? 'yellow' : 'gray'} onClick={handlePinClick}>
-										<PushPin size={16} />
+										<Pin size={16} />
 									</ActionIcon>
 								</Tooltip>
 								<Tooltip label='Vis historie'>
 									<ActionIcon variant='light' size='sm' color='gray' onClick={handleHistoryClick}>
-										<ClockCounterClockwise size={16} />
+										<Clock size={16} />
 									</ActionIcon>
 								</Tooltip>
 							</Group>

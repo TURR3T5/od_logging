@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../components/AuthProvider';
 import { Container, Title, Text, Button, Paper, Box, TextInput, PasswordInput, Tabs } from '../components/mantine';
 import { Navigate } from '@tanstack/react-router';
-import { Envelope, Lock } from '../components/icons';
+import { Mail, Lock } from 'lucide-react';
 import MainLayout from '../layouts/MainLayout';
 import { notifications } from '@mantine/notifications';
 export default function LoginPage() {
@@ -96,7 +96,7 @@ export default function LoginPage() {
 								<Title order={2} ta='center' c='gray.0' fw={700} mb='md'>
 									FiveM Logging System
 								</Title>
-								<TextInput label='Email' placeholder='your@email.com' required mb='md' leftSection={<Envelope size={16} />} value={email} onChange={(e) => setEmail(e.currentTarget.value)} />
+								<TextInput label='Email' placeholder='your@email.com' required mb='md' leftSection={<Mail size={16} />} value={email} onChange={(e) => setEmail(e.currentTarget.value)} />
 								<PasswordInput label='Password' placeholder='Your password' required mb='xl' leftSection={<Lock size={16} />} value={password} onChange={(e) => setPassword(e.currentTarget.value)} />
 								<Button fullWidth size='md' variant='gradient' gradient={{ from: 'indigo', to: 'blue' }} onClick={handleSignIn} loading={processing || isLoading}>
 									Sign In
@@ -106,7 +106,7 @@ export default function LoginPage() {
 								<Title order={2} ta='center' c='gray.0' fw={700} mb='md'>
 									Create Account
 								</Title>
-								<TextInput label='Email' placeholder='your@email.com' required mb='md' leftSection={<Envelope size={16} />} value={email} onChange={(e) => setEmail(e.currentTarget.value)} />
+								<TextInput label='Email' placeholder='your@email.com' required mb='md' leftSection={<Mail size={16} />} value={email} onChange={(e) => setEmail(e.currentTarget.value)} />
 								<PasswordInput label='Password' placeholder='Choose a password' required mb='md' leftSection={<Lock size={16} />} value={password} onChange={(e) => setPassword(e.currentTarget.value)} />
 								<PasswordInput label='Confirm Password' placeholder='Confirm your password' required mb='xl' leftSection={<Lock size={16} />} value={confirmPassword} onChange={(e) => setConfirmPassword(e.currentTarget.value)} />
 								<Button fullWidth size='md' variant='gradient' gradient={{ from: 'indigo', to: 'blue' }} onClick={handleSignUp} loading={processing || isLoading}>

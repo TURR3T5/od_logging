@@ -1,5 +1,5 @@
 import { Group, Tabs, SegmentedControl, Text, Switch } from '../mantine';
-import { Bell, FileText, Calendar } from '../icons';
+import { Bell, FileText, Calendar } from 'lucide-react';
 
 interface ContentFiltersProps {
 	activeTab: string | null;

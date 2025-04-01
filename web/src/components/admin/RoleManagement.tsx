@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Container, Title, Text, Box, Paper, Group, Table, Badge, Button, TextInput, ActionIcon, Modal, Divider, Loader, Center, Tabs, notifications } from '../mantine';
-import { Trash, Plus, FloppyDisk, UserPlus, UserMinus, Users, MagnifyingGlass, At } from '../icons';
+import { Trash, Plus, Save, UserPlus, UserMinus, Users, Search, AtSign } from 'lucide-react';
 import { useAuth } from '../AuthProvider';
 import { supabase } from '../../lib/supabase';
 import MainLayout from '../../layouts/MainLayout';
@@ -350,7 +350,7 @@ export default function RoleManagement() {
 							<Tabs.Tab value='discord' leftSection={<Users size={16} />}>
 								Discord Roles
 							</Tabs.Tab>
-							<Tabs.Tab value='email' leftSection={<At size={16} />}>
+							<Tabs.Tab value='email' leftSection={<AtSign size={16} />}>
 								Email Roles
 							</Tabs.Tab>
 						</Tabs.List>
@@ -385,7 +385,7 @@ export default function RoleManagement() {
 									</Group>
 								</Paper>
 								<Group>
-									<Button leftSection={<FloppyDisk size={16} />} onClick={updateRoles} loading={isSaving}>
+									<Button leftSection={<Save size={16} />} onClick={updateRoles} loading={isSaving}>
 										Save Changes
 									</Button>
 									<Button leftSection={<Plus size={16} />} variant='outline' onClick={() => setRoleModalOpen(true)}>
@@ -397,7 +397,7 @@ export default function RoleManagement() {
 							<Divider my='md' />
 
 							<Group mb='md'>
-								<TextInput placeholder='Search by role name or ID...' value={searchTerm} onChange={(e) => setSearchTerm(e.currentTarget.value)} style={{ flex: 1 }} leftSection={<MagnifyingGlass size={16} />} />
+								<TextInput placeholder='Search by role name or ID...' value={searchTerm} onChange={(e) => setSearchTerm(e.currentTarget.value)} style={{ flex: 1 }} leftSection={<Search size={16} />} />
 							</Group>
 
 							<Table striped>
@@ -461,7 +461,7 @@ export default function RoleManagement() {
 							</Group>
 
 							<Group mb='md'>
-								<TextInput placeholder='Search by email...' value={searchTerm} onChange={(e) => setSearchTerm(e.currentTarget.value)} style={{ flex: 1 }} leftSection={<MagnifyingGlass size={16} />} />
+								<TextInput placeholder='Search by email...' value={searchTerm} onChange={(e) => setSearchTerm(e.currentTarget.value)} style={{ flex: 1 }} leftSection={<Search size={16} />} />
 							</Group>
 
 							<Table striped>

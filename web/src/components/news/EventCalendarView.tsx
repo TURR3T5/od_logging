@@ -1,6 +1,6 @@
 import { Grid, Box, Paper, Title, Group, Card, Badge, Text, Menu, ActionIcon, Button, Indicator } from '../mantine';
 import { Calendar } from '@mantine/dates';
-import { DotsThree, CheckCircle, PushPin, Pencil, Trash, CalendarCheck } from '../icons';
+import { Ellipsis, CheckCircle, Pin, Pencil, Trash, CalendarCheck } from 'lucide-react';
 import { format, isSameDay } from 'date-fns';
 import { ContentItem } from '../../lib/NewsEventsService';
 
@@ -20,13 +20,13 @@ export function EventCalendarView({ selectedDate, setSelectedDate, filteredItems
 	const getTypeDetails = (item: ContentItem) => {
 		switch (item.event_type) {
 			case 'official':
-				return { color: 'blue', label: 'Official', icon: <CalendarCheck size={16} weight='fill' /> };
+				return { color: 'blue', label: 'Official', icon: <CalendarCheck size={16} /> };
 			case 'community':
-				return { color: 'green', label: 'Community', icon: <CalendarCheck size={16} weight='fill' /> };
+				return { color: 'green', label: 'Community', icon: <CalendarCheck size={16} /> };
 			case 'special':
-				return { color: 'purple', label: 'Special', icon: <CalendarCheck size={16} weight='fill' /> };
+				return { color: 'purple', label: 'Special', icon: <CalendarCheck size={16} /> };
 			default:
-				return { color: 'gray', label: 'Event', icon: <CalendarCheck size={16} weight='fill' /> };
+				return { color: 'gray', label: 'Event', icon: <CalendarCheck size={16} /> };
 		}
 	};
 
@@ -102,7 +102,7 @@ export function EventCalendarView({ selectedDate, setSelectedDate, filteredItems
 									<Menu shadow='md' width={200} position='bottom-end'>
 										<Menu.Target>
 											<ActionIcon>
-												<DotsThree size={20} />
+												<Ellipsis size={20} />
 											</ActionIcon>
 										</Menu.Target>
 										<Menu.Dropdown>
@@ -111,7 +111,7 @@ export function EventCalendarView({ selectedDate, setSelectedDate, filteredItems
 											</Menu.Item>
 											{isAuthorized && (
 												<>
-													<Menu.Item onClick={() => togglePinItem(item.id)} leftSection={<PushPin size={14} />}>
+													<Menu.Item onClick={() => togglePinItem(item.id)} leftSection={<Pin size={14} />}>
 														{item.is_pinned ? 'Fjern fastgørelse' : 'Fastgør'}
 													</Menu.Item>
 													<Menu.Item onClick={() => handleOpenEditModal(item)} leftSection={<Pencil size={14} />}>

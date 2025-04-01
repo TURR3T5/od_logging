@@ -1,7 +1,7 @@
 import { Group, Text, Button, Box, Container, Menu, Badge } from '../components/mantine';
 import { useAuth } from '../components/AuthProvider';
 import { useNavigate } from '@tanstack/react-router';
-import { House, SignOut, ListBullets, Book, Calendar, User, CaretDown, ChartBar, ShieldStar, Bug, Wrench } from '../components/icons';
+import { House, LogOut, List, Book, Calendar, User, ChevronDown, ChartBar, ShieldUser, Bug, Wrench } from 'lucide-react';
 
 export default function Header() {
 	const { isAuthorized, isLoading, user, signOut, permissionLevel } = useAuth();
@@ -22,9 +22,8 @@ export default function Header() {
 	];
 
 	const adminMenuItems = [
-		{ label: 'Server Logs', icon: ListBullets, onClick: () => navigate({ to: '/logs' }) },
-		{ label: 'Role Management', icon: ShieldStar, onClick: () => navigate({ to: '/admin/roles' }) },
-		{ label: 'Discord Bot Test', icon: Bug, onClick: () => navigate({ to: '/admin/discord-bot-test' }) },
+		{ label: 'Server Logs', icon: List, onClick: () => navigate({ to: '/logs' }) },
+		{ label: 'Role Management', icon: ShieldUser, onClick: () => navigate({ to: '/admin/roles' }) },
 	];
 
 	return (
@@ -96,7 +95,7 @@ export default function Header() {
 											<Text c='gray.0' style={{ display: 'flex', alignItems: 'center' }}>
 												WIP
 											</Text>
-											<CaretDown size={14} />
+											<ChevronDown size={14} />
 										</Group>
 									</Menu.Target>
 									<Menu.Dropdown>
@@ -123,11 +122,11 @@ export default function Header() {
 												alignItems: 'center',
 											})}
 										>
-											<ShieldStar size={22} style={{ display: 'flex', alignItems: 'center' }} />
+											<ShieldUser size={22} style={{ display: 'flex', alignItems: 'center' }} />
 											<Text c='gray.0' style={{ display: 'flex', alignItems: 'center' }}>
 												Admin
 											</Text>
-											<CaretDown size={14} />
+											<ChevronDown size={14} />
 										</Group>
 									</Menu.Target>
 									<Menu.Dropdown>
@@ -163,7 +162,7 @@ export default function Header() {
 								<Button variant='subtle' color='blue' onClick={() => navigate({ to: '/profile' })} leftSection={<User size={16} style={{ display: 'flex', alignItems: 'center' }} />}>
 									Profil
 								</Button>
-								<Button variant='outline' color='red' onClick={signOut} leftSection={<SignOut size={16} style={{ display: 'flex', alignItems: 'center' }} />}>
+								<Button variant='outline' color='red' onClick={signOut} leftSection={<LogOut size={16} style={{ display: 'flex', alignItems: 'center' }} />}>
 									Logout
 								</Button>
 							</Group>

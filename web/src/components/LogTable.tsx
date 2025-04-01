@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel, getFacetedRowModel, getFacetedUniqueValues, ColumnDef, flexRender } from '@tanstack/react-table';
 import { Table, ScrollArea, Paper, TextInput, Group, Box, Text, Pagination, Center, Badge, Button } from '../components/mantine';
-import { ArrowUp, ArrowDown, Eye, MagnifyingGlass } from './icons';
+import { ArrowUp, ArrowDown, Eye, Search } from 'lucide-react';
 import { Log } from '../pages/Logs';
 import { SearchFilters } from '../hooks/useLogsSearch';
 import { format } from 'date-fns';
@@ -228,7 +228,7 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 								<Button size='xs' variant='outline' color='gray' onClick={handleClearSearch}>
 									Clear
 								</Button>
-								<Button size='xs' leftSection={<MagnifyingGlass size={14} />} onClick={handleSearchSubmit}>
+								<Button size='xs' leftSection={<Search size={14} />} onClick={handleSearchSubmit}>
 									Search
 								</Button>
 							</Group>
@@ -262,7 +262,7 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 							<Button size='xs' variant='outline' color='gray' onClick={handleClearSearch}>
 								Clear
 							</Button>
-							<Button size='xs' leftSection={<MagnifyingGlass size={14} />} onClick={handleSearchSubmit}>
+							<Button size='xs' leftSection={<Search size={14} />} onClick={handleSearchSubmit}>
 								Search
 							</Button>
 						</Group>

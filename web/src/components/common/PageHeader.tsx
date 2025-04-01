@@ -1,5 +1,5 @@
 import { Box, Title, Text, Group, Button, ActionIcon, Divider, Paper } from '../mantine';
-import { ArrowLeft, DotsThree } from '../icons';
+import { ArrowLeft, Ellipsis } from 'lucide-react';
 import { ReactNode } from 'react';
 
 interface Action {
@@ -44,7 +44,7 @@ export function PageHeader({ title, description, primaryAction, secondaryActions
 							{/* Mobile view: dropdown menu */}
 							<Box hiddenFrom='sm'>
 								<ActionIcon variant='subtle'>
-									<DotsThree size={24} />
+									<Ellipsis size={24} />
 								</ActionIcon>
 							</Box>
 

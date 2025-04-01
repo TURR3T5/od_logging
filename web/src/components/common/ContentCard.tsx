@@ -1,5 +1,5 @@
 import { Card, Text, Badge, Group, Button, ActionIcon, Menu } from '../mantine';
-import { DotsThree, PushPin, Pencil, Trash, CheckCircle, CalendarCheck, Bell, Star, FileText, Megaphone } from '../icons';
+import { Ellipsis, Pin, Pencil, Trash, CheckCircle, CalendarCheck, Bell, Star, FileText, Megaphone } from 'lucide-react';
 import { format } from 'date-fns';
 import { ContentItem } from '../../lib/NewsEventsService';
 interface ContentCardProps {
@@ -16,24 +16,24 @@ export function ContentCard({ item, viewMode = 'list', onView, onPin, onEdit, on
 		if (contentItem.type === 'news') {
 			switch (contentItem.news_type) {
 				case 'update':
-					return { color: 'blue', label: 'Opdatering', icon: <Bell size={16} weight='fill' /> };
+					return { color: 'blue', label: 'Opdatering', icon: <Bell size={16} /> };
 				case 'announcement':
-					return { color: 'orange', label: 'Meddelelse', icon: <Megaphone size={16} weight='fill' /> };
+					return { color: 'orange', label: 'Meddelelse', icon: <Megaphone size={16} /> };
 				case 'changelog':
-					return { color: 'green', label: 'Changelog', icon: <FileText size={16} weight='fill' /> };
+					return { color: 'green', label: 'Changelog', icon: <FileText size={16} /> };
 				default:
-					return { color: 'gray', label: 'Nyhed', icon: <Bell size={16} weight='fill' /> };
+					return { color: 'gray', label: 'Nyhed', icon: <Bell size={16} /> };
 			}
 		} else {
 			switch (contentItem.event_type) {
 				case 'official':
-					return { color: 'blue', label: 'Officiel', icon: <CalendarCheck size={16} weight='fill' /> };
+					return { color: 'blue', label: 'Officiel', icon: <CalendarCheck size={16} /> };
 				case 'community':
-					return { color: 'green', label: 'Fællesskab', icon: <CalendarCheck size={16} weight='fill' /> };
+					return { color: 'green', label: 'Fællesskab', icon: <CalendarCheck size={16} /> };
 				case 'special':
-					return { color: 'purple', label: 'Special', icon: <Star size={16} weight='fill' /> };
+					return { color: 'purple', label: 'Special', icon: <Star size={16} /> };
 				default:
-					return { color: 'gray', label: 'Event', icon: <CalendarCheck size={16} weight='fill' /> };
+					return { color: 'gray', label: 'Event', icon: <CalendarCheck size={16} /> };
 			}
 		}
 	};
@@ -48,7 +48,7 @@ export function ContentCard({ item, viewMode = 'list', onView, onPin, onEdit, on
 						</Badge>
 						{item.is_pinned && (
 							<ActionIcon color='blue' variant='subtle'>
-								<PushPin size={16} weight='fill' />
+								<Pin size={16} />
 							</ActionIcon>
 						)}
 					</Group>
@@ -78,12 +78,12 @@ export function ContentCard({ item, viewMode = 'list', onView, onPin, onEdit, on
 						<Menu shadow='md' width={200} position='bottom-end'>
 							<Menu.Target>
 								<ActionIcon>
-									<DotsThree size={20} />
+									<Ellipsis size={20} />
 								</ActionIcon>
 							</Menu.Target>
 							<Menu.Dropdown>
 								{onPin && (
-									<Menu.Item onClick={() => onPin(item.id)} leftSection={<PushPin size={14} />}>
+									<Menu.Item onClick={() => onPin(item.id)} leftSection={<Pin size={14} />}>
 										{item.is_pinned ? 'Fjern fastgørelse' : 'Fastgør'}
 									</Menu.Item>
 								)}
@@ -114,7 +114,7 @@ export function ContentCard({ item, viewMode = 'list', onView, onPin, onEdit, on
 					<Text fw={700}>{item.title}</Text>
 					{item.is_pinned && (
 						<ActionIcon color='blue' variant='subtle' onClick={() => onPin && onPin(item.id)}>
-							<PushPin size={16} weight='fill' />
+							<Pin size={16} />
 						</ActionIcon>
 					)}
 				</Group>
@@ -123,7 +123,7 @@ export function ContentCard({ item, viewMode = 'list', onView, onPin, onEdit, on
 					<Menu shadow='md' width={200} position='bottom-end'>
 						<Menu.Target>
 							<ActionIcon>
-								<DotsThree size={20} />
+								<Ellipsis size={20} />
 							</ActionIcon>
 						</Menu.Target>
 						<Menu.Dropdown>
@@ -133,7 +133,7 @@ export function ContentCard({ item, viewMode = 'list', onView, onPin, onEdit, on
 							{isAuthorized && (
 								<>
 									{onPin && (
-										<Menu.Item onClick={() => onPin(item.id)} leftSection={<PushPin size={14} />}>
+										<Menu.Item onClick={() => onPin(item.id)} leftSection={<Pin size={14} />}>
 											{item.is_pinned ? 'Fjern fastgørelse' : 'Fastgør'}
 										</Menu.Item>
 									)}

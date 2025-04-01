@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Container, Title, Text, Box, Paper, Group, Avatar, TextInput, Button, Tabs, Divider, PasswordInput, Switch, Grid } from '../components/mantine';
 import { useAuth } from '../components/AuthProvider';
 import MainLayout from '../layouts/MainLayout';
-import { PencilSimple, Gear } from '../components/icons';
+import { PencilLine, Settings } from 'lucide-react';
 import { notifications } from '@mantine/notifications';
 import { usePermission } from '../hooks/usePermissions';
 
@@ -161,7 +161,7 @@ export default function ProfilePage() {
 										<Text size='sm' c='dimmed' mt='xs'>
 											Medlem siden {formatDate(profile?.joinDate || '')}
 										</Text>
-										<Button leftSection={<PencilSimple size={16} />} variant='outline' mt='md' onClick={() => setIsEditing(true)}>
+										<Button leftSection={<PencilLine size={16} />} variant='outline' mt='md' onClick={() => setIsEditing(true)}>
 											Rediger profil
 										</Button>
 									</>
@@ -174,7 +174,7 @@ export default function ProfilePage() {
 						<Paper withBorder p='md' radius='md' mb='md'>
 							<Tabs defaultValue='characters'>
 								<Tabs.List mb='md'>
-									<Tabs.Tab value='settings' leftSection={<Gear size={16} />}>
+									<Tabs.Tab value='settings' leftSection={<Settings size={16} />}>
 										Indstillinger
 									</Tabs.Tab>
 								</Tabs.List>

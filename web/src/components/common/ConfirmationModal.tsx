@@ -1,5 +1,5 @@
 import { Modal, Text, Button, Group, Stack, Alert, ThemeIcon } from '../mantine';
-import { Warning, Check } from '../icons';
+import { TriangleAlert, Check } from 'lucide-react';
 import { ReactNode } from 'react';
 
 export type ConfirmationVariant = 'danger' | 'warning' | 'info' | 'success';
@@ -23,14 +23,14 @@ export function ConfirmationModal({ opened, onClose, onConfirm, title, message, 
 			case 'danger':
 				return {
 					color: 'red',
-					icon: <Warning size={20} />,
+					icon: <TriangleAlert size={20} />,
 					confirmButtonColor: 'red',
 					confirmButtonVariant: 'filled' as const,
 				};
 			case 'warning':
 				return {
 					color: 'yellow',
-					icon: <Warning size={20} />,
+					icon: <TriangleAlert size={20} />,
 					confirmButtonColor: 'yellow',
 					confirmButtonVariant: 'filled' as const,
 				};
@@ -45,7 +45,7 @@ export function ConfirmationModal({ opened, onClose, onConfirm, title, message, 
 			default:
 				return {
 					color: 'blue',
-					icon: <Warning size={20} />,
+					icon: <TriangleAlert size={20} />,
 					confirmButtonColor: 'blue',
 					confirmButtonVariant: 'filled' as const,
 				};

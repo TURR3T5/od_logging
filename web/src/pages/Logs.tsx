@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { useRouter } from '@tanstack/react-router';
 import { Container, Title, Text, Paper, Group, Box, Tabs, Menu, Button, Tooltip, SimpleGrid, Card, Badge } from '../components/mantine';
-import { DownloadSimple, ChartPie, ListBullets, BookmarkSimple } from '../components/icons';
+import { Download, ChartPie, List, Bookmark } from 'lucide-react';
 import MainLayout from '../layouts/MainLayout';
 import LogTable from '../components/LogTable';
 import { useLogsSearch, SearchFilters } from '../hooks/useLogsSearch';
@@ -325,7 +325,7 @@ export default function LogsPage() {
 							<Group>
 								<Menu shadow='md' width={200}>
 									<Menu.Target>
-										<Button variant='subtle' leftSection={<BookmarkSimple size={18} />}>
+										<Button variant='subtle' leftSection={<Bookmark size={18} />}>
 											Gemte Filtre
 										</Button>
 									</Menu.Target>
@@ -341,7 +341,7 @@ export default function LogsPage() {
 								</Menu>
 
 								<Tooltip label='Eksporter logs'>
-									<Button variant='subtle' onClick={exportLogs} leftSection={<DownloadSimple size={18} />}>
+									<Button variant='subtle' onClick={exportLogs} leftSection={<Download size={18} />}>
 										Eksporter
 									</Button>
 								</Tooltip>
@@ -350,7 +350,7 @@ export default function LogsPage() {
 
 						<Tabs value={activeTab} onChange={setActiveTab} mb='md'>
 							<Tabs.List>
-								<Tabs.Tab value='table' leftSection={<ListBullets size={16} />}>
+								<Tabs.Tab value='table' leftSection={<List size={16} />}>
 									Tabeller
 								</Tabs.Tab>
 								<Tabs.Tab value='dashboard' leftSection={<ChartPie size={16} />}>

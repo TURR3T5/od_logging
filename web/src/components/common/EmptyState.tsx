@@ -1,5 +1,5 @@
 import { Paper, Stack, Title, Text, Button, Group, Box } from '../mantine';
-import { Folder, Plus } from '../icons';
+import { Folder, Plus } from 'lucide-react';
 
 interface EmptyStateProps {
 	title?: string;
@@ -10,7 +10,7 @@ interface EmptyStateProps {
 	compact?: boolean;
 }
 
-export function EmptyState({ title = 'Ingen data', message = 'Der er ingen data at vise på nuværende tidspunkt.', actionLabel, onAction, icon = <Folder size={48} weight='duotone' color='#4c6ef5' />, compact = false }: EmptyStateProps) {
+export function EmptyState({ title = 'Ingen data', message = 'Der er ingen data at vise på nuværende tidspunkt.', actionLabel, onAction, icon = <Folder size={48} color='#4c6ef5' />, compact = false }: EmptyStateProps) {
 	if (compact) {
 		return (
 			<Group p='md' justify='center' gap='sm'>

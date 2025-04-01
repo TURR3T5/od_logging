@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Container, Title, Text, Box, Paper, Group, SimpleGrid, Card, RingProgress, Tabs, Loader, Center, SegmentedControl, Badge } from '../components/mantine';
 import MainLayout from '../layouts/MainLayout';
 import { useAuth } from '../components/AuthProvider';
-import { Users, Car, DoorOpen, Clock, ShoppingBag, CreditCard, Handshake, Siren, Heartbeat, Money } from '../components/icons';
+import { Users, Car, DoorOpen, Clock, ShoppingBag, CreditCard, Handshake, Siren, HeartPulse, Banknote } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 
 interface ServerStats {
@@ -180,7 +180,7 @@ export default function PlayerStatisticsPage() {
 							<Tabs.Tab value='activity' leftSection={<Clock size={16} />}>
 								Aktivitet
 							</Tabs.Tab>
-							<Tabs.Tab value='economy' leftSection={<Money size={16} />}>
+							<Tabs.Tab value='economy' leftSection={<Banknote size={16} />}>
 								Økonomi
 							</Tabs.Tab>
 							<Tabs.Tab value='jobs' leftSection={<Handshake size={16} />}>
@@ -377,7 +377,7 @@ export default function PlayerStatisticsPage() {
 
 								<Card withBorder p='md' radius='md'>
 									<Group mb='xs'>
-										<Heartbeat size={20} color='#48BB78' />
+										<HeartPulse size={20} color='#48BB78' />
 										<Text fw={500}>Ambulance Udkald</Text>
 									</Group>
 									<Box h={200}>

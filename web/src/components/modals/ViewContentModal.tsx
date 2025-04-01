@@ -1,5 +1,5 @@
 import { Box, Group, Text, Badge, Modal, Button, Divider, ActionIcon } from '../mantine';
-import { CalendarCheck, Calendar, PushPin, Pencil, Trash } from '../icons';
+import { CalendarCheck, Calendar, Pin, Pencil, Trash } from 'lucide-react';
 import { format } from 'date-fns';
 import { ContentItem } from '../../lib/NewsEventsService';
 
@@ -20,24 +20,24 @@ export function ViewContentModal({ opened, onClose, item, isAuthorized, onPin, o
 		if (contentItem.type === 'news') {
 			switch (contentItem.news_type) {
 				case 'update':
-					return { color: 'blue', label: 'Update', icon: <Calendar size={16} weight='fill' /> };
+					return { color: 'blue', label: 'Update', icon: <Calendar size={16} /> };
 				case 'announcement':
-					return { color: 'orange', label: 'Announcement', icon: <Calendar size={16} weight='fill' /> };
+					return { color: 'orange', label: 'Announcement', icon: <Calendar size={16} /> };
 				case 'changelog':
-					return { color: 'green', label: 'Changelog', icon: <Calendar size={16} weight='fill' /> };
+					return { color: 'green', label: 'Changelog', icon: <Calendar size={16} /> };
 				default:
-					return { color: 'gray', label: 'News', icon: <Calendar size={16} weight='fill' /> };
+					return { color: 'gray', label: 'News', icon: <Calendar size={16} /> };
 			}
 		} else {
 			switch (contentItem.event_type) {
 				case 'official':
-					return { color: 'blue', label: 'Official', icon: <CalendarCheck size={16} weight='fill' /> };
+					return { color: 'blue', label: 'Official', icon: <CalendarCheck size={16} /> };
 				case 'community':
-					return { color: 'green', label: 'Community', icon: <CalendarCheck size={16} weight='fill' /> };
+					return { color: 'green', label: 'Community', icon: <CalendarCheck size={16} /> };
 				case 'special':
-					return { color: 'purple', label: 'Special', icon: <CalendarCheck size={16} weight='fill' /> };
+					return { color: 'purple', label: 'Special', icon: <CalendarCheck size={16} /> };
 				default:
-					return { color: 'gray', label: 'Event', icon: <CalendarCheck size={16} weight='fill' /> };
+					return { color: 'gray', label: 'Event', icon: <CalendarCheck size={16} /> };
 			}
 		}
 	};
@@ -56,7 +56,7 @@ export function ViewContentModal({ opened, onClose, item, isAuthorized, onPin, o
 					<Text fw={700}>{item.title}</Text>
 					{item.is_pinned && (
 						<ActionIcon color='blue' variant='subtle'>
-							<PushPin size={16} weight='fill' />
+							<Pin size={16} />
 						</ActionIcon>
 					)}
 				</Group>
@@ -105,7 +105,7 @@ export function ViewContentModal({ opened, onClose, item, isAuthorized, onPin, o
 					<Group>
 						{isAuthorized && (
 							<>
-								<Button variant='subtle' leftSection={<PushPin size={16} />} onClick={() => onPin(item.id)}>
+								<Button variant='subtle' leftSection={<Pin size={16} />} onClick={() => onPin(item.id)}>
 									{item.is_pinned ? 'Fjern fastgørelse' : 'Fastgør'}
 								</Button>
 								<Button variant='subtle' leftSection={<Pencil size={16} />} onClick={() => onEdit(item)}>

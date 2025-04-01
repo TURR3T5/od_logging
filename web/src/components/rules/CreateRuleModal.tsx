@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Box, Group, TextInput, Tabs, Textarea, MultiSelect, Switch, Button, Text, Paper, Modal, SegmentedControl, notifications } from '../mantine';
-import { Pencil, Eye } from '../icons';
+import { Pencil, Eye } from 'lucide-react';
 import RuleApiService from '../../lib/RuleApiService';
 
 interface CreateRuleModalProps {

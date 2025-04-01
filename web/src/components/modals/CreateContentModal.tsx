@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Box, Button, Group, TextInput, Textarea, Modal, SegmentedControl, Tabs, Text, Checkbox, notifications } from '../mantine';
 import { DatePickerInput } from '@mantine/dates';
-import { FileText, Calendar } from '../icons';
+import { FileText, Calendar } from 'lucide-react';
 import { ContentItem } from '../../lib/NewsEventsService';
 
 interface CreateContentModalProps {

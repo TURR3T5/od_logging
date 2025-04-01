@@ -3,7 +3,7 @@ import { Container, Box, Title, Text, Button, Group, Grid, Card, Badge, Center, 
 import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '../components/AuthProvider';
 import MainLayout from '../layouts/MainLayout';
-import { Users, Car, Buildings, Calendar, ShieldCheck, GameController, ArrowRight, DiscordLogo, Bell, Star, CalendarCheck, PushPin, Megaphone } from '../components/icons';
+import { Users, Car, Building2, Calendar, ShieldCheck, Gamepad2, ArrowRight, Bell, Star, CalendarCheck, Pin, Megaphone } from 'lucide-react';
 import { format } from 'date-fns/format';
 import { da } from 'date-fns/locale/da';
 import { useUpcomingContent, convertToPinnedItems, convertToNewsItems } from '../hooks/NewsHooks';
@@ -122,32 +122,32 @@ export default function HomePage() {
 
 	const serverFeatures = [
 		{
-			icon: <Users size={36} weight='duotone' />,
+			icon: <Users size={36} />,
 			title: 'Aktivt Fællesskab',
 			description: 'Tilslut vores blomstrende fællesskab af rollespillere, der skaber fordybende oplevelser sammen.',
 		},
 		{
-			icon: <Car size={36} weight='duotone' />,
+			icon: <Car size={36} />,
 			title: 'Tilpassede Køretøjer',
 			description: 'Vælg fra vores omfattende samling af tilpassede køretøjer med unik håndtering og modifikationer.',
 		},
 		{
-			icon: <Buildings size={36} weight='duotone' />,
+			icon: <Building2 size={36} />,
 			title: 'Økonomisk System',
 			description: 'Deltag i en realistisk økonomi med jobs, virksomheder og ejendomsbesiddelse.',
 		},
 		{
-			icon: <ShieldCheck size={36} weight='duotone' />,
+			icon: <ShieldCheck size={36} />,
 			title: 'Professionelt Personale',
 			description: '24/7 support fra vores dedikerede personale, der sikrer en sikker og behagelig oplevelse.',
 		},
 		{
-			icon: <Calendar size={36} weight='duotone' />,
+			icon: <Calendar size={36} />,
 			title: 'Regelmæssige Events',
 			description: 'Deltag i ugentlige fællesskabsbegivenheder, konkurrencer og særlige rollespilsscenarier.',
 		},
 		{
-			icon: <GameController size={36} weight='duotone' />,
+			icon: <Gamepad2 size={36} />,
 			title: 'Tilpassede Scripts',
 			description: 'Nyd unikke gameplay-funktioner med vores specialudviklede server scripts.',
 		},
@@ -265,7 +265,7 @@ export default function HomePage() {
 											{slide.subtitle}
 										</Text>
 										<Group justify='center' style={{ marginTop: '24px' }}>
-											<Button component='a' href='https://discord.gg/odessarp' target='_blank' size='lg' leftSection={<DiscordLogo size={20} />} variant='gradient' gradient={{ from: 'indigo', to: 'blue' }}>
+											<Button component='a' href='https://discord.gg/odessarp' target='_blank' size='lg' variant='gradient' gradient={{ from: 'indigo', to: 'blue' }}>
 												Tilslut vores Discord
 											</Button>
 											<Button component='a' href='fivem://connect/play.odessarp.com' size='lg' variant='outline' color='white' rightSection={<ArrowRight size={20} />}>
@@ -282,7 +282,7 @@ export default function HomePage() {
 				<Box
 					style={{
 						position: 'absolute',
-						bottom: '32px',
+						bottom: '18px',
 						left: 0,
 						right: 0,
 						zIndex: 10,
@@ -318,7 +318,7 @@ export default function HomePage() {
 				<Container size='xl'>
 					<Group justify='space-between' mb='md'>
 						<Group>
-							<PushPin size={24} />
+							<Pin size={24} />
 							<Title order={3}>Vigtige Meddelelser</Title>
 						</Group>
 						<Button variant='subtle' rightSection={<ArrowRight size={16} />} onClick={() => navigate({ to: '/events' })}>
@@ -336,7 +336,7 @@ export default function HomePage() {
 												{item.type === 'news' ? (item.newsType === 'update' ? 'Opdatering' : item.newsType === 'changelog' ? 'Changelog' : 'Meddelelse') : item.eventType === 'official' ? 'Officiel Begivenhed' : item.eventType === 'community' ? 'Fællesskab' : 'Special Event'}
 											</Badge>
 											<ActionIcon color='blue' variant='subtle'>
-												<PushPin size={16} weight='fill' />
+												<Pin size={16} />
 											</ActionIcon>
 										</Group>
 									</Card.Section>
