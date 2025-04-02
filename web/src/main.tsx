@@ -1,4 +1,4 @@
-import React from 'react';
+import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider } from '@tanstack/react-router';
 import { MantineProvider, Notifications } from '../src/components/mantine';
@@ -10,10 +10,10 @@ import './styles/index.css';
 import { appTheme } from './styles/theme';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-	<React.StrictMode>
+	<StrictMode>
 		<MantineProvider defaultColorScheme='dark' theme={appTheme}>
 			<Notifications />
 			<RouterProvider router={router} />
 		</MantineProvider>
-	</React.StrictMode>
+	</StrictMode>
 );

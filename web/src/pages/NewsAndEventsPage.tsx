@@ -13,9 +13,9 @@ import { LoadingState } from '../components/common/LoadingState';
 import { EmptyState } from '../components/common/EmptyState';
 import { ContentFilters } from '../components/news/ContentFilter';
 import { EventCalendarView } from '../components/news/EventCalendarView';
-import { MemoizedContentCard } from '../components/common/MemoizedContentCard';
 import { usePermission } from '../hooks/usePermissions';
 import { useModalState } from '../hooks/useModalState';
+import { ContentCard } from '../components/common/ContentCard';
 
 const EditContentModal = lazy(() => import('../components/modals/EditContentModal'));
 const CreateContentModal = lazy(() => import('../components/modals/CreateContentModal'));
@@ -157,7 +157,7 @@ export default function NewsAndEventsPage() {
 			<Grid gutter='md'>
 				{filteredItems.map((item) => (
 					<Grid.Col key={item.id} span={{ base: 12, sm: 6, md: 4, lg: 3 }}>
-						<MemoizedContentCard item={item} viewMode='grid' onView={handleOpenItemModal} onPin={isAuthorized ? togglePinItem : undefined} onEdit={isAuthorized ? handleOpenEditModal : undefined} onDelete={isAuthorized ? handleDeleteItem : undefined} isAuthorized={isAuthorized} />
+						<ContentCard item={item} viewMode='grid' onView={handleOpenItemModal} onPin={isAuthorized ? togglePinItem : undefined} onEdit={isAuthorized ? handleOpenEditModal : undefined} onDelete={isAuthorized ? handleDeleteItem : undefined} isAuthorized={isAuthorized} />
 					</Grid.Col>
 				))}
 			</Grid>

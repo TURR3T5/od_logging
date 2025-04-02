@@ -1,4 +1,4 @@
-import { useState, useEffect, memo, useMemo, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Box, ScrollArea, Text, Collapse, Group } from '../components/mantine';
 import { ChevronRight } from 'lucide-react';
 import { useNavigate, useRouter } from '@tanstack/react-router';
@@ -222,7 +222,7 @@ const useActiveState = () => {
 	return { activeSectionIndex, activeItemIndex, activeCategory, activeType };
 };
 
-const SidebarSection = memo(({ sectionIndex, item, expanded, toggle, hasActiveChild, onNavigate }: { sectionIndex: number; item: SidebarItem; expanded: boolean; toggle: () => void; hasActiveChild: boolean; onNavigate: (path: string) => void }) => {
+function SidebarSection({ sectionIndex, item, expanded, toggle, hasActiveChild, onNavigate }: { sectionIndex: number; item: SidebarItem; expanded: boolean; toggle: () => void; hasActiveChild: boolean; onNavigate: (path: string) => void }) {
 	const hasChildren = !!item.children && item.children.length > 0;
 
 	const handleClick = useCallback(() => {
@@ -247,8 +247,8 @@ const SidebarSection = memo(({ sectionIndex, item, expanded, toggle, hasActiveCh
 					cursor: 'pointer',
 					transition: 'all 0.2s ease',
 					'&:hover': {
-						backgroundColor: !hasActiveChild ? theme.colors.dark[8] : undefined,
-						color: !hasActiveChild ? theme.colors.gray[0] : undefined,
+						backgroundColor: theme.colors.dark[8],
+						color: theme.colors.gray[0],
 					},
 				})}
 			>
@@ -288,9 +288,9 @@ const SidebarSection = memo(({ sectionIndex, item, expanded, toggle, hasActiveCh
 			)}
 		</>
 	);
-});
+}
 
-const SubItem = memo(({ item, sectionIndex, itemIndex, onNavigate }: { item: SidebarItem; sectionIndex: number; itemIndex: number; onNavigate: (path: string) => void }) => {
+function SubItem({ item, sectionIndex, itemIndex, onNavigate }: { item: SidebarItem; sectionIndex: number; itemIndex: number; onNavigate: (path: string) => void }) {
 	const { activeSectionIndex, activeItemIndex } = useActiveState();
 	const isActive = sectionIndex === activeSectionIndex && itemIndex === activeItemIndex;
 
@@ -307,14 +307,14 @@ const SubItem = memo(({ item, sectionIndex, itemIndex, onNavigate }: { item: Sid
 			py='xs'
 			my='2px'
 			style={(theme) => ({
-				borderRadius: theme.radius.md,
+				borderRadius: theme.radius.sm,
 				backgroundColor: isActive ? 'rgba(82, 197, 255, 0.1)' : 'transparent',
 				color: isActive ? '#0099e6' : theme.colors.gray[6],
 				fontWeight: isActive ? 600 : 500,
 				fontSize: theme.fontSizes.sm,
 				cursor: 'pointer',
 				transition: 'all 0.2s ease',
-				'&:hover': {
+				hover: {
 					backgroundColor: !isActive ? theme.colors.dark[8] : undefined,
 					color: !isActive ? theme.colors.gray[0] : undefined,
 				},
@@ -323,7 +323,7 @@ const SubItem = memo(({ item, sectionIndex, itemIndex, onNavigate }: { item: Sid
 			{item.label}
 		</Box>
 	);
-});
+}
 
 export default function Sidebar() {
 	const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
@@ -369,13 +369,11 @@ export default function Sidebar() {
 		}
 	}, [activeCategory, activeSectionIndex]);
 
-	const renderedSections = useMemo(() => {
-		return sidebarSections.map((section, index) => (
-			<Box key={index} mb='sm'>
-				<SidebarSection sectionIndex={index} item={section} expanded={!!expandedSections[section.label]} toggle={() => toggleSection(section.label)} hasActiveChild={index === activeSectionIndex} onNavigate={handleNavigate} />
-			</Box>
-		));
-	}, [expandedSections, activeSectionIndex, toggleSection, handleNavigate]);
+	const renderedSections = sidebarSections.map((section, index) => (
+		<Box key={index} mb='sm'>
+			<SidebarSection sectionIndex={index} item={section} expanded={!!expandedSections[section.label]} toggle={() => toggleSection(section.label)} hasActiveChild={index === activeSectionIndex} onNavigate={handleNavigate} />
+		</Box>
+	));
 
 	return (
 		<Box component='nav' h='100%' bg='#111'>

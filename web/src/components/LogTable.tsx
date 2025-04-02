@@ -1,4 +1,4 @@
-import { useMemo, useState, lazy, Suspense } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel, getFacetedRowModel, getFacetedUniqueValues, ColumnDef, flexRender } from '@tanstack/react-table';
 import { Table, ScrollArea, Paper, TextInput, Group, Box, Text, Pagination, Center, Badge, Button } from '../components/mantine';
 import { ArrowUp, ArrowDown, Eye, Search } from 'lucide-react';
@@ -188,9 +188,7 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 		},
 	];
 
-	const columns = useMemo(() => {
-		return [...commonColumns, ...extraColumns];
-	}, [extraColumns]);
+	const columns = [...commonColumns, ...extraColumns];
 
 	const table = useReactTable({
 		data,

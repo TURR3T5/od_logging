@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { Box, Group, Text, Badge, Modal } from '../components/mantine';
 import { format } from 'date-fns';
 import { Log } from '../pages/Logs';
@@ -10,16 +9,16 @@ interface LogDetailsModalProps {
 }
 
 export function LogDetailsModal({ opened, onClose, selectedLog }: LogDetailsModalProps) {
-	const formattedDetails = useMemo(() => {
-		if (!selectedLog) return '';
-
-		try {
-			return typeof selectedLog.details === 'object' ? JSON.stringify(selectedLog.details, null, 2) : String(selectedLog.details || '');
-		} catch (e) {
-			console.error('Error formatting log details:', e);
-			return '';
-		}
-	}, [selectedLog]);
+	const formattedDetails = selectedLog
+		? (() => {
+				try {
+					return typeof selectedLog.details === 'object' ? JSON.stringify(selectedLog.details, null, 2) : String(selectedLog.details || '');
+				} catch (e) {
+					console.error('Error formatting log details:', e);
+					return '';
+				}
+		  })()
+		: '';
 
 	if (!selectedLog) return null;
 
