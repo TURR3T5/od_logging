@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Container, Title, Text, Box, Grid, Tabs, Group, Paper, Badge, Card, Avatar, Button, Modal, Divider, TextInput, Textarea, Stack, List, ThemeIcon, Accordion } from '../components/mantine';
+import { Container, Title, Text, Box, Grid, Tabs, Group, Paper, Badge, Card, Avatar, Button, Modal, Divider, TextInput, Textarea, Stack, List, ThemeIcon, Accordion } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import MainLayout from '../layouts/MainLayout';
 import { CheckCircle, FileText, Clock, ShieldUser, HeartPulse, Users, ArrowRight } from 'lucide-react';

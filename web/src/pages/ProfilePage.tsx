@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Container, Title, Text, Box, Paper, Group, Avatar, TextInput, Button, Tabs, Divider, PasswordInput, Switch, Grid } from '../components/mantine';
+import { Container, Title, Text, Box, Paper, Group, Avatar, TextInput, Button, Tabs, Divider, PasswordInput, Switch, Grid } from '@mantine/core';
 import { useAuth } from '../components/AuthProvider';
 import MainLayout from '../layouts/MainLayout';
 import { PencilLine, Settings } from 'lucide-react';

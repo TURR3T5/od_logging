@@ -1,4 +1,4 @@
-import { Modal, Text, Button, Group, Stack, Alert, ThemeIcon } from '../mantine';
+import { Modal, Text, Button, Group, Stack, Alert, ThemeIcon } from '@mantine/core';
 import { TriangleAlert, Check } from 'lucide-react';
 import { ReactNode } from 'react';
 

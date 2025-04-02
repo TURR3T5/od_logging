@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Box, ScrollArea, Text, Collapse, Group } from '../components/mantine';
+import { Box, ScrollArea, Text, Collapse, Group } from '@mantine/core';
 import { ChevronRight } from 'lucide-react';
 import { useNavigate, useRouter } from '@tanstack/react-router';
 

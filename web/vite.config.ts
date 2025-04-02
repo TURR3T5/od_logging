@@ -11,7 +11,7 @@ export default defineConfig({
           ["babel-plugin-react-compiler"],
         ],
       },
-    }),,
+    }),
     compression({
       algorithm: 'gzip',
       ext: '.gz',

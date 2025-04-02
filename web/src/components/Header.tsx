@@ -1,4 +1,4 @@
-import { Group, Text, Button, Box, Container, Menu, Badge } from '../components/mantine';
+import { Group, Text, Button, Box, Container, Menu, Badge } from '@mantine/core';
 import { useAuth } from '../components/AuthProvider';
 import { useNavigate } from '@tanstack/react-router';
 import { House, LogOut, List, Book, Calendar, User, ChevronDown, ShieldUser, Wrench } from 'lucide-react';

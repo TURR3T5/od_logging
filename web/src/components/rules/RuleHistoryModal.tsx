@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Center, Text, Group, Badge, Card, Tabs, Paper, Timeline, Modal, Accordion, Loader } from '../mantine';
+import { Box, Center, Text, Group, Badge, Card, Tabs, Paper, Timeline, Modal, Accordion, Loader } from '@mantine/core';
 import { ArrowRight, Check } from 'lucide-react';
 import RuleApiService, { RuleChange } from '../../lib/RuleApiService';
 import { EmptyState } from '../common/EmptyState';
@@ -41,7 +41,7 @@ export default function RuleHistoryModal({ ruleId, opened, onClose }: RuleHistor
 			) : (
 				<Box>
 					{ruleHistory.length === 0 ? (
-						<EmptyState title="Ingen data" message="Der er ingen data at vise." />
+						<EmptyState title='Ingen data' message='Der er ingen data at vise.' />
 					) : (
 						<Timeline active={0} bulletSize={24} lineWidth={2}>
 							{ruleHistory.map((change) => (

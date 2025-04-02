@@ -1,4 +1,4 @@
-import { List, Text, Paper, Badge, Group, Chip, Alert, Title } from '../mantine';
+import { List, Text, Paper, Badge, Group, Chip, Alert, Title } from '@mantine/core';
 import { Info, Lightbulb } from 'lucide-react';
 import { Rule } from '../../lib/RuleApiService';
 

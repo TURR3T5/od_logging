@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Group, ActionIcon, DateTimePicker } from '../components/mantine';
+import { Group, ActionIcon } from '@mantine/core';
+import { DateTimePicker } from '@mantine/dates';
 import { X } from 'lucide-react';
 
 interface DateFilterProps {

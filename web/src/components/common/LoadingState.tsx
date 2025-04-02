@@ -1,4 +1,4 @@
-import { Center, Loader, Text, Stack, Group, Paper } from '../mantine';
+import { Center, Loader, Text, Stack, Group, Paper } from '@mantine/core';
 
 export function LoadingState({ text = 'Indlæser...', compact = false, fullPage = false, size = 'lg' }) {
 	if (compact) {

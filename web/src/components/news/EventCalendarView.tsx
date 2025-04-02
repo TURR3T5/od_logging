@@ -1,4 +1,4 @@
-import { Grid, Box, Paper, Title, Group, Card, Badge, Text, Menu, ActionIcon, Button, Indicator } from '../mantine';
+import { Grid, Box, Paper, Title, Group, Card, Badge, Text, Menu, ActionIcon, Button, Indicator } from '@mantine/core';
 import { Calendar } from '@mantine/dates';
 import { Ellipsis, CheckCircle, Pin, Pencil, Trash, CalendarCheck } from 'lucide-react';
 import { format, isSameDay } from 'date-fns';

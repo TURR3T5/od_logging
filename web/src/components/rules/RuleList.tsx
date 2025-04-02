@@ -1,5 +1,5 @@
 import { memo, useState, useCallback, useEffect } from 'react';
-import { Box, Text, Loader, Center, Stack } from '../mantine';
+import { Box, Text, Loader, Center, Stack } from '@mantine/core';
 import { Rule } from '../../lib/RuleApiService';
 import { useInView } from 'react-intersection-observer';
 import RuleItem from './RuleItem';

@@ -1,4 +1,4 @@
-import { Center, Paper, Group, Title, Text, Button, Stack } from '../mantine';
+import { Center, Paper, Group, Title, Text, Button, Stack } from '@mantine/core';
 import { CircleAlert, RefreshCw } from 'lucide-react';
 
 interface ErrorStateProps {

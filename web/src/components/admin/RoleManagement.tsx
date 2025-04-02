@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Container, Title, Text, Box, Paper, Group, Table, Badge, Button, TextInput, ActionIcon, Modal, Divider, Loader, Center, Tabs, notifications } from '../mantine';
+import { Container, Title, Text, Box, Paper, Group, Table, Badge, Button, TextInput, ActionIcon, Modal, Divider, Loader, Center, Tabs } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { Trash, Plus, Save, UserPlus, UserMinus, Users, Search, AtSign } from 'lucide-react';
 import { useAuth } from '../AuthProvider';
 import { supabase } from '../../lib/supabase';

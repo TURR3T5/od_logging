@@ -1,7 +1,8 @@
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider } from '@tanstack/react-router';
-import { MantineProvider, Notifications } from '../src/components/mantine';
+import { MantineProvider } from '@mantine/core';
+import { Notifications } from '@mantine/notifications';
 import { router } from './routes';
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';

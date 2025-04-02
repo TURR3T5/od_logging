@@ -1,4 +1,4 @@
-import { Box, Group, Text, Badge, Modal, Button, Divider, ActionIcon } from '../mantine';
+import { Box, Group, Text, Badge, Modal, Button, Divider, ActionIcon } from '@mantine/core';
 import { CalendarCheck, Calendar, Pin, Pencil, Trash } from 'lucide-react';
 import { format } from 'date-fns';
 import { ContentItem } from '../../lib/NewsEventsService';

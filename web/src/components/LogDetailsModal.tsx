@@ -1,4 +1,4 @@
-import { Box, Group, Text, Badge, Modal } from '../components/mantine';
+import { Box, Group, Text, Badge, Modal } from '@mantine/core';
 import { format } from 'date-fns';
 import { Log } from '../pages/Logs';
 

@@ -1,4 +1,4 @@
-import { Box, Title, Text, Group, Button, ActionIcon, Divider, Paper } from '../mantine';
+import { Box, Title, Text, Group, Button, ActionIcon, Divider, Paper } from '@mantine/core';
 import { ArrowLeft, Ellipsis } from 'lucide-react';
 import { ReactNode } from 'react';
 

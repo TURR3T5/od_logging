@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useRouter } from '@tanstack/react-router';
-import { Container, Title, Text, Paper, Group, Box, Menu, Button, Tooltip } from '../components/mantine';
+import { Container, Title, Text, Paper, Group, Box, Menu, Button, Tooltip } from '@mantine/core';
 import { Download, Bookmark } from 'lucide-react';
 import MainLayout from '../layouts/MainLayout';
 import LogTable from '../components/LogTable';

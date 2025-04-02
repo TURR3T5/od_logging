@@ -1,4 +1,4 @@
-import { Paper, Stack, Title, Text, Button, Group, Box } from '../mantine';
+import { Paper, Stack, Title, Text, Button, Group, Box } from '@mantine/core';
 import { Folder, Plus } from 'lucide-react';
 
 interface EmptyStateProps {

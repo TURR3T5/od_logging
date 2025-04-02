@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, lazy, Suspense, useRef } from 'react';
-import { Container, Title, Box, Paper, Badge, Divider } from '../components/mantine';
+import { Container, Title, Box, Paper, Badge, Divider } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import MainLayout from '../layouts/MainLayout';

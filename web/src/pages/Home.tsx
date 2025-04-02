@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Container, Box, Title, Text, Button, Group, Grid, Card, Badge, Center, Avatar, Timeline, Modal, Divider, SimpleGrid, ActionIcon, Image } from '../components/mantine';
+import { Container, Box, Title, Text, Button, Group, Grid, Card, Badge, Center, Avatar, Timeline, Modal, Divider, SimpleGrid, ActionIcon, Image } from '@mantine/core';
 import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '../components/AuthProvider';
 import MainLayout from '../layouts/MainLayout';
@@ -51,29 +51,7 @@ export default function HomePage() {
 	const [formattedPinnedItems, setFormattedPinnedItems] = useState<PinnedItem[]>([]);
 	const [formattedNewsItems, setFormattedNewsItems] = useState<NewsItem[]>([]);
 
-	const featuredPlayers: FeaturedPlayer[] = [
-		{
-			id: 1,
-			name: 'Michael Stone',
-			avatarUrl: '/api/placeholder/100/100',
-			role: 'Gang Leader',
-			description: 'Leader of the Yellow Jack Gang, known for strategic territory.',
-		},
-		{
-			id: 2,
-			name: 'Sarah Johnson',
-			avatarUrl: '/api/placeholder/100/100',
-			role: 'Police Chief',
-			description: 'Respected Police Chief dedicated to keeping Odessa safe.',
-		},
-		{
-			id: 3,
-			name: 'Alex Martinez',
-			avatarUrl: '/api/placeholder/100/100',
-			role: 'Business Owner',
-			description: 'Owner of multiple successful businesses in the city center.',
-		},
-	];
+	const featuredPlayers: FeaturedPlayer[] = [];
 
 	useEffect(() => {
 		setIsLoaded(true);
@@ -223,7 +201,7 @@ export default function HomePage() {
 									maxWidth: '1800px',
 								}}
 							>
-								<Image src={slide.image} alt={slide.title} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.5)', transition: 'transform 6s ease-in-out', transform: currentSlide === index ? 'scale(1.05)' : 'scale(1)' }} radius='md'/>
+								<Image src={slide.image} alt={slide.title} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.5)', transition: 'transform 6s ease-in-out', transform: currentSlide === index ? 'scale(1.05)' : 'scale(1)' }} radius='md' />
 							</Box>
 
 							<Container size='xl' style={{ position: 'relative', zIndex: 10 }}>

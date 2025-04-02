@@ -1,4 +1,4 @@
-import { Group, Tabs, SegmentedControl, Text, Switch } from '../mantine';
+import { Group, Tabs, SegmentedControl, Text, Switch } from '@mantine/core';
 import { Bell, FileText, Calendar } from 'lucide-react';
 
 interface ContentFiltersProps {

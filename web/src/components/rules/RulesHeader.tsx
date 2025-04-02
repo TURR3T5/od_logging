@@ -1,4 +1,4 @@
-import { Title, Text, Box, Group, TextInput, ActionIcon, Button, Tabs } from '../mantine';
+import { Title, Text, Box, Group, TextInput, ActionIcon, Button, Tabs } from '@mantine/core';
 import { Search, X, Plus, FileDown } from 'lucide-react';
 
 interface RulesHeaderProps {

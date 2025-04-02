@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Box, Group, TextInput, Tabs, Textarea, MultiSelect, Switch, Button, Text, Paper, Modal, SegmentedControl, notifications } from '../mantine';
+import { Box, Group, TextInput, Tabs, Textarea, MultiSelect, Switch, Button, Text, Paper, Modal, SegmentedControl } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { Pencil, Eye } from 'lucide-react';
 import RuleApiService from '../../lib/RuleApiService';
 

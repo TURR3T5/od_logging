@@ -3,15 +3,15 @@ import { lazy, Suspense } from 'react';
 import App from '../App';
 import { LoadingState } from '../components/common/LoadingState';
 
-const HomePage = lazy(() => import('../pages/Home'));
-const LoginPage = lazy(() => import('../pages/Login'));
-const LogsPage = lazy(() => import('../pages/Logs'));
-const AuthCallbackPage = lazy(() => import('../pages/AuthCallback'));
-const RulesPage = lazy(() => import('../pages/Rules'));
-const NewsAndEventsPage = lazy(() => import('../pages/NewsAndEventsPage'));
-const WhitelistApplicationPage = lazy(() => import('../pages/WhitelistPortal'));
-const ProfilePage = lazy(() => import('../pages/ProfilePage'));
-const RoleManagementPage = lazy(() => import('../pages/RoleManagement'));
+const HomePage = lazy(() => import(/* webpackChunkName: "home-page" */ '../pages/Home'));
+const LoginPage = lazy(() => import(/* webpackChunkName: "login-page" */ '../pages/Login'));
+const LogsPage = lazy(() => import(/* webpackChunkName: "logs-page" */ '../pages/Logs'));
+const AuthCallbackPage = lazy(() => import(/* webpackChunkName: "auth-callback-page" */ '../pages/AuthCallback'));
+const RulesPage = lazy(() => import(/* webpackChunkName: "rules-page" */ '../pages/Rules'));
+const NewsAndEventsPage = lazy(() => import(/* webpackChunkName: "news-and-events-page" */ '../pages/NewsAndEventsPage'));
+const WhitelistApplicationPage = lazy(() => import(/* webpackChunkName: "whitelist-application-page" */ '../pages/WhitelistPortal'));
+const ProfilePage = lazy(() => import(/* webpackChunkName: "profile-page" */ '../pages/ProfilePage'));
+const RoleManagementPage = lazy(() => import(/* webpackChunkName: "role-management-page" */ '../pages/RoleManagement'));
 
 const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => <Suspense fallback={<LoadingState fullPage />}>{children}</Suspense>;
 

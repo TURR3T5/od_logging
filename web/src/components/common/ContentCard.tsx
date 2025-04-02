@@ -1,4 +1,4 @@
-import { Card, Text, Badge, Group, Button, ActionIcon, Menu, Box } from '../mantine';
+import { Card, Text, Badge, Group, Button, ActionIcon, Menu, Box } from '@mantine/core';
 import { Ellipsis, Pin, Pencil, Trash, CalendarCheck, Bell, Star, FileText, Megaphone } from 'lucide-react';
 import { format } from 'date-fns';
 import { ContentItem } from '../../lib/NewsEventsService';

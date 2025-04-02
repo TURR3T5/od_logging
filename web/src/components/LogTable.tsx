@@ -1,6 +1,6 @@
 import { useState, lazy, Suspense } from 'react';
 import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel, getFacetedRowModel, getFacetedUniqueValues, ColumnDef, flexRender } from '@tanstack/react-table';
-import { Table, ScrollArea, Paper, TextInput, Group, Box, Text, Pagination, Center, Badge, Button } from '../components/mantine';
+import { Table, ScrollArea, Paper, TextInput, Group, Box, Text, Pagination, Center, Badge, Button } from '@mantine/core';
 import { ArrowUp, ArrowDown, Eye, Search } from 'lucide-react';
 import { Log } from '../pages/Logs';
 import { SearchFilters } from '../hooks/useLogsSearch';
@@ -11,7 +11,7 @@ import { EmptyState } from '../components/common/EmptyState';
 import { LoadingState } from '../components/common/LoadingState';
 import { useModalState } from '../hooks/useModalState';
 
-const LogDetailsModal = lazy(() => import('./LogDetailsModal'));
+const LogDetailsModal = lazy(() => import(/*webpackChunkName: "log-details"*/ './LogDetailsModal'));
 
 const dateRangeFilterFn = (row: any, columnId: string, filterValue: [string, string]) => {
 	if (!filterValue || !Array.isArray(filterValue) || filterValue.length !== 2) {
