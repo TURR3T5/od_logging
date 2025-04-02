@@ -5,28 +5,47 @@ import { Navigate } from '@tanstack/react-router';
 import { Mail, Lock } from 'lucide-react';
 import MainLayout from '../layouts/MainLayout';
 import { notifications } from '@mantine/notifications';
+import { useForm } from '@mantine/form';
+
 export default function LoginPage() {
-	const { /* signInWithDiscord, */ signInWithEmail, signUpWithEmail, isAuthorized, isLoading } = useAuth();
+	const { signInWithEmail, signUpWithEmail, isAuthorized, isLoading } = useAuth();
 	const [activeTab, setActiveTab] = useState<string | null>('login');
-	const [email, setEmail] = useState('');
-	const [password, setPassword] = useState('');
-	const [confirmPassword, setConfirmPassword] = useState('');
 	const [processing, setProcessing] = useState(false);
+
+	const loginForm = useForm({
+		mode: 'uncontrolled',
+		initialValues: {
+			email: '',
+			password: '',
+		},
+		validate: {
+			email: (value) => (!value ? 'Email is required' : null),
+			password: (value) => (!value ? 'Password is required' : null),
+		},
+	});
+
+	const signupForm = useForm({
+		mode: 'uncontrolled',
+		initialValues: {
+			email: '',
+			password: '',
+			confirmPassword: '',
+		},
+		validate: {
+			email: (value) => (!value ? 'Email is required' : null),
+			password: (value) => (!value ? 'Password is required' : null),
+			confirmPassword: (value, values) => (value !== values.password ? 'Passwords do not match' : null),
+		},
+	});
+
 	if (isAuthorized && !isLoading) {
 		return <Navigate to='/' />;
 	}
-	const handleSignIn = async () => {
-		if (!email || !password) {
-			notifications.show({
-				title: 'Missing Information',
-				message: 'Please enter both email and password',
-				color: 'red',
-			});
-			return;
-		}
+
+	const handleSignIn = async (values: typeof loginForm.values) => {
 		setProcessing(true);
 		try {
-			await signInWithEmail(email, password);
+			await signInWithEmail(values.email, values.password);
 		} catch (error) {
 			console.error('Login error:', error);
 			notifications.show({
@@ -38,26 +57,11 @@ export default function LoginPage() {
 			setProcessing(false);
 		}
 	};
-	const handleSignUp = async () => {
-		if (!email || !password) {
-			notifications.show({
-				title: 'Missing Information',
-				message: 'Please enter both email and password',
-				color: 'red',
-			});
-			return;
-		}
-		if (password !== confirmPassword) {
-			notifications.show({
-				title: 'Password Mismatch',
-				message: 'Passwords do not match',
-				color: 'red',
-			});
-			return;
-		}
+
+	const handleSignUp = async (values: typeof signupForm.values) => {
 		setProcessing(true);
 		try {
-			await signUpWithEmail(email, password);
+			await signUpWithEmail(values.email, values.password);
 			notifications.show({
 				title: 'Account Created',
 				message: 'Your account has been created successfully. You can now sign in.',
@@ -75,6 +79,7 @@ export default function LoginPage() {
 			setProcessing(false);
 		}
 	};
+
 	return (
 		<MainLayout requireAuth={false}>
 			<Box
@@ -92,41 +97,35 @@ export default function LoginPage() {
 								<Tabs.Tab value='login'>Login</Tabs.Tab>
 								<Tabs.Tab value='signup'>Sign Up</Tabs.Tab>
 							</Tabs.List>
+
 							<Tabs.Panel value='login'>
-								<Title order={2} ta='center' c='gray.0' fw={700} mb='md'>
-									FiveM Logging System
-								</Title>
-								<TextInput label='Email' placeholder='your@email.com' required mb='md' leftSection={<Mail size={16} />} value={email} onChange={(e) => setEmail(e.currentTarget.value)} />
-								<PasswordInput label='Password' placeholder='Your password' required mb='xl' leftSection={<Lock size={16} />} value={password} onChange={(e) => setPassword(e.currentTarget.value)} />
-								<Button fullWidth size='md' variant='gradient' gradient={{ from: 'indigo', to: 'blue' }} onClick={handleSignIn} loading={processing || isLoading}>
-									Sign In
-								</Button>
+								<Box component='form' onSubmit={loginForm.onSubmit(handleSignIn)}>
+									<Title order={2} ta='center' c='gray.0' fw={700} mb='md'>
+										FiveM Logging System
+									</Title>
+									<TextInput label='Email' placeholder='your@email.com' required mb='md' leftSection={<Mail size={16} />} key={loginForm.key('email')} {...loginForm.getInputProps('email')} autoComplete='username email' type='email' />
+									<PasswordInput label='Password' placeholder='Your password' required mb='xl' leftSection={<Lock size={16} />} key={loginForm.key('password')} {...loginForm.getInputProps('password')} autoComplete='current-password' />
+									<Button fullWidth size='md' variant='gradient' gradient={{ from: 'indigo', to: 'blue' }} type='submit' loading={processing || isLoading}>
+										Sign In
+									</Button>
+								</Box>
 							</Tabs.Panel>
+
 							<Tabs.Panel value='signup'>
-								<Title order={2} ta='center' c='gray.0' fw={700} mb='md'>
-									Create Account
-								</Title>
-								<TextInput label='Email' placeholder='your@email.com' required mb='md' leftSection={<Mail size={16} />} value={email} onChange={(e) => setEmail(e.currentTarget.value)} />
-								<PasswordInput label='Password' placeholder='Choose a password' required mb='md' leftSection={<Lock size={16} />} value={password} onChange={(e) => setPassword(e.currentTarget.value)} />
-								<PasswordInput label='Confirm Password' placeholder='Confirm your password' required mb='xl' leftSection={<Lock size={16} />} value={confirmPassword} onChange={(e) => setConfirmPassword(e.currentTarget.value)} />
-								<Button fullWidth size='md' variant='gradient' gradient={{ from: 'indigo', to: 'blue' }} onClick={handleSignUp} loading={processing || isLoading}>
-									Create Account
-								</Button>
+								<Box component='form' onSubmit={signupForm.onSubmit(handleSignUp)}>
+									<Title order={2} ta='center' c='gray.0' fw={700} mb='md'>
+										Create Account
+									</Title>
+									<TextInput label='Email' placeholder='your@email.com' required mb='md' leftSection={<Mail size={16} />} key={signupForm.key('email')} {...signupForm.getInputProps('email')} autoComplete='username email' type='email' />
+									<PasswordInput label='Password' placeholder='Choose a password' required mb='md' leftSection={<Lock size={16} />} key={signupForm.key('password')} {...signupForm.getInputProps('password')} autoComplete='new-password' />
+									<PasswordInput label='Confirm Password' placeholder='Confirm your password' required mb='xl' leftSection={<Lock size={16} />} key={signupForm.key('confirmPassword')} {...signupForm.getInputProps('confirmPassword')} autoComplete='new-password' />
+									<Button fullWidth size='md' variant='gradient' gradient={{ from: 'indigo', to: 'blue' }} type='submit' loading={processing || isLoading}>
+										Create Account
+									</Button>
+								</Box>
 							</Tabs.Panel>
 						</Tabs>
-						{/* Keep Discord login option commented out but preserved */}
-						{/* <Divider label="Or continue with" labelPosition="center" my="lg" />
-						<Button 
-							fullWidth 
-							leftSection={<DiscordLogo size={18} />} 
-							size='md' 
-							variant='gradient' 
-							gradient={{ from: 'indigo', to: 'blue' }} 
-							onClick={signInWithDiscord} 
-							loading={isLoading}
-						>
-							Continue with Discord
-						</Button> */}
+
 						<Text size='xs' c='dimmed' ta='center' mt='md'>
 							Only authorized users with appropriate permissions can access this system.
 						</Text>
