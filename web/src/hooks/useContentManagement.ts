@@ -1,10 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ContentItem, NewsEventsService } from '../lib/NewsEventsService';
 import { notifications } from '@mantine/notifications';
 
+function isSameDay(date1: Date, date2: Date): boolean {
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
+}
+
 export function useContentManagement(user: any) {
   const [items, setItems] = useState<ContentItem[]>([]);
-  const [filteredItems, setFilteredItems] = useState<ContentItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
   
@@ -13,7 +20,6 @@ export function useContentManagement(user: any) {
     try {
       const allItems = await NewsEventsService.getAllContent();
       setItems(allItems);
-      setFilteredItems(allItems);
     } catch (error) {
       console.error('Error fetching content:', error);
       notifications.show({
@@ -25,10 +31,6 @@ export function useContentManagement(user: any) {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchItems();
-  }, []);
 
   const filterItems = (
     itemsList: ContentItem[] = items,
@@ -114,11 +116,11 @@ export function useContentManagement(user: any) {
       const success = await NewsEventsService.updateContent(id, updates, user);
       
       if (success) {
-        const updatedItems = items.map((item) => 
-          item.id === id ? { ...item, ...updates } : item
+        setItems(prevItems => 
+          prevItems.map(item => 
+            item.id === id ? { ...item, ...updates } : item
+          )
         );
-        
-        setItems(updatedItems);
         
         if (selectedItem?.id === id) {
           setSelectedItem({ ...selectedItem, ...updates });
@@ -138,8 +140,7 @@ export function useContentManagement(user: any) {
       const success = await NewsEventsService.deleteContent(id, user);
       
       if (success) {
-        const updatedItems = items.filter((item) => item.id !== id);
-        setItems(updatedItems);
+        setItems(prevItems => prevItems.filter(item => item.id !== id));
         
         if (selectedItem?.id === id) {
           setSelectedItem(null);
@@ -156,8 +157,6 @@ export function useContentManagement(user: any) {
 
   return {
     items,
-    filteredItems,
-    setFilteredItems,
     isLoading,
     selectedItem,
     setSelectedItem,
@@ -167,12 +166,4 @@ export function useContentManagement(user: any) {
     updateItem,
     deleteItem
   };
-}
-
-function isSameDay(date1: Date, date2: Date): boolean {
-  return (
-    date1.getFullYear() === date2.getFullYear() &&
-    date1.getMonth() === date2.getMonth() &&
-    date1.getDate() === date2.getDate()
-  );
 }

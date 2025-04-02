@@ -28,10 +28,17 @@ export default function NewsAndEventsPage() {
 	const [showPinnedOnly, setShowPinnedOnly] = useState(false);
 	const { user } = useAuth();
 	const { hasPermission: isAuthorized, isChecking: checkingPermission } = usePermission('content');
-	const { items, filteredItems, setFilteredItems, isLoading, fetchItems, filterItems, createItem, updateItem, deleteItem } = useContentManagement(user);
+	const { items, isLoading, fetchItems, filterItems, createItem, updateItem, deleteItem } = useContentManagement(user);
 	const editModal = useModalState<ContentItem>();
 	const viewModal = useModalState<ContentItem>();
 	const createModal = useModalState();
+
+	const filteredItems = filterItems(items, {
+		contentType: activeTab === 'news' ? 'news' : activeTab === 'events' ? 'event' : 'all',
+		showPinnedOnly,
+		selectedDate,
+		viewMode,
+	});
 
 	useEffect(() => {
 		if (activeTab === 'events') {
@@ -40,6 +47,10 @@ export default function NewsAndEventsPage() {
 			setViewMode('grid');
 		}
 	}, [activeTab]);
+
+	useEffect(() => {
+		fetchItems();
+	}, []);
 
 	const handleOpenItemModal = (item: ContentItem) => {
 		viewModal.open(item);
@@ -68,20 +79,6 @@ export default function NewsAndEventsPage() {
 			return false;
 		}
 	};
-
-	useEffect(() => {
-		fetchItems();
-	}, []);
-
-	useEffect(() => {
-		const filtered = filterItems(items, {
-			contentType: activeTab === 'news' ? 'news' : activeTab === 'events' ? 'event' : 'all',
-			showPinnedOnly,
-			selectedDate,
-			viewMode,
-		});
-		setFilteredItems(filtered);
-	}, [activeTab, selectedDate, showPinnedOnly, viewMode, items, filterItems]);
 
 	const handleDateChange = (date: Date | null) => {
 		setSelectedDate(date);

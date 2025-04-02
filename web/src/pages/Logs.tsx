@@ -86,9 +86,6 @@ export default function LogsPage() {
 		};
 	};
 
-	const filters = getQueryFilters();
-	const pageTitle = filters.type ? `${filters.type.charAt(0).toUpperCase() + filters.type.slice(1)} Logs` : 'Server Logs';
-
 	const fetchLogs = async () => {
 		setLoading(true);
 
@@ -127,12 +124,9 @@ export default function LogsPage() {
 
 	const handleUrlChange = () => {
 		setPage(1);
-		fetchLogs();
 	};
 
 	useEffect(() => {
-		fetchLogs();
-
 		const handlePopState = () => {
 			handleUrlChange();
 		};
@@ -149,11 +143,14 @@ export default function LogsPage() {
 			window.removeEventListener('popstate', handlePopState);
 			unsubscribe();
 		};
-	}, [handleUrlChange, router]);
+	}, [router]);
 
 	useEffect(() => {
 		fetchLogs();
-	}, [page, fetchLogs]);
+	}, [page, searchFilters]);
+
+	const filters = getQueryFilters();
+	const pageTitle = filters.type ? `${filters.type.charAt(0).toUpperCase() + filters.type.slice(1)} Logs` : 'Server Logs';
 
 	const manageSearch = (newFilters: SearchFilters) => {
 		handleSearch(newFilters);

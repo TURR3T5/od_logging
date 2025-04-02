@@ -4,7 +4,6 @@ import { notifications } from '@mantine/notifications';
 import { Trash, Plus, Save, UserPlus, UserMinus, Users, Search, AtSign } from 'lucide-react';
 import { useAuth } from '../AuthProvider';
 import { supabase } from '../../lib/supabase';
-import MainLayout from '../../layouts/MainLayout';
 import { usePermission } from '../../hooks/usePermissions';
 
 interface PermissionRole {
@@ -39,15 +38,12 @@ export default function RoleManagement() {
 	const [activeTab, setActiveTab] = useState<string | null>('discord');
 
 	useEffect(() => {
-		const checkPermission = async () => {
-			if (isAuthorized && (await usePermission('admin'))) {
-				fetchRoles();
-				fetchEmailRoles();
-			} else {
-				setIsLoading(false);
-			}
-		};
-		checkPermission();
+		if (isAuthorized) {
+			fetchRoles();
+			fetchEmailRoles();
+		} else {
+			setIsLoading(false);
+		}
 	}, [isAuthorized]);
 
 	const fetchRoles = async () => {
@@ -104,7 +100,8 @@ export default function RoleManagement() {
 				console.error('Error fetching email roles:', error);
 				setEmailRoles([]);
 			} else {
-				setEmailRoles(data || []);
+				const validEmailRoles = data?.filter((role) => role && role.email) || [];
+				setEmailRoles(validEmailRoles);
 			}
 		} catch (err) {
 			console.error('Error fetching email roles:', err);
@@ -208,7 +205,7 @@ export default function RoleManagement() {
 			return;
 		}
 
-		if (emailRoles.some((r) => r.email.toLowerCase() === newEmail.toLowerCase())) {
+		if (emailRoles.some((r) => r.email && r.email.toLowerCase() === newEmail.toLowerCase())) {
 			notifications.show({
 				title: 'Duplicate Email',
 				message: 'This email already has an assigned role',
@@ -307,284 +304,278 @@ export default function RoleManagement() {
 		}
 	};
 
-	const filteredRoles = roles.filter((role) => role.name.toLowerCase().includes(searchTerm.toLowerCase()) || role.id.includes(searchTerm));
-	const filteredEmailRoles = emailRoles.filter((role) => role.email.toLowerCase().includes(searchTerm.toLowerCase()));
+	const filteredRoles = roles.filter((role) => role.name?.toLowerCase().includes(searchTerm.toLowerCase()) || role.id?.includes(searchTerm));
+	const filteredEmailRoles = emailRoles.filter((role) => role.email && typeof role.email === 'string' && role.email.toLowerCase().includes(searchTerm.toLowerCase()));
 
 	if (!isAuthorized) {
 		return (
-			<MainLayout>
-				<Container size='md' py='xl'>
-					<Paper withBorder p='xl' radius='md'>
-						<Title order={2} ta='center' mb='md'>
-							Access Denied
-						</Title>
-						<Text ta='center'>You do not have permission to access the role management panel.</Text>
-					</Paper>
-				</Container>
-			</MainLayout>
+			<Container size='md' py='xl'>
+				<Paper withBorder p='xl' radius='md'>
+					<Title order={2} ta='center' mb='md'>
+						Access Denied
+					</Title>
+					<Text ta='center'>You do not have permission to access the role management panel.</Text>
+				</Paper>
+			</Container>
 		);
 	}
 
 	if (isLoading || checkingPermission) {
 		return (
-			<MainLayout>
-				<Center style={{ height: 'calc(100vh - 200px)' }}>
-					<Loader size='xl' />
-				</Center>
-			</MainLayout>
+			<Center style={{ height: 'calc(100vh - 200px)' }}>
+				<Loader size='xl' />
+			</Center>
 		);
 	}
 
 	return (
-		<MainLayout>
-			<Container size='xl' py='xl'>
-				<Paper shadow='md' p='lg' radius='md' withBorder>
-					<Group justify='space-between' mb='lg'>
-						<Box>
-							<Title order={2}>Role Management</Title>
-							<Text c='dimmed'>Manage access levels for Discord server roles and email-based roles</Text>
-						</Box>
-					</Group>
+		<Container size='xl' py='xl'>
+			<Paper shadow='md' p='lg' radius='md' withBorder>
+				<Group justify='space-between' mb='lg'>
+					<Box>
+						<Title order={2}>Role Management</Title>
+						<Text c='dimmed'>Manage access levels for Discord server roles and email-based roles</Text>
+					</Box>
+				</Group>
 
-					<Tabs value={activeTab} onChange={setActiveTab}>
-						<Tabs.List mb='lg'>
-							<Tabs.Tab value='discord' leftSection={<Users size={16} />}>
-								Discord Roles
-							</Tabs.Tab>
-							<Tabs.Tab value='email' leftSection={<AtSign size={16} />}>
-								Email Roles
-							</Tabs.Tab>
-						</Tabs.List>
+				<Tabs value={activeTab} onChange={setActiveTab}>
+					<Tabs.List mb='lg'>
+						<Tabs.Tab value='discord' leftSection={<Users size={16} />}>
+							Discord Roles
+						</Tabs.Tab>
+						<Tabs.Tab value='email' leftSection={<AtSign size={16} />}>
+							Email Roles
+						</Tabs.Tab>
+					</Tabs.List>
 
-						<Tabs.Panel value='discord'>
-							<Group justify='space-between' mb='lg'>
-								<Paper withBorder p='md' radius='md' mb='xl'>
-									<Group justify='space-between' mb='md'>
-										<Group>
-											<Users size={24} />
-											<Text fw={500}>Permission Levels</Text>
-										</Group>
+					<Tabs.Panel value='discord'>
+						<Group justify='space-between' mb='lg'>
+							<Paper withBorder p='md' radius='md' mb='xl'>
+								<Group justify='space-between' mb='md'>
+									<Group>
+										<Users size={24} />
+										<Text fw={500}>Permission Levels</Text>
 									</Group>
-									<Text size='sm' mb='xs'>
-										Each Discord role can be assigned one of these permission levels:
-									</Text>
-									<Group mb='md'>
-										<Badge color='red'>Admin</Badge>
-										<Text size='sm'>- Full access to all features and settings</Text>
-									</Group>
-									<Group mb='md'>
-										<Badge color='blue'>Staff</Badge>
-										<Text size='sm'>- Can manage logs, user reports, and moderate content</Text>
-									</Group>
-									<Group mb='md'>
-										<Badge color='green'>Content</Badge>
-										<Text size='sm'>- Can create and edit news, events, and some content</Text>
-									</Group>
-									<Group mb='md'>
-										<Badge color='gray'>Viewer</Badge>
-										<Text size='sm'>- Can view most pages but cannot modify content</Text>
-									</Group>
-								</Paper>
-								<Group>
-									<Button leftSection={<Save size={16} />} onClick={updateRoles} loading={isSaving}>
-										Save Changes
-									</Button>
-									<Button leftSection={<Plus size={16} />} variant='outline' onClick={() => setRoleModalOpen(true)}>
-										Add Role
-									</Button>
 								</Group>
-							</Group>
-
-							<Divider my='md' />
-
-							<Group mb='md'>
-								<TextInput placeholder='Search by role name or ID...' value={searchTerm} onChange={(e) => setSearchTerm(e.currentTarget.value)} style={{ flex: 1 }} leftSection={<Search size={16} />} />
-							</Group>
-
-							<Table striped>
-								<Table.Thead>
-									<Table.Tr>
-										<Table.Th>Role ID</Table.Th>
-										<Table.Th>Role Name</Table.Th>
-										<Table.Th>Permission Level</Table.Th>
-										<Table.Th>Status</Table.Th>
-										<Table.Th>Actions</Table.Th>
-									</Table.Tr>
-								</Table.Thead>
-								<Table.Tbody>
-									{filteredRoles.length > 0 ? (
-										filteredRoles.map((role) => (
-											<Table.Tr key={role.id}>
-												<Table.Td style={{ fontFamily: 'monospace' }}>{role.id}</Table.Td>
-												<Table.Td>{role.name}</Table.Td>
-												<Table.Td>
-													<Badge color={role.level === 'admin' ? 'red' : role.level === 'staff' ? 'blue' : role.level === 'content' ? 'green' : 'gray'}>{role.level.toUpperCase()}</Badge>
-												</Table.Td>
-												<Table.Td>
-													<Badge color={role.isActive ? 'green' : 'red'}>{role.isActive ? 'Active' : 'Inactive'}</Badge>
-												</Table.Td>
-												<Table.Td>
-													<Group>
-														<ActionIcon variant='transparent' color={role.isActive ? 'red' : 'green'} onClick={() => toggleRoleStatus(role.id)}>
-															{role.isActive ? <UserMinus size={18} /> : <UserPlus size={18} />}
-														</ActionIcon>
-														<ActionIcon variant='transparent' color='red' onClick={() => removeRole(role.id)}>
-															<Trash size={18} />
-														</ActionIcon>
-													</Group>
-												</Table.Td>
-											</Table.Tr>
-										))
-									) : (
-										<Table.Tr>
-											<Table.Td colSpan={5} style={{ textAlign: 'center' }}>
-												{searchTerm ? 'No roles match your search' : 'No roles found. Add roles to manage permissions.'}
-											</Table.Td>
-										</Table.Tr>
-									)}
-								</Table.Tbody>
-							</Table>
-						</Tabs.Panel>
-
-						<Tabs.Panel value='email'>
-							<Group justify='space-between' mb='lg'>
-								<Box>
-									<Text size='lg' fw={500}>
-										Email-Based Permissions
-									</Text>
-									<Text size='sm' c='dimmed'>
-										Assign permission levels directly to email addresses. Users will automatically get these permissions when they sign up.
-									</Text>
-								</Box>
-								<Button leftSection={<Plus size={16} />} onClick={() => setEmailRoleModalOpen(true)}>
-									Add Email Role
+								<Text size='sm' mb='xs'>
+									Each Discord role can be assigned one of these permission levels:
+								</Text>
+								<Group mb='md'>
+									<Badge color='red'>Admin</Badge>
+									<Text size='sm'>- Full access to all features and settings</Text>
+								</Group>
+								<Group mb='md'>
+									<Badge color='blue'>Staff</Badge>
+									<Text size='sm'>- Can manage logs, user reports, and moderate content</Text>
+								</Group>
+								<Group mb='md'>
+									<Badge color='green'>Content</Badge>
+									<Text size='sm'>- Can create and edit news, events, and some content</Text>
+								</Group>
+								<Group mb='md'>
+									<Badge color='gray'>Viewer</Badge>
+									<Text size='sm'>- Can view most pages but cannot modify content</Text>
+								</Group>
+							</Paper>
+							<Group>
+								<Button leftSection={<Save size={16} />} onClick={updateRoles} loading={isSaving}>
+									Save Changes
+								</Button>
+								<Button leftSection={<Plus size={16} />} variant='outline' onClick={() => setRoleModalOpen(true)}>
+									Add Role
 								</Button>
 							</Group>
+						</Group>
 
-							<Group mb='md'>
-								<TextInput placeholder='Search by email...' value={searchTerm} onChange={(e) => setSearchTerm(e.currentTarget.value)} style={{ flex: 1 }} leftSection={<Search size={16} />} />
-							</Group>
+						<Divider my='md' />
 
-							<Table striped>
-								<Table.Thead>
-									<Table.Tr>
-										<Table.Th>Email</Table.Th>
-										<Table.Th>Role</Table.Th>
-										<Table.Th>Added On</Table.Th>
-										<Table.Th>Actions</Table.Th>
-									</Table.Tr>
-								</Table.Thead>
-								<Table.Tbody>
-									{filteredEmailRoles.length > 0 ? (
-										filteredEmailRoles.map((role) => (
-											<Table.Tr key={role.id}>
-												<Table.Td>{role.email}</Table.Td>
-												<Table.Td>
-													<Badge color={role.role === 'admin' ? 'red' : role.role === 'staff' ? 'blue' : role.role === 'content' ? 'green' : 'gray'}>{role.role.toUpperCase()}</Badge>
-												</Table.Td>
-												<Table.Td>{new Date(role.created_at).toLocaleDateString()}</Table.Td>
-												<Table.Td>
-													<Group>
-														<select value={role.role} onChange={(e) => updateEmailRole(role.id, e.target.value as any)} style={{ padding: '4px', borderRadius: '4px' }}>
-															<option value='admin'>Admin</option>
-															<option value='staff'>Staff</option>
-															<option value='content'>Content</option>
-															<option value='viewer'>Viewer</option>
-														</select>
-														<ActionIcon variant='transparent' color='red' onClick={() => removeEmailRole(role.id)}>
-															<Trash size={18} />
-														</ActionIcon>
-													</Group>
-												</Table.Td>
-											</Table.Tr>
-										))
-									) : (
-										<Table.Tr>
-											<Table.Td colSpan={4} style={{ textAlign: 'center' }}>
-												{searchTerm ? 'No email roles match your search' : 'No email roles found. Add email roles to manage permissions.'}
+						<Group mb='md'>
+							<TextInput placeholder='Search by role name or ID...' value={searchTerm} onChange={(e) => setSearchTerm(e.currentTarget.value)} style={{ flex: 1 }} leftSection={<Search size={16} />} />
+						</Group>
+
+						<Table striped>
+							<Table.Thead>
+								<Table.Tr>
+									<Table.Th>Role ID</Table.Th>
+									<Table.Th>Role Name</Table.Th>
+									<Table.Th>Permission Level</Table.Th>
+									<Table.Th>Status</Table.Th>
+									<Table.Th>Actions</Table.Th>
+								</Table.Tr>
+							</Table.Thead>
+							<Table.Tbody>
+								{filteredRoles.length > 0 ? (
+									filteredRoles.map((role) => (
+										<Table.Tr key={role.id}>
+											<Table.Td style={{ fontFamily: 'monospace' }}>{role.id}</Table.Td>
+											<Table.Td>{role.name}</Table.Td>
+											<Table.Td>
+												<Badge color={role.level === 'admin' ? 'red' : role.level === 'staff' ? 'blue' : role.level === 'content' ? 'green' : 'gray'}>{role.level.toUpperCase()}</Badge>
+											</Table.Td>
+											<Table.Td>
+												<Badge color={role.isActive ? 'green' : 'red'}>{role.isActive ? 'Active' : 'Inactive'}</Badge>
+											</Table.Td>
+											<Table.Td>
+												<Group>
+													<ActionIcon variant='transparent' color={role.isActive ? 'red' : 'green'} onClick={() => toggleRoleStatus(role.id)}>
+														{role.isActive ? <UserMinus size={18} /> : <UserPlus size={18} />}
+													</ActionIcon>
+													<ActionIcon variant='transparent' color='red' onClick={() => removeRole(role.id)}>
+														<Trash size={18} />
+													</ActionIcon>
+												</Group>
 											</Table.Td>
 										</Table.Tr>
-									)}
-								</Table.Tbody>
-							</Table>
-						</Tabs.Panel>
-					</Tabs>
-				</Paper>
+									))
+								) : (
+									<Table.Tr>
+										<Table.Td colSpan={5} style={{ textAlign: 'center' }}>
+											{searchTerm ? 'No roles match your search' : 'No roles found. Add roles to manage permissions.'}
+										</Table.Td>
+									</Table.Tr>
+								)}
+							</Table.Tbody>
+						</Table>
+					</Tabs.Panel>
 
-				<Modal opened={roleModalOpen} onClose={() => setRoleModalOpen(false)} title='Add Discord Role Permission' size='md'>
-					<Box>
-						<TextInput label='Discord Role ID' placeholder='Enter Discord role ID (e.g., 123456789012345678)' value={newRoleId} onChange={(e) => setNewRoleId(e.currentTarget.value)} mb='md' required />
-
-						<TextInput label='Role Name' placeholder='Enter a recognizable name for this role' value={newRoleName} onChange={(e) => setNewRoleName(e.currentTarget.value)} mb='md' required />
-
-						<Box mb='md'>
-							<Text size='sm' mb='xs' fw={500}>
-								Permission Level
-							</Text>
-							<Group>
-								<Button.Group>
-									<Button variant={newRoleLevel === 'admin' ? 'filled' : 'outline'} color='red' onClick={() => setNewRoleLevel('admin')}>
-										Admin
-									</Button>
-									<Button variant={newRoleLevel === 'staff' ? 'filled' : 'outline'} color='blue' onClick={() => setNewRoleLevel('staff')}>
-										Staff
-									</Button>
-									<Button variant={newRoleLevel === 'content' ? 'filled' : 'outline'} color='green' onClick={() => setNewRoleLevel('content')}>
-										Content
-									</Button>
-									<Button variant={newRoleLevel === 'viewer' ? 'filled' : 'outline'} color='gray' onClick={() => setNewRoleLevel('viewer')}>
-										Viewer
-									</Button>
-								</Button.Group>
-							</Group>
-						</Box>
-
-						<Group justify='flex-end' mt='xl'>
-							<Button variant='outline' onClick={() => setRoleModalOpen(false)}>
-								Cancel
-							</Button>
-							<Button onClick={addRole}>Add Role</Button>
-						</Group>
-					</Box>
-				</Modal>
-
-				<Modal opened={emailRoleModalOpen} onClose={() => setEmailRoleModalOpen(false)} title='Add Email Role Permission' size='md'>
-					<Box>
-						<TextInput label='Email Address' placeholder='Enter email address to assign role' value={newEmail} onChange={(e) => setNewEmail(e.currentTarget.value)} mb='md' required type='email' />
-
-						<Box mb='md'>
-							<Text size='sm' mb='xs' fw={500}>
-								Permission Level
-							</Text>
-							<Group>
-								<Button.Group>
-									<Button variant={newEmailRole === 'admin' ? 'filled' : 'outline'} color='red' onClick={() => setNewEmailRole('admin')}>
-										Admin
-									</Button>
-									<Button variant={newEmailRole === 'staff' ? 'filled' : 'outline'} color='blue' onClick={() => setNewEmailRole('staff')}>
-										Staff
-									</Button>
-									<Button variant={newEmailRole === 'content' ? 'filled' : 'outline'} color='green' onClick={() => setNewEmailRole('content')}>
-										Content
-									</Button>
-									<Button variant={newEmailRole === 'viewer' ? 'filled' : 'outline'} color='gray' onClick={() => setNewEmailRole('viewer')}>
-										Viewer
-									</Button>
-								</Button.Group>
-							</Group>
-						</Box>
-
-						<Group justify='flex-end' mt='xl'>
-							<Button variant='outline' onClick={() => setEmailRoleModalOpen(false)}>
-								Cancel
-							</Button>
-							<Button onClick={addEmailRole} loading={isSaving}>
+					<Tabs.Panel value='email'>
+						<Group justify='space-between' mb='lg'>
+							<Box>
+								<Text size='lg' fw={500}>
+									Email-Based Permissions
+								</Text>
+								<Text size='sm' c='dimmed'>
+									Assign permission levels directly to email addresses. Users will automatically get these permissions when they sign up.
+								</Text>
+							</Box>
+							<Button leftSection={<Plus size={16} />} onClick={() => setEmailRoleModalOpen(true)}>
 								Add Email Role
 							</Button>
 						</Group>
+
+						<Group mb='md'>
+							<TextInput placeholder='Search by email...' value={searchTerm} onChange={(e) => setSearchTerm(e.currentTarget.value)} style={{ flex: 1 }} leftSection={<Search size={16} />} />
+						</Group>
+
+						<Table striped>
+							<Table.Thead>
+								<Table.Tr>
+									<Table.Th>Email</Table.Th>
+									<Table.Th>Role</Table.Th>
+									<Table.Th>Added On</Table.Th>
+									<Table.Th>Actions</Table.Th>
+								</Table.Tr>
+							</Table.Thead>
+							<Table.Tbody>
+								{filteredEmailRoles.length > 0 ? (
+									filteredEmailRoles.map((role) => (
+										<Table.Tr key={role.id}>
+											<Table.Td>{role.email}</Table.Td>
+											<Table.Td>
+												<Badge color={role.role === 'admin' ? 'red' : role.role === 'staff' ? 'blue' : role.role === 'content' ? 'green' : 'gray'}>{role.role.toUpperCase()}</Badge>
+											</Table.Td>
+											<Table.Td>{new Date(role.created_at).toLocaleDateString()}</Table.Td>
+											<Table.Td>
+												<Group>
+													<select value={role.role} onChange={(e) => updateEmailRole(role.id, e.target.value as any)} style={{ padding: '4px', borderRadius: '4px' }}>
+														<option value='admin'>Admin</option>
+														<option value='staff'>Staff</option>
+														<option value='content'>Content</option>
+														<option value='viewer'>Viewer</option>
+													</select>
+													<ActionIcon variant='transparent' color='red' onClick={() => removeEmailRole(role.id)}>
+														<Trash size={18} />
+													</ActionIcon>
+												</Group>
+											</Table.Td>
+										</Table.Tr>
+									))
+								) : (
+									<Table.Tr>
+										<Table.Td colSpan={4} style={{ textAlign: 'center' }}>
+											{searchTerm ? 'No email roles match your search' : 'No email roles found. Add email roles to manage permissions.'}
+										</Table.Td>
+									</Table.Tr>
+								)}
+							</Table.Tbody>
+						</Table>
+					</Tabs.Panel>
+				</Tabs>
+			</Paper>
+
+			<Modal opened={roleModalOpen} onClose={() => setRoleModalOpen(false)} title='Add Discord Role Permission' size='md'>
+				<Box>
+					<TextInput label='Discord Role ID' placeholder='Enter Discord role ID (e.g., 123456789012345678)' value={newRoleId} onChange={(e) => setNewRoleId(e.currentTarget.value)} mb='md' required />
+
+					<TextInput label='Role Name' placeholder='Enter a recognizable name for this role' value={newRoleName} onChange={(e) => setNewRoleName(e.currentTarget.value)} mb='md' required />
+
+					<Box mb='md'>
+						<Text size='sm' mb='xs' fw={500}>
+							Permission Level
+						</Text>
+						<Group>
+							<Button.Group>
+								<Button variant={newRoleLevel === 'admin' ? 'filled' : 'outline'} color='red' onClick={() => setNewRoleLevel('admin')}>
+									Admin
+								</Button>
+								<Button variant={newRoleLevel === 'staff' ? 'filled' : 'outline'} color='blue' onClick={() => setNewRoleLevel('staff')}>
+									Staff
+								</Button>
+								<Button variant={newRoleLevel === 'content' ? 'filled' : 'outline'} color='green' onClick={() => setNewRoleLevel('content')}>
+									Content
+								</Button>
+								<Button variant={newRoleLevel === 'viewer' ? 'filled' : 'outline'} color='gray' onClick={() => setNewRoleLevel('viewer')}>
+									Viewer
+								</Button>
+							</Button.Group>
+						</Group>
 					</Box>
-				</Modal>
-			</Container>
-		</MainLayout>
+
+					<Group justify='flex-end' mt='xl'>
+						<Button variant='outline' onClick={() => setRoleModalOpen(false)}>
+							Cancel
+						</Button>
+						<Button onClick={addRole}>Add Role</Button>
+					</Group>
+				</Box>
+			</Modal>
+
+			<Modal opened={emailRoleModalOpen} onClose={() => setEmailRoleModalOpen(false)} title='Add Email Role Permission' size='md'>
+				<Box>
+					<TextInput label='Email Address' placeholder='Enter email address to assign role' value={newEmail} onChange={(e) => setNewEmail(e.currentTarget.value)} mb='md' required type='email' />
+
+					<Box mb='md'>
+						<Text size='sm' mb='xs' fw={500}>
+							Permission Level
+						</Text>
+						<Group>
+							<Button.Group>
+								<Button variant={newEmailRole === 'admin' ? 'filled' : 'outline'} color='red' onClick={() => setNewEmailRole('admin')}>
+									Admin
+								</Button>
+								<Button variant={newEmailRole === 'staff' ? 'filled' : 'outline'} color='blue' onClick={() => setNewEmailRole('staff')}>
+									Staff
+								</Button>
+								<Button variant={newEmailRole === 'content' ? 'filled' : 'outline'} color='green' onClick={() => setNewEmailRole('content')}>
+									Content
+								</Button>
+								<Button variant={newEmailRole === 'viewer' ? 'filled' : 'outline'} color='gray' onClick={() => setNewEmailRole('viewer')}>
+									Viewer
+								</Button>
+							</Button.Group>
+						</Group>
+					</Box>
+
+					<Group justify='flex-end' mt='xl'>
+						<Button variant='outline' onClick={() => setEmailRoleModalOpen(false)}>
+							Cancel
+						</Button>
+						<Button onClick={addEmailRole} loading={isSaving}>
+							Add Email Role
+						</Button>
+					</Group>
+				</Box>
+			</Modal>
+		</Container>
 	);
 }
