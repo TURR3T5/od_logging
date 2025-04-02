@@ -70,7 +70,7 @@ export default function RulesPage() {
 
 				loadContent();
 			}
-		}, [activeRuleId, ruleContents, rules]);
+		}, [activeRuleId, rules]);
 
 		const getContent = (ruleId: string) => ruleContents[ruleId]?.content || null;
 		const isLoading = (ruleId: string) => ruleContents[ruleId]?.loading || false;
@@ -100,7 +100,7 @@ export default function RulesPage() {
 
 	useEffect(() => {
 		fetchRules();
-	}, [fetchRules]);
+	}, []);
 
 	const togglePinnedRule = async (rule: Rule) => {
 		try {
