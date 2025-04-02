@@ -33,7 +33,6 @@ export default function NewsAndEventsPage() {
 	const viewModal = useModalState<ContentItem>();
 	const createModal = useModalState();
 
-	// Set to calendar view by default when on events tab
 	useEffect(() => {
 		if (activeTab === 'events' && viewMode !== 'calendar') {
 			setViewMode('calendar');

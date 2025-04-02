@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Rule } from '../lib/RuleApiService';
 
 export function useRulesFilter(rules: {
@@ -37,17 +37,12 @@ export function useRulesFilter(rules: {
     });
   }, [searchQuery, rules]);
 
-  const displayRules = useMemo(() => {
-    const displayCommunityRules = activeTab === 'all' || activeTab === 'community';
-    const displayRoleplayRules = activeTab === 'all' || activeTab === 'roleplay';
-
-    return {
-      displayCommunityRules,
-      displayRoleplayRules,
-      community: displayCommunityRules ? filteredRules.community : [],
-      roleplay: displayRoleplayRules ? filteredRules.roleplay : []
-    };
-  }, [activeTab, filteredRules]);
+  const displayRules = {
+    displayCommunityRules: activeTab === 'all' || activeTab === 'community',
+    displayRoleplayRules: activeTab === 'all' || activeTab === 'roleplay',
+    community: (activeTab === 'all' || activeTab === 'community') ? filteredRules.community : [],
+    roleplay: (activeTab === 'all' || activeTab === 'roleplay') ? filteredRules.roleplay : []
+  };
 
   return {
     searchQuery,

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Rule } from '../lib/RuleApiService';
 
 type ContentState = Record<string, { content: string | null; loading: boolean }>;
@@ -35,13 +35,9 @@ export function useRuleContent(activeRuleId: string | null, rules: Rule[]) {
     }
   }, [activeRuleId, ruleContents, rules]);
 
-  const getContent = useMemo(() => {
-    return (ruleId: string) => ruleContents[ruleId]?.content || null;
-  }, [ruleContents]);
-  
-  const isLoading = useMemo(() => {
-    return (ruleId: string) => ruleContents[ruleId]?.loading || false;
-  }, [ruleContents]);
+  const getContent = (ruleId: string) => ruleContents[ruleId]?.content || null;
+
+  const isLoading = (ruleId: string) => ruleContents[ruleId]?.loading || false;
 
   return {
     ruleContents,
