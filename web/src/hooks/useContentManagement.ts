@@ -28,7 +28,7 @@ export function useContentManagement(user: any) {
 
   useEffect(() => {
     fetchItems();
-  }, [fetchItems]);
+  }, []);
 
   const filterItems = (
     itemsList: ContentItem[] = items,

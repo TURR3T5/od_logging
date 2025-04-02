@@ -34,12 +34,12 @@ export default function NewsAndEventsPage() {
 	const createModal = useModalState();
 
 	useEffect(() => {
-		if (activeTab === 'events' && viewMode !== 'calendar') {
+		if (activeTab === 'events') {
 			setViewMode('calendar');
-		} else if (activeTab !== 'events' && viewMode !== 'grid') {
+		} else {
 			setViewMode('grid');
 		}
-	}, [activeTab, viewMode]);
+	}, [activeTab]);
 
 	const handleOpenItemModal = (item: ContentItem) => {
 		viewModal.open(item);

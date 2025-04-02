@@ -2,6 +2,7 @@ import { createRootRoute, createRoute, createRouter } from '@tanstack/react-rout
 import { lazy, Suspense } from 'react';
 import App from '../App';
 import { LoadingState } from '../components/common/LoadingState';
+import { ErrorState } from '../components/common/ErrorState';
 
 const HomePage = lazy(() => import(/* webpackChunkName: "home-page" */ '../pages/Home'));
 const LoginPage = lazy(() => import(/* webpackChunkName: "login-page" */ '../pages/Login'));
@@ -17,6 +18,11 @@ const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => <Suspen
 
 const rootRoute = createRootRoute({
 	component: App,
+	errorComponent: () => (
+		<SuspenseWrapper>
+			<ErrorState />
+		</SuspenseWrapper>
+	),
 });
 
 const homeRoute = createRoute({
