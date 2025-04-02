@@ -67,7 +67,7 @@ export function EventCalendarView({ selectedDate, setSelectedDate, filteredItems
 					date={selectedDate || undefined}
 					onDateChange={setSelectedDate}
 					locale='da'
-					size='xl'
+					size='lg'
 					styles={(theme) => ({
 						calendarHeader: {
 							minWidth: '100%',
@@ -84,7 +84,7 @@ export function EventCalendarView({ selectedDate, setSelectedDate, filteredItems
 			</Grid.Col>
 
 			<Grid.Col span={{ base: 12, md: 7 }}>
-				<Paper withBorder p='md' radius='md' h='100%'>
+				<Paper withBorder p='md' radius='md' h='98%'>
 					<Group justify='space-between' mb='md'>
 						<Title order={3}>{selectedDate ? <>Events {format(selectedDate, 'd. MMMM yyyy')}</> : <>Vælg en dato</>}</Title>
 					</Group>
