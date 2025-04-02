@@ -51,7 +51,29 @@ export default function HomePage() {
 	const [formattedPinnedItems, setFormattedPinnedItems] = useState<PinnedItem[]>([]);
 	const [formattedNewsItems, setFormattedNewsItems] = useState<NewsItem[]>([]);
 
-	const featuredPlayers: FeaturedPlayer[] = [];
+	const featuredPlayers: FeaturedPlayer[] = [
+		{
+			id: 1,
+			name: 'Peter Mongo',
+			avatarUrl: 'https://via.placeholder.com/150',
+			role: 'Landbetjent',
+			description: 'En dedikeret betjent med fokus på fællesskab.',
+		},
+		{
+			id: 2,
+			name: 'John Mongo',
+			avatarUrl: 'https://via.placeholder.com/150',
+			role: 'Landbetjent',
+			description: 'En erfaren betjent med mange års erfaring.',
+		},
+		{
+			id: 3,
+			name: 'David Mongo',
+			avatarUrl: 'https://via.placeholder.com/150',
+			role: 'Landbetjent',
+			description: 'En betroet betjent med fokus på retfærdighed.',
+		},
+	];
 
 	useEffect(() => {
 		setIsLoaded(true);
@@ -424,7 +446,7 @@ export default function HomePage() {
 									<Title order={3}>
 										<Group gap='xs'>
 											<Star size={24} />
-											Fremhævede Spillere
+											Savlerlisten
 										</Group>
 									</Title>
 								</Group>
@@ -435,10 +457,14 @@ export default function HomePage() {
 											<Group>
 												<Avatar src={player.avatarUrl} size='lg' radius='md' />
 												<Box>
-													<Text fw={600}>{player.name}</Text>
-													<Badge size='sm' variant='light' color='indigo'>
-														{player.role}
-													</Badge>
+													<Group>
+														{' '}
+														<Text fw={600}>{player.name}</Text>
+														<Badge size='sm' variant='light' color='indigo'>
+															{player.role}
+														</Badge>
+													</Group>
+
 													<Text size='xs' c='dimmed' mt={4}>
 														{player.description}
 													</Text>
