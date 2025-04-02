@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 
 export interface SearchFilters {
   playerSearch: string;
@@ -13,9 +13,9 @@ export function useLogsSearch() {
     dateRange: null,
   });
 
-  const handleSearch = useCallback((newFilters: SearchFilters) => {
+  const handleSearch = (newFilters: SearchFilters) => {
     setSearchFilters(newFilters);
-  }, []);
+  };
 
   return {
     searchFilters,

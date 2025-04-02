@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { ContentItem, NewsEventsService } from '../lib/NewsEventsService';
 import { notifications } from '@mantine/notifications';
 
@@ -8,7 +8,7 @@ export function useContentManagement(user: any) {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
   
-  const fetchItems = useCallback(async () => {
+  const fetchItems = async () => {
     setIsLoading(true);
     try {
       const allItems = await NewsEventsService.getAllContent();
@@ -24,13 +24,13 @@ export function useContentManagement(user: any) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
     fetchItems();
   }, [fetchItems]);
 
-  const filterItems = useCallback((
+  const filterItems = (
     itemsList: ContentItem[] = items,
     filters: {
       contentType?: 'news' | 'event' | 'all';
@@ -91,9 +91,9 @@ export function useContentManagement(user: any) {
     });
 
     return filtered;
-  }, [items]);
+  };
 
-  const createItem = useCallback(async (
+  const createItem = async (
     contentData: Omit<ContentItem, 'id' | 'created_at'>
   ): Promise<boolean> => {
     try {
@@ -104,9 +104,9 @@ export function useContentManagement(user: any) {
       console.error('Error creating content:', error);
       return false;
     }
-  }, [fetchItems, user]);
+  };
 
-  const updateItem = useCallback(async (
+  const updateItem = async (
     id: string, 
     updates: Partial<ContentItem>
   ): Promise<boolean> => {
@@ -131,9 +131,9 @@ export function useContentManagement(user: any) {
       console.error('Error updating item:', error);
       return false;
     }
-  }, [items, selectedItem, user]);
+  };
 
-  const deleteItem = useCallback(async (id: string): Promise<boolean> => {
+  const deleteItem = async (id: string): Promise<boolean> => {
     try {
       const success = await NewsEventsService.deleteContent(id, user);
       
@@ -152,7 +152,7 @@ export function useContentManagement(user: any) {
       console.error('Error deleting content:', error);
       return false;
     }
-  }, [items, selectedItem, user]);
+  };
 
   return {
     items,

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useRouter } from '@tanstack/react-router';
 import { Container, Title, Text, Paper, Group, Box, Menu, Button, Tooltip } from '@mantine/core';
@@ -75,7 +75,7 @@ export default function LogsPage() {
 
 	const LOGS_PER_PAGE = 8;
 
-	const getQueryFilters = useCallback(() => {
+	const getQueryFilters = () => {
 		const params = new URLSearchParams(window.location.search);
 		return {
 			category: params.get('category') || '',
@@ -84,12 +84,12 @@ export default function LogsPage() {
 			serverId: params.get('serverId') || '',
 			discordId: params.get('discordId') || '',
 		};
-	}, []);
+	};
 
 	const filters = getQueryFilters();
 	const pageTitle = filters.type ? `${filters.type.charAt(0).toUpperCase() + filters.type.slice(1)} Logs` : 'Server Logs';
 
-	const fetchLogs = useCallback(async () => {
+	const fetchLogs = async () => {
 		setLoading(true);
 
 		try {
@@ -123,12 +123,12 @@ export default function LogsPage() {
 		} finally {
 			setLoading(false);
 		}
-	}, [page, LOGS_PER_PAGE, getQueryFilters, searchFilters]);
+	};
 
-	const handleUrlChange = useCallback(() => {
+	const handleUrlChange = () => {
 		setPage(1);
 		fetchLogs();
-	}, [fetchLogs]);
+	};
 
 	useEffect(() => {
 		fetchLogs();

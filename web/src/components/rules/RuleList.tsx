@@ -1,4 +1,4 @@
-import { memo, useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, Text, Loader, Center, Stack } from '@mantine/core';
 import { Rule } from '../../lib/RuleApiService';
 import { useInView } from 'react-intersection-observer';
@@ -18,7 +18,7 @@ interface RuleListProps {
 	isAuthorized: boolean;
 }
 
-const RuleList = memo(({ rules, activeRuleId, isLoading, onRuleExpanded, onEditRule, onPinRule, onViewHistory, onBadgeClick, isAuthorized }: RuleListProps) => {
+const RuleList = ({ rules, activeRuleId, isLoading, onRuleExpanded, onEditRule, onPinRule, onViewHistory, onBadgeClick, isAuthorized }: RuleListProps) => {
 	const [visibleRules, setVisibleRules] = useState<Rule[]>([]);
 	const [ruleContents, setRuleContents] = useState<Record<string, { content: string | null; loading: boolean }>>({});
 	const pageSize = 15;
@@ -86,12 +86,9 @@ const RuleList = memo(({ rules, activeRuleId, isLoading, onRuleExpanded, onEditR
 		}
 	}, [activeRuleId, ruleContents, rules]);
 
-	const handleSelectRule = useCallback(
-		(ruleId: string) => {
-			onRuleExpanded(activeRuleId === ruleId ? null : ruleId);
-		},
-		[activeRuleId, onRuleExpanded]
-	);
+	const handleSelectRule = (ruleId: string) => {
+		onRuleExpanded(activeRuleId === ruleId ? null : ruleId);
+	};
 
 	if (isLoading) {
 		return (
@@ -126,6 +123,6 @@ const RuleList = memo(({ rules, activeRuleId, isLoading, onRuleExpanded, onEditR
 			</Stack>
 		</Box>
 	);
-});
+};
 
 export default RuleList;

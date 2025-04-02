@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, lazy, Suspense, useRef } from 'react';
+import { useState, useEffect, lazy, Suspense, useRef } from 'react';
 import { Container, Title, Box, Paper, Badge, Divider } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -85,7 +85,7 @@ export default function RulesPage() {
 		setSearchQuery(debouncedSearchValue);
 	}, [debouncedSearchValue, setSearchQuery]);
 
-	const fetchRules = useCallback(async () => {
+	const fetchRules = async () => {
 		setIsLoading(true);
 		try {
 			const data = await RuleApiService.getRulesList();
@@ -96,84 +96,75 @@ export default function RulesPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	}, []);
+	};
 
 	useEffect(() => {
 		fetchRules();
 	}, [fetchRules]);
 
-	const togglePinnedRule = useCallback(
-		async (rule: Rule) => {
-			try {
-				await RuleApiService.updateRule(
-					rule.id,
-					{
-						is_pinned: !rule.is_pinned,
-						updated_by: user?.username || 'Unknown',
-					},
-					`Regel blev ${rule.is_pinned ? 'fjernet fra' : 'tilføjet til'} hurtig oversigt af ${user?.username || 'Unknown'}`
-				);
+	const togglePinnedRule = async (rule: Rule) => {
+		try {
+			await RuleApiService.updateRule(
+				rule.id,
+				{
+					is_pinned: !rule.is_pinned,
+					updated_by: user?.username || 'Unknown',
+				},
+				`Regel blev ${rule.is_pinned ? 'fjernet fra' : 'tilføjet til'} hurtig oversigt af ${user?.username || 'Unknown'}`
+			);
 
-				fetchRules();
+			fetchRules();
 
-				notifications.show({
-					title: rule.is_pinned ? 'Regel fjernet fra hurtig oversigt' : 'Regel tilføjet til hurtig oversigt',
-					message: rule.is_pinned ? 'Reglen vises ikke længere i det hurtige overblik' : 'Reglen vises nu i det hurtige overblik',
-					color: 'blue',
-				});
-			} catch (error) {
-				console.error('Error toggling pin status:', error);
-				notifications.show({
-					title: 'Fejl',
-					message: 'Der opstod en fejl ved ændring af pin-status',
-					color: 'red',
-				});
+			notifications.show({
+				title: rule.is_pinned ? 'Regel fjernet fra hurtig oversigt' : 'Regel tilføjet til hurtig oversigt',
+				message: rule.is_pinned ? 'Reglen vises ikke længere i det hurtige overblik' : 'Reglen vises nu i det hurtige overblik',
+				color: 'blue',
+			});
+		} catch (error) {
+			console.error('Error toggling pin status:', error);
+			notifications.show({
+				title: 'Fejl',
+				message: 'Der opstod en fejl ved ændring af pin-status',
+				color: 'red',
+			});
+		}
+	};
+
+	const scrollToRule = (ruleId: string) => {
+		const allRules = [...rules.community, ...rules.roleplay];
+		const rule = allRules.find((r) => r.id === ruleId);
+
+		if (rule) {
+			setActiveTab(rule.category === 'community' ? 'community' : 'roleplay');
+
+			if (rule.category === 'community') {
+				setActiveCommunityRule((prevId) => (prevId === ruleId ? null : ruleId));
+			} else {
+				setActiveRoleplayRule((prevId) => (prevId === ruleId ? null : ruleId));
 			}
-		},
-		[user?.username, fetchRules]
-	);
 
-	const scrollToRule = useCallback(
-		(ruleId: string) => {
-			const allRules = [...rules.community, ...rules.roleplay];
-			const rule = allRules.find((r) => r.id === ruleId);
+			setTimeout(() => {
+				const element = document.getElementById(`rule-${ruleId}`);
+				if (element) {
+					element.scrollIntoView({
+						behavior: 'smooth',
+						block: 'center',
+					});
 
-			if (rule) {
-				setActiveTab(rule.category === 'community' ? 'community' : 'roleplay');
-
-				if (rule.category === 'community') {
-					setActiveCommunityRule((prevId) => (prevId === ruleId ? null : ruleId));
-				} else {
-					setActiveRoleplayRule((prevId) => (prevId === ruleId ? null : ruleId));
+					element.classList.add('highlight-rule');
+					setTimeout(() => {
+						element.classList.remove('highlight-rule');
+					}, 2000);
 				}
+			}, 50);
+		}
+	};
 
-				setTimeout(() => {
-					const element = document.getElementById(`rule-${ruleId}`);
-					if (element) {
-						element.scrollIntoView({
-							behavior: 'smooth',
-							block: 'center',
-						});
+	const openEditModal = (rule: Rule) => {
+		editModal.open(rule);
+	};
 
-						element.classList.add('highlight-rule');
-						setTimeout(() => {
-							element.classList.remove('highlight-rule');
-						}, 2000);
-					}
-				}, 50);
-			}
-		},
-		[rules.community, rules.roleplay, setActiveTab]
-	);
-
-	const openEditModal = useCallback(
-		(rule: Rule) => {
-			editModal.open(rule);
-		},
-		[editModal]
-	);
-
-	const exportRules = useCallback(() => {
+	const exportRules = () => {
 		const data = {
 			community: rules.community,
 			roleplay: rules.roleplay,
@@ -196,14 +187,11 @@ export default function RulesPage() {
 			message: 'Reglerne er blevet eksporteret til en JSON-fil',
 			color: 'blue',
 		});
-	}, [rules.community, rules.roleplay]);
+	};
 
-	const openHistoryModal = useCallback(
-		(ruleId: string) => {
-			historyModal.open(ruleId);
-		},
-		[historyModal]
-	);
+	const openHistoryModal = (ruleId: string) => {
+		historyModal.open(ruleId);
+	};
 
 	return (
 		<MainLayout requireAuth={false}>

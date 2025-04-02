@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, ScrollArea, Text, Collapse, Group } from '@mantine/core';
 import { ChevronRight } from 'lucide-react';
 import { useNavigate, useRouter } from '@tanstack/react-router';
@@ -225,13 +225,13 @@ const useActiveState = () => {
 function SidebarSection({ sectionIndex, item, expanded, toggle, hasActiveChild, onNavigate }: { sectionIndex: number; item: SidebarItem; expanded: boolean; toggle: () => void; hasActiveChild: boolean; onNavigate: (path: string) => void }) {
 	const hasChildren = !!item.children && item.children.length > 0;
 
-	const handleClick = useCallback(() => {
+	const handleClick = () => {
 		if (hasChildren) {
 			toggle();
 		} else if (item.path) {
 			onNavigate(item.path);
 		}
-	}, [hasChildren, item.path, onNavigate, toggle]);
+	};
 
 	return (
 		<>
@@ -294,11 +294,11 @@ function SubItem({ item, sectionIndex, itemIndex, onNavigate }: { item: SidebarI
 	const { activeSectionIndex, activeItemIndex } = useActiveState();
 	const isActive = sectionIndex === activeSectionIndex && itemIndex === activeItemIndex;
 
-	const handleClick = useCallback(() => {
+	const handleClick = () => {
 		if (item.path) {
 			onNavigate(item.path);
 		}
-	}, [item.path, onNavigate]);
+	};
 
 	return (
 		<Box
@@ -331,26 +331,23 @@ export default function Sidebar() {
 	const navigate = useNavigate();
 	const [isNavigating, setIsNavigating] = useState(false);
 
-	const toggleSection = useCallback((label: string) => {
+	const toggleSection = (label: string) => {
 		setExpandedSections((prev) => ({
 			...prev,
 			[label]: !prev[label],
 		}));
-	}, []);
+	};
 
-	const handleNavigate = useCallback(
-		(path: string) => {
-			if (isNavigating) return;
+	const handleNavigate = (path: string) => {
+		if (isNavigating) return;
 
-			setIsNavigating(true);
+		setIsNavigating(true);
 
-			setTimeout(() => {
-				navigate({ to: path });
-				setIsNavigating(false);
-			}, 50);
-		},
-		[isNavigating, navigate]
-	);
+		setTimeout(() => {
+			navigate({ to: path });
+			setIsNavigating(false);
+		}, 50);
+	};
 
 	useEffect(() => {
 		if (activeCategory && activeSectionIndex !== -1) {

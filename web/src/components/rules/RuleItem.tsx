@@ -1,4 +1,4 @@
-import { memo, useCallback, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, Text, Group, Badge, Paper, ActionIcon, Tooltip, Loader, Collapse } from '@mantine/core';
 import { Pencil, Pin, Clock } from 'lucide-react';
 import { Rule } from '../../lib/RuleApiService';
@@ -38,44 +38,32 @@ function useRuleContent(rule: Rule, isActive: boolean) {
 	return { content, isLoading };
 }
 
-const RuleItem = memo(function RuleItem({ rule, isActive, onSelect, onEdit, onPin, onHistory, onBadgeClick, isAuthorized }: RuleItemProps) {
+function RuleItem({ rule, isActive, onSelect, onEdit, onPin, onHistory, onBadgeClick, isAuthorized }: RuleItemProps) {
 	const { content, isLoading } = useRuleContent(rule, isActive);
 
-	const handleClick = useCallback(() => {
+	const handleClick = () => {
 		onSelect(rule.id);
-	}, [rule.id, onSelect]);
+	};
 
-	const handleEditClick = useCallback(
-		(e: React.MouseEvent) => {
-			e.stopPropagation();
-			onEdit(rule);
-		},
-		[rule, onEdit]
-	);
+	const handleEditClick = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		onEdit(rule);
+	};
 
-	const handlePinClick = useCallback(
-		(e: React.MouseEvent) => {
-			e.stopPropagation();
-			onPin(rule);
-		},
-		[rule, onPin]
-	);
+	const handlePinClick = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		onPin(rule);
+	};
 
-	const handleHistoryClick = useCallback(
-		(e: React.MouseEvent) => {
-			e.stopPropagation();
-			onHistory(rule.id);
-		},
-		[rule.id, onHistory]
-	);
+	const handleHistoryClick = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		onHistory(rule.id);
+	};
 
-	const handleBadgeClick = useCallback(
-		(e: React.MouseEvent) => {
-			e.stopPropagation();
-			onBadgeClick(rule.id);
-		},
-		[rule.id, onBadgeClick]
-	);
+	const handleBadgeClick = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		onBadgeClick(rule.id);
+	};
 
 	return (
 		<Box mb='md'>
@@ -145,7 +133,7 @@ const RuleItem = memo(function RuleItem({ rule, isActive, onSelect, onEdit, onPi
 								</Tooltip>
 								<Tooltip label='Vis historie'>
 									<ActionIcon variant='light' size='sm' color='gray' onClick={handleHistoryClick}>
-										<Clock size={14	} />
+										<Clock size={14} />
 									</ActionIcon>
 								</Tooltip>
 							</Group>
@@ -178,6 +166,6 @@ const RuleItem = memo(function RuleItem({ rule, isActive, onSelect, onEdit, onPi
 			</Paper>
 		</Box>
 	);
-});
+}
 
 export default RuleItem;

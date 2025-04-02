@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { SortingState, ColumnFiltersState, PaginationState } from '@tanstack/react-table';
 interface UseDataTableOptions {
   initialSorting?: SortingState;
@@ -20,37 +20,37 @@ export function useDataTable<_T>({
   });
     const [rowSelection, setRowSelection] = useState({});
     const [isLoading, setIsLoading] = useState(false);
-    const setPage = useCallback((page: number) => {
+    const setPage = (page: number) => {
     setPagination(prev => ({ ...prev, pageIndex: page }));
-  }, []);
-    const setPageSize = useCallback((size: number) => {
+    };
+    const setPageSize = (size: number) => {
     setPagination(prev => ({ ...prev, pageSize: size }));
-  }, []);
-    const resetFiltersAndSorting = useCallback(() => {
+    };
+    const resetFiltersAndSorting = () => {
     setColumnFilters([]);
     setGlobalFilter('');
     setSorting(initialSorting);
-  }, [initialSorting]);
-    const applyFilter = useCallback((columnId: string, value: any) => {
+    };
+    const applyFilter = (columnId: string, value: any) => {
     setColumnFilters(prev => {
       const existingFilterIndex = prev.findIndex(filter => filter.id === columnId);
-            if (value === '' || value === null || value === undefined) {
-        if (existingFilterIndex === -1) return prev;
-        return prev.filter((_, i) => i !== existingFilterIndex);
+        if (value === '' || value === null || value === undefined) {
+      if (existingFilterIndex === -1) return prev;
+      return prev.filter((_, i) => i !== existingFilterIndex);
       }
-            if (existingFilterIndex !== -1) {
-        return prev.map((filter, i) => 
-          i === existingFilterIndex 
-            ? { ...filter, value } 
-            : filter
-        );
+        if (existingFilterIndex !== -1) {
+      return prev.map((filter, i) => 
+        i === existingFilterIndex 
+        ? { ...filter, value } 
+        : filter
+      );
       }
-            return [...prev, { id: columnId, value }];
+        return [...prev, { id: columnId, value }];
     });
-        setPage(0);
-  }, [setPage]);
-  return {
-        sorting,
+      setPage(0);
+    };
+    return {
+      sorting,
     setSorting,
     columnFilters,
     setColumnFilters,
@@ -62,9 +62,9 @@ export function useDataTable<_T>({
     setRowSelection,
     isLoading,
     setIsLoading,
-        setPage,
+      setPage,
     setPageSize,
     resetFiltersAndSorting,
     applyFilter
-  };
+    };
 }

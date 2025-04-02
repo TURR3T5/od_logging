@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 
 export interface ModalState<T = any> {
   isOpen: boolean;
@@ -8,17 +8,17 @@ export interface ModalState<T = any> {
 export function useModalState<T = any>(initialState: ModalState<T> = { isOpen: false, data: null }) {
   const [state, setState] = useState<ModalState<T>>(initialState);
 
-  const open = useCallback((data: T | null = null) => {
+  const open = (data: T | null = null) => {
     setState({ isOpen: true, data });
-  }, []);
+  };
 
-  const close = useCallback(() => {
+  const close = () => {
     setState(prev => ({ ...prev, isOpen: false }));
-  }, []);
+  };
 
-  const setData = useCallback((data: T | null) => {
+  const setData = (data: T | null) => {
     setState(prev => ({ ...prev, data }));
-  }, []);
+  };
 
   return {
     isOpen: state.isOpen,
