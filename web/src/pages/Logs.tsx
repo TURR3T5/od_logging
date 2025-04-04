@@ -15,7 +15,7 @@ export interface Log {
 	event: string;
 	category?: string;
 	type?: string;
-	txname?: string | null;
+	txname?: string | null;	
 	charname?: string | null;
 	discord?: string | null;
 	details: any;

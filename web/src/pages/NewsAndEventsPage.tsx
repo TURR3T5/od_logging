@@ -22,7 +22,7 @@ const CreateContentModal = lazy(() => import('../components/modals/CreateContent
 const ViewContentModal = lazy(() => import('../components/modals/ViewContentModal'));
 
 export default function NewsAndEventsPage() {
-	const [activeTab, setActiveTab] = useState<string | null>('news');
+	const [activeTab, setActiveTab] = useState<string | null>('all');
 	const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
 	const [viewMode, setViewMode] = useState<'calendar' | 'grid'>('grid');
 	const [showPinnedOnly, setShowPinnedOnly] = useState(false);
@@ -107,26 +107,24 @@ export default function NewsAndEventsPage() {
 
 	const getTypeDetails = (item: ContentItem) => {
 		if (item.type === 'news') {
-			switch (item.news_type) {
-				case 'update':
-					return { color: 'blue', label: 'Opdatering', icon: <Bell size={16} /> };
-				case 'announcement':
-					return { color: 'orange', label: 'Meddelelse', icon: <Megaphone size={16} /> };
-				case 'changelog':
-					return { color: 'green', label: 'Changelog', icon: <FileText size={16} /> };
-				default:
-					return { color: 'gray', label: 'Nyhed', icon: <Bell size={16} /> };
+			if (item.news_type === 'update') {
+				return { color: 'blue', label: 'Opdatering', icon: <Bell size={16} /> };
+			} else if (item.news_type === 'announcement') {
+				return { color: 'orange', label: 'Meddelelse', icon: <Megaphone size={16} /> };
+			} else if (item.news_type === 'changelog') {
+				return { color: 'green', label: 'Changelog', icon: <FileText size={16} /> };
+			} else {
+				return { color: 'gray', label: 'Nyhed', icon: <Bell size={16} /> };
 			}
 		} else {
-			switch (item.event_type) {
-				case 'official':
-					return { color: 'blue', label: 'Officiel', icon: <CalendarCheck size={16} /> };
-				case 'community':
-					return { color: 'green', label: 'Fællesskab', icon: <CalendarCheck size={16} /> };
-				case 'special':
-					return { color: 'purple', label: 'Special', icon: <Star size={16} /> };
-				default:
-					return { color: 'gray', label: 'Event', icon: <CalendarIcon size={16} /> };
+			if (item.event_type === 'official') {
+				return { color: 'blue', label: 'Officiel', icon: <CalendarCheck size={16} /> };
+			} else if (item.event_type === 'community') {
+				return { color: 'green', label: 'Fællesskab', icon: <CalendarCheck size={16} /> };
+			} else if (item.event_type === 'special') {
+				return { color: 'purple', label: 'Special', icon: <Star size={16} /> };
+			} else {
+				return { color: 'gray', label: 'Event', icon: <CalendarIcon size={16} /> };
 			}
 		}
 	};

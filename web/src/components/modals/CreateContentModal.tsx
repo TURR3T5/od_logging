@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Box, Button, Group, TextInput, Textarea, Modal, SegmentedControl, Tabs, Text, Checkbox } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { DatePickerInput } from '@mantine/dates';
+import { DateTimePicker } from '@mantine/dates';
 import { FileText, Calendar } from 'lucide-react';
 import { ContentItem } from '../../lib/NewsEventsService';
 
@@ -69,6 +69,8 @@ export function CreateContentModal({ opened, onClose, onCreate }: CreateContentM
 				type: createType,
 			} as Omit<ContentItem, 'id' | 'created_at'>);
 
+			console.log('Create content response:', newItem, success);
+
 			if (success) {
 				notifications.show({
 					title: 'Indhold oprettet',
@@ -129,7 +131,7 @@ export function CreateContentModal({ opened, onClose, onCreate }: CreateContentM
 
 				{createType === 'event' && (
 					<>
-						<DatePickerInput label='Dato og tidspunkt' placeholder='Vælg dato og tidspunkt' valueFormat='DD MMM YYYY HH:mm' mb='md' required value={newItem.event_date instanceof Date ? newItem.event_date : null} onChange={(date) => updateNewItem('event_date', date)} locale='da' clearable={false} />
+						<DateTimePicker label='Dato og tidspunkt' placeholder='Vælg dato og tidspunkt' valueFormat='DD MMM YYYY HH:mm' mb='md' required value={newItem.event_date instanceof Date ? newItem.event_date : null} onChange={(date) => updateNewItem('event_date', date)} clearable={false} />
 
 						<Box mb='md'>
 							<Text fw={500} size='sm' mb='xs'>

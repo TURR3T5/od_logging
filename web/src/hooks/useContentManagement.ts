@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ContentItem, NewsEventsService } from '../lib/NewsEventsService';
 import { notifications } from '@mantine/notifications';
+
 function isSameDay(date1: Date, date2: Date): boolean {
   return (
     date1.getFullYear() === date2.getFullYear() &&
@@ -8,15 +9,28 @@ function isSameDay(date1: Date, date2: Date): boolean {
     date1.getDate() === date2.getDate()
   );
 }
+
+function normalizeContentItem(item: ContentItem): ContentItem {
+  return {
+    ...item,
+    news_type: item.type === 'news' ? (item.news_type || 'announcement') : undefined,
+    event_type: item.type === 'event' ? (item.event_type || 'community') : undefined,
+  };
+}
+
 export function useContentManagement(user: any) {
   const [items, setItems] = useState<ContentItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
+
   const fetchItems = async () => {
     setIsLoading(true);
     try {
       const allItems = await NewsEventsService.getAllContent();
-      setItems(allItems);
+
+      const normalizedItems = allItems.map(normalizeContentItem);
+
+      setItems(normalizedItems);
     } catch (error) {
       notifications.show({
         title: 'Error fetching content',
@@ -27,6 +41,7 @@ export function useContentManagement(user: any) {
       setIsLoading(false);
     }
   };
+
   const filterItems = (
     itemsList: ContentItem[] = items,
     filters: {
@@ -39,14 +54,17 @@ export function useContentManagement(user: any) {
   ) => {
     const { contentType = 'all', showPinnedOnly = false, selectedDate = null, viewMode = 'list', searchTerm = '' } = filters;
     let filtered = [...itemsList];
+
     if (contentType === 'news') {
       filtered = filtered.filter((item) => item.type === 'news');
     } else if (contentType === 'event') {
       filtered = filtered.filter((item) => item.type === 'event');
     }
+
     if (showPinnedOnly) {
       filtered = filtered.filter((item) => item.is_pinned);
     }
+
     if (contentType === 'event' && selectedDate && viewMode === 'calendar') {
       filtered = filtered.filter((item) => {
         if (item.type === 'event' && item.event_date) {
@@ -58,6 +76,7 @@ export function useContentManagement(user: any) {
         return false;
       });
     }
+
     if (searchTerm) {
       const lowerSearch = searchTerm.toLowerCase();
       filtered = filtered.filter(item => 
@@ -65,6 +84,7 @@ export function useContentManagement(user: any) {
         item.description.toLowerCase().includes(lowerSearch)
       );
     }
+
     filtered = filtered.sort((a, b) => {
       const dateA = a.type === 'event' && a.event_date 
         ? (typeof a.event_date === 'string' ? new Date(a.event_date) : a.event_date) 
@@ -76,13 +96,22 @@ export function useContentManagement(user: any) {
       if (!dateB) return -1;
       return dateB.getTime() - dateA.getTime();
     });
+
     return filtered;
   };
+
   const createItem = async (
     contentData: Omit<ContentItem, 'id' | 'created_at'>
   ): Promise<boolean> => {
     try {
-      const id = await NewsEventsService.createContent(contentData, user);
+
+      const normalizedData = {
+        ...contentData,
+        news_type: contentData.type === 'news' ? (contentData.news_type || 'announcement') : undefined,
+        event_type: contentData.type === 'event' ? (contentData.event_type || 'community') : undefined,
+      };
+
+      const id = await NewsEventsService.createContent(normalizedData, user);
       if (id) {
         await fetchItems();
         return true;
@@ -93,20 +122,38 @@ export function useContentManagement(user: any) {
       return false;
     }
   };
+
   const updateItem = async (
     id: string, 
     updates: Partial<ContentItem>
   ): Promise<boolean> => {
     try {
-      const success = await NewsEventsService.updateContent(id, updates, user);
+
+      const currentItem = items.find(item => item.id === id);
+      if (!currentItem) {
+        console.error('Item not found for update:', id);
+        return false;
+      }
+
+      let updatesToApply = {...updates};
+
+      if (currentItem.type === 'news' && !updatesToApply.news_type) {
+        updatesToApply.news_type = currentItem.news_type || 'announcement';
+      }
+
+      if (currentItem.type === 'event' && !updatesToApply.event_type) {
+        updatesToApply.event_type = currentItem.event_type || 'community';
+      }
+
+      const success = await NewsEventsService.updateContent(id, updatesToApply, user);
       if (success) {
         setItems(prevItems => 
           prevItems.map(item => 
-            item.id === id ? { ...item, ...updates } : item
+            item.id === id ? { ...item, ...updatesToApply } : item
           )
         );
         if (selectedItem?.id === id) {
-          setSelectedItem({ ...selectedItem, ...updates });
+          setSelectedItem({ ...selectedItem, ...updatesToApply });
         }
         await fetchItems();
         return true;
@@ -117,6 +164,7 @@ export function useContentManagement(user: any) {
       return false;
     }
   };
+
   const deleteItem = async (id: string): Promise<boolean> => {
     try {
       const success = await NewsEventsService.deleteContent(id, user);
@@ -135,6 +183,7 @@ export function useContentManagement(user: any) {
       return false;
     }
   };
+
   return {
     items,
     isLoading,

@@ -15,30 +15,63 @@ interface ContentCardProps {
 
 export function ContentCard({ item, onView, onPin, onEdit, onDelete, isAuthorized = false }: ContentCardProps) {
 	const getTypeDetails = (contentItem: ContentItem) => {
+		console.log('Content item debug:', {
+			id: contentItem.id,
+			title: contentItem.title,
+			type: contentItem.type,
+			event_type: contentItem.event_type,
+			news_type: contentItem.news_type,
+		});
+
+		let color = 'gray';
+		let label = 'Item';
+		let icon = <FileText size={16} />;
+
 		if (contentItem.type === 'news') {
-			switch (contentItem.news_type) {
-				case 'update':
-					return { color: 'blue', label: 'Opdatering', icon: <Bell size={16} /> };
-				case 'announcement':
-					return { color: 'orange', label: 'Meddelelse', icon: <Megaphone size={16} /> };
-				case 'changelog':
-					return { color: 'green', label: 'Changelog', icon: <FileText size={16} /> };
-				default:
-					return { color: 'gray', label: 'Nyhed', icon: <Bell size={16} /> };
+			color = 'gray';
+			label = 'Nyhed';
+			icon = <Bell size={16} />;
+
+			if (contentItem.news_type) {
+				if (contentItem.news_type === 'update') {
+					color = 'blue';
+					label = 'Opdatering';
+					icon = <Bell size={16} />;
+				} else if (contentItem.news_type === 'announcement') {
+					color = 'orange';
+					label = 'Meddelelse';
+					icon = <Megaphone size={16} />;
+				} else if (contentItem.news_type === 'changelog') {
+					color = 'green';
+					label = 'Changelog';
+					icon = <FileText size={16} />;
+				}
 			}
-		} else {
-			switch (contentItem.event_type) {
-				case 'official':
-					return { color: 'blue', label: 'Officiel', icon: <CalendarCheck size={16} /> };
-				case 'community':
-					return { color: 'green', label: 'Fællesskab', icon: <CalendarCheck size={16} /> };
-				case 'special':
-					return { color: 'purple', label: 'Special', icon: <Star size={16} /> };
-				default:
-					return { color: 'gray', label: 'Event', icon: <CalendarCheck size={16} /> };
+		} else if (contentItem.type === 'event') {
+			color = 'gray';
+			label = 'Event';
+			icon = <CalendarCheck size={16} />;
+
+			if (contentItem.event_type) {
+				if (contentItem.event_type === 'official') {
+					color = 'blue';
+					label = 'Officiel';
+					icon = <CalendarCheck size={16} />;
+				} else if (contentItem.event_type === 'community') {
+					color = 'green';
+					label = 'Fællesskab';
+					icon = <CalendarCheck size={16} />;
+				} else if (contentItem.event_type === 'special') {
+					color = 'purple';
+					label = 'Special';
+					icon = <Star size={16} />;
+				}
 			}
 		}
+
+		return { color, label, icon };
 	};
+
 	const typeDetails = getTypeDetails(item);
 
 	return (

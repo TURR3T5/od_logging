@@ -36,9 +36,17 @@ export function EditContentModal({ item, opened, onClose, onUpdate }: EditConten
 
 			if (item.type === 'event') {
 				if (item.event_type) setEventType(item.event_type);
-				if (item.event_date) setEventDate(new Date(item.event_date));
-				if (item.location) setLocation(item.location || '');
-				if (item.address) setAddress(item.address || '');
+
+				if (item.event_date) {
+					if (typeof item.event_date === 'string') {
+						setEventDate(new Date(item.event_date));
+					} else {
+						setEventDate(item.event_date);
+					}
+				}
+
+				setLocation(item.location || '');
+				setAddress(item.address || '');
 			}
 		}
 	}, [item, opened]);
@@ -49,6 +57,15 @@ export function EditContentModal({ item, opened, onClose, onUpdate }: EditConten
 			notifications.show({
 				title: 'Manglende information',
 				message: 'Udfyld venligst alle påkrævede felter',
+				color: 'red',
+			});
+			return;
+		}
+
+		if (item.type === 'event' && !eventDate) {
+			notifications.show({
+				title: 'Manglende dato',
+				message: 'Du skal angive en dato for denne begivenhed',
 				color: 'red',
 			});
 			return;
@@ -129,7 +146,7 @@ export function EditContentModal({ item, opened, onClose, onUpdate }: EditConten
 
 			{item.type === 'event' && (
 				<>
-					<DateTimePicker label='Dato og tidspunkt' placeholder='Vælg dato og tidspunkt' valueFormat='DD MMM YYYY HH:mm' value={eventDate} onChange={setEventDate} locale='da' mb='md' clearable />
+					<DateTimePicker label='Dato og tidspunkt' placeholder='Vælg dato og tidspunkt' valueFormat='DD MMM YYYY HH:mm' value={eventDate} onChange={setEventDate} locale='da' mb='md' required clearable={false} />
 
 					<Box mb='md'>
 						<Text size='sm' fw={500} mb='xs'>

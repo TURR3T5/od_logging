@@ -1,5 +1,5 @@
 import { Box, Group, Text, Badge, Modal, Button, Divider, ActionIcon } from '@mantine/core';
-import { CalendarCheck, Calendar, Pin, Pencil, Trash } from 'lucide-react';
+import { CalendarCheck, Calendar, Pin, Pencil, Trash, Star, Bell, Megaphone, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { ContentItem } from '../../lib/NewsEventsService';
 
@@ -17,27 +17,27 @@ export function ViewContentModal({ opened, onClose, item, isAuthorized, onPin, o
 	if (!item) return null;
 
 	const getTypeDetails = (contentItem: ContentItem) => {
+		console.log('Modal - Content type:', contentItem.type, 'Event type:', contentItem.event_type, 'News type:', contentItem.news_type);
+
 		if (contentItem.type === 'news') {
-			switch (contentItem.news_type) {
-				case 'update':
-					return { color: 'blue', label: 'Update', icon: <Calendar size={16} /> };
-				case 'announcement':
-					return { color: 'orange', label: 'Announcement', icon: <Calendar size={16} /> };
-				case 'changelog':
-					return { color: 'green', label: 'Changelog', icon: <Calendar size={16} /> };
-				default:
-					return { color: 'gray', label: 'News', icon: <Calendar size={16} /> };
+			if (contentItem.news_type === 'update') {
+				return { color: 'blue', label: 'Opdatering', icon: <Bell size={16} /> };
+			} else if (contentItem.news_type === 'announcement') {
+				return { color: 'orange', label: 'Meddelelse', icon: <Megaphone size={16} /> };
+			} else if (contentItem.news_type === 'changelog') {
+				return { color: 'green', label: 'Changelog', icon: <FileText size={16} /> };
+			} else {
+				return { color: 'gray', label: 'Nyhed', icon: <Bell size={16} /> };
 			}
 		} else {
-			switch (contentItem.event_type) {
-				case 'official':
-					return { color: 'blue', label: 'Official', icon: <CalendarCheck size={16} /> };
-				case 'community':
-					return { color: 'green', label: 'Community', icon: <CalendarCheck size={16} /> };
-				case 'special':
-					return { color: 'purple', label: 'Special', icon: <CalendarCheck size={16} /> };
-				default:
-					return { color: 'gray', label: 'Event', icon: <CalendarCheck size={16} /> };
+			if (contentItem.event_type === 'official') {
+				return { color: 'blue', label: 'Officiel', icon: <CalendarCheck size={16} /> };
+			} else if (contentItem.event_type === 'community') {
+				return { color: 'green', label: 'Fællesskab', icon: <CalendarCheck size={16} /> };
+			} else if (contentItem.event_type === 'special') {
+				return { color: 'purple', label: 'Special', icon: <Star size={16} /> };
+			} else {
+				return { color: 'gray', label: 'Event', icon: <Calendar size={16} /> };
 			}
 		}
 	};

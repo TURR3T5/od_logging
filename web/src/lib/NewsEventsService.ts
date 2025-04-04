@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import cacheService from './CacheService';
 import { hasPermission } from './discord';
+
 export interface ContentItem {
     id: string;
     title: string;
@@ -20,16 +21,19 @@ export interface ContentItem {
     address?: string;
     tags?: string[];
 }
+
 const CACHE_KEY_ALL_CONTENT = 'all_content';
 const CACHE_KEY_NEWS = 'news_items';
 const CACHE_KEY_EVENTS = 'event_items';
 const CACHE_KEY_PINNED = 'pinned_content';
+
 const invalidateAllContentCaches = () => {
   cacheService.invalidate(CACHE_KEY_ALL_CONTENT);
   cacheService.invalidate(CACHE_KEY_NEWS);
   cacheService.invalidate(CACHE_KEY_EVENTS);
   cacheService.invalidate(CACHE_KEY_PINNED);
 };
+
 export const checkContentPermission = async (
     user: any, 
     requiredLevel: 'content' | 'staff' | 'admin' = 'content'
@@ -65,6 +69,30 @@ export const checkContentPermission = async (
       return false;
     }
 }
+
+function normalizeContentItem(item: any): ContentItem {
+
+  let type = item.type;
+  if (!['news', 'event'].includes(type)) {
+    type = 'news'; 
+  }
+
+  const normalized: ContentItem = {
+    ...item,
+    type,
+
+    is_pinned: item.is_pinned !== undefined ? item.is_pinned : false
+  };
+
+  if (type === 'news') {
+    normalized.news_type = item.news_type || 'announcement';
+  } else if (type === 'event') {
+    normalized.event_type = item.event_type || 'community';
+  }
+
+  return normalized;
+}
+
 export const NewsEventsService = {
   async getAllContent(): Promise<ContentItem[]> {
     const cached = cacheService.get<ContentItem[]>(CACHE_KEY_ALL_CONTENT);
@@ -109,22 +137,30 @@ export const NewsEventsService = {
       eventMetadata?.forEach(meta => {
         eventMetadataMap[meta.content_id] = meta;
       });
+
       const combinedContent: ContentItem[] = contentItems.map(item => {
-        const result: ContentItem = {
+
+        const result: any = {
           ...item,
           tags: tagsByContentId[item.id] || []
         };
-        if (item.type === 'news' && newsMetadataMap[item.id]) {
-          result.news_type = newsMetadataMap[item.id].news_type;
+
+        if (item.type === 'news') {
+          result.news_type = newsMetadataMap[item.id]?.news_type || 'announcement';
         }
-        if (item.type === 'event' && eventMetadataMap[item.id]) {
-          result.event_type = eventMetadataMap[item.id].event_type;
-          result.event_date = eventMetadataMap[item.id].event_date;
-          result.location = eventMetadataMap[item.id].location;
-          result.address = eventMetadataMap[item.id].address;
+
+        if (item.type === 'event') {
+          result.event_type = eventMetadataMap[item.id]?.event_type || 'community';
+          result.event_date = eventMetadataMap[item.id]?.event_date || null;
+          result.location = eventMetadataMap[item.id]?.location || '';
+          result.address = eventMetadataMap[item.id]?.address || '';
         }
-        return result;
+
+        return normalizeContentItem(result);
       });
+
+      console.log("Fetched content items:", combinedContent);
+
       cacheService.set(CACHE_KEY_ALL_CONTENT, combinedContent, { expiryInMinutes: 15 });
       return combinedContent;
     } catch (error) {
@@ -132,24 +168,28 @@ export const NewsEventsService = {
       return [];
     }
   },
+
   async getNews(): Promise<ContentItem[]> {
     const allContent = await this.getAllContent();
     const newsItems = allContent.filter(item => item.type === 'news');
     cacheService.set(CACHE_KEY_NEWS, newsItems, { expiryInMinutes: 15 });
     return newsItems;
   },
+
   async getEvents(): Promise<ContentItem[]> {
     const allContent = await this.getAllContent();
     const eventItems = allContent.filter(item => item.type === 'event');
     cacheService.set(CACHE_KEY_EVENTS, eventItems, { expiryInMinutes: 15 });
     return eventItems;
   },
+
   async getPinnedContent(): Promise<ContentItem[]> {
     const allContent = await this.getAllContent();
     const pinnedItems = allContent.filter(item => item.is_pinned);
     cacheService.set(CACHE_KEY_PINNED, pinnedItems, { expiryInMinutes: 15 });
     return pinnedItems;
   },
+
   async createContent(content: Omit<ContentItem, 'id' | 'created_at'>, user: any): Promise<string | null> {
     const hasPermissions = await checkContentPermission(user);
     if (!hasPermissions) {
@@ -157,6 +197,15 @@ export const NewsEventsService = {
     }
     try {
       content.created_by = user?.username || 'Unknown';
+
+      if (content.type === 'news' && !content.news_type) {
+        content.news_type = 'announcement';
+      }
+
+      if (content.type === 'event' && !content.event_type) {
+        content.event_type = 'community';
+      }
+
       const { data: contentData, error: contentError } = await supabase
         .from('content_items')
         .insert({
@@ -210,6 +259,7 @@ export const NewsEventsService = {
       return null;
     }
   },
+
   async updateContent(id: string, updates: Partial<ContentItem>, user: any): Promise<boolean> {
     const hasPermissions = await checkContentPermission(user);
     if (!hasPermissions) {
@@ -261,7 +311,7 @@ export const NewsEventsService = {
         }
       }
       if (currentItem.type === 'event') {
-        if (updates.event_type || updates.event_date || updates.location !== undefined || updates.address !== undefined) {
+        if (updates.event_type || updates.event_date !== undefined || updates.location !== undefined || updates.address !== undefined) {
           const { data: existingEventMetadata, error: eventMetaCheckError } = await supabase
             .from('event_metadata')
             .select('*')
@@ -272,10 +322,12 @@ export const NewsEventsService = {
           }
           const eventUpdates: any = { content_id: id };
           if (updates.event_type) eventUpdates.event_type = updates.event_type;
-          if (updates.event_date) {
-            eventUpdates.event_date = typeof updates.event_date === 'string' 
-              ? updates.event_date 
-              : updates.event_date?.toISOString();
+          if (updates.event_date !== undefined) {
+            eventUpdates.event_date = updates.event_date === null 
+              ? null 
+              : (typeof updates.event_date === 'string' 
+                ? updates.event_date 
+                : updates.event_date?.toISOString());
           }
           if (updates.location !== undefined) eventUpdates.location = updates.location;
           if (updates.address !== undefined) eventUpdates.address = updates.address;
@@ -317,6 +369,7 @@ export const NewsEventsService = {
       return false;
     }
   },
+
   async deleteContent(id: string, user: any): Promise<boolean> {
     const hasPermissions = await checkContentPermission(user, 'staff');
     if (!hasPermissions) {
@@ -355,4 +408,5 @@ export const NewsEventsService = {
     }
   }
 };
+
 export default NewsEventsService;
