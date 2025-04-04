@@ -3,7 +3,7 @@ export interface Database {
     Tables: {
       logs: {
         Row: {
-          id: string;
+          id: number;
           created_at: string;
           server_id: string;
           event_type: string;
@@ -15,7 +15,7 @@ export interface Database {
           details: any;
         };
         Insert: {
-          id?: string;
+          id?: number;
           created_at?: string;
           server_id: string;
           event_type: string;
@@ -27,7 +27,7 @@ export interface Database {
           details?: any;
         };
         Update: {
-          id?: string;
+          id?: number;
           created_at?: string;
           server_id?: string;
           event_type?: string;
@@ -42,7 +42,7 @@ export interface Database {
 
       rules: {
         Row: {
-          id: string;
+          id: number;
           badge: string;
           title: string;
           content: string;
@@ -56,7 +56,7 @@ export interface Database {
           order_index: number;
         };
         Insert: {
-          id?: string;
+          id?: number;
           badge: string;
           title: string;
           content: string;
@@ -70,7 +70,7 @@ export interface Database {
           order_index?: number;
         };
         Update: {
-          id?: string;
+          id?: number;
           badge?: string;
           title?: string;
           content?: string;
@@ -86,8 +86,8 @@ export interface Database {
       };
       rule_changes: {
         Row: {
-          id: string;
-          rule_id: string;
+          id: number;
+          rule_id: number;
           previous_content: string;
           new_content: string;
           previous_title: string;
@@ -102,8 +102,8 @@ export interface Database {
           change_notes: string;
         };
         Insert: {
-          id?: string;
-          rule_id: string;
+          id?: number;
+          rule_id: number;
           previous_content: string;
           new_content: string;
           previous_title: string;
@@ -118,8 +118,8 @@ export interface Database {
           change_notes?: string;
         };
         Update: {
-          id?: string;
-          rule_id?: string;
+          id?: number;
+          rule_id?: number;
           previous_content?: string;
           new_content?: string;
           previous_title?: string;
@@ -136,7 +136,7 @@ export interface Database {
       };
       content_items: {
         Row: {
-          id: string;
+          id: number;
           title: string;
           description: string;
           content: string | null;
@@ -149,7 +149,7 @@ export interface Database {
           category: string;
         };
         Insert: {
-          id?: string;
+          id?: number;
           title: string;
           description: string;
           content?: string | null;
@@ -162,7 +162,7 @@ export interface Database {
           category: string;
         };
         Update: {
-          id?: string;
+          id?: number;
           title?: string;
           description?: string;
           content?: string | null;
@@ -178,36 +178,36 @@ export interface Database {
       
       news_metadata: {
         Row: {
-          content_id: string;
+          content_id: number;
           news_type: 'update' | 'announcement' | 'changelog';
         };
         Insert: {
-          content_id: string;
+          content_id: number;
           news_type: 'update' | 'announcement' | 'changelog';
         };
         Update: {
-          content_id?: string;
+          content_id?: number;
           news_type?: 'update' | 'announcement' | 'changelog';
         };
       };
       
       event_metadata: {
         Row: {
-          content_id: string;
+          content_id: number;
           event_type: 'community' | 'official' | 'special';
           event_date: string;
           location: string | null;
           address: string | null;
         };
         Insert: {
-          content_id: string;
+          content_id: number;
           event_type: 'community' | 'official' | 'special';
           event_date: string;
           location?: string | null;
           address?: string | null;
         };
         Update: {
-          content_id?: string;
+          content_id?: number;
           event_type?: 'community' | 'official' | 'special';
           event_date?: string;
           location?: string | null;
@@ -217,15 +217,15 @@ export interface Database {
       
       content_tags: {
         Row: {
-          content_id: string;
+          content_id: number;
           tag: string;
         };
         Insert: {
-          content_id: string;
+          content_id: number;
           tag: string;
         };
         Update: {
-          content_id?: string;
+          content_id?: number;
           tag?: string;
         };
       };
@@ -262,7 +262,7 @@ export interface Database {
       
       job_types: {
         Row: {
-          id: string;
+          id: number;
           title: string;
           description: string | null;
           requirements: string[] | null;
@@ -271,7 +271,7 @@ export interface Database {
           members_count: number;
         };
         Insert: {
-          id: string;
+          id?: number;
           title: string;
           description?: string | null;
           requirements?: string[] | null;
@@ -280,7 +280,7 @@ export interface Database {
           members_count?: number;
         };
         Update: {
-          id?: string;
+          id?: number;
           title?: string;
           description?: string | null;
           requirements?: string[] | null;
@@ -292,24 +292,24 @@ export interface Database {
       
       job_questions: {
         Row: {
-          id: string;
-          job_id: string;
+          id: number;
+          job_id: number;
           label: string;
           type: 'text' | 'textarea';
           required: boolean;
           order_index: number;
         };
         Insert: {
-          id?: string;
-          job_id: string;
+          id?: number;
+          job_id: number;
           label: string;
           type: 'text' | 'textarea';
           required?: boolean;
           order_index: number;
         };
         Update: {
-          id?: string;
-          job_id?: string;
+          id?: number;
+          job_id?: number;
           label?: string;
           type?: 'text' | 'textarea';
           required?: boolean;
@@ -319,8 +319,8 @@ export interface Database {
       
       job_applications: {
         Row: {
-          id: string;
-          job_id: string;
+          id: number;
+          job_id: number;
           user_id: string;
           username: string | null;
           discord_id: string | null;
@@ -331,8 +331,8 @@ export interface Database {
           feedback: string | null;
         };
         Insert: {
-          id?: string;
-          job_id: string;
+          id?: number;
+          job_id: number;
           user_id: string;
           username?: string | null;
           discord_id?: string | null;
@@ -343,8 +343,8 @@ export interface Database {
           feedback?: string | null;
         };
         Update: {
-          id?: string;
-          job_id?: string;
+          id?: number;
+          job_id?: number;
           user_id?: string;
           username?: string | null;
           discord_id?: string | null;
@@ -358,18 +358,18 @@ export interface Database {
       
       application_answers: {
         Row: {
-          application_id: string;
-          question_id: string;
+          application_id: number;
+          question_id: number;
           answer: string | null;
         };
         Insert: {
-          application_id: string;
-          question_id: string;
+          application_id: number;
+          question_id: number;
           answer?: string | null;
         };
         Update: {
-          application_id?: string;
-          question_id?: string;
+          application_id?: number;
+          question_id?: number;
           answer?: string | null;
         };
       };
@@ -393,7 +393,7 @@ export interface Database {
       
       role_changes: {
         Row: {
-          id: string;
+          id: number;
           role_id: string;
           previous_level: string;
           new_level: string;
@@ -403,7 +403,7 @@ export interface Database {
           changed_by: string;
         };
         Insert: {
-          id?: string;
+          id?: number;
           role_id: string;
           previous_level: string;
           new_level: string;
@@ -413,7 +413,7 @@ export interface Database {
           changed_by: string;
         };
         Update: {
-          id?: string;
+          id?: number;
           role_id?: string;
           previous_level?: string;
           new_level?: string;
@@ -426,21 +426,21 @@ export interface Database {
       
       user_permissions: {
         Row: {
-          id: string;
+          id: number;
           user_id: string;
           permission_level: string;
           granted_at: string;
           granted_by: string | null;
         };
         Insert: {
-          id?: string;
+          id?: number;
           user_id: string;
           permission_level: string;
           granted_at?: string;
           granted_by?: string | null;
         };
         Update: {
-          id?: string;
+          id?: number;
           user_id?: string;
           permission_level?: string;
           granted_at?: string;
