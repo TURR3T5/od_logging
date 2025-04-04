@@ -5,38 +5,41 @@ export interface Database {
         Row: {
           id: number;
           created_at: string;
-          server_id: string;
-          event_type: string;
+          source: string;
+          event: string;
           category: string | null;
           type: string | null;
-          player_id: string | null;
-          player_name: string | null;
-          discord_id: string | null;
+          txname: string | null;
+          charname: string | null;
+          discord: string | null;
           details: any;
+          citizenid: string | null;
         };
         Insert: {
           id?: number;
           created_at?: string;
-          server_id: string;
-          event_type: string;
+          source: string;
+          event: string;
           category?: string | null;
           type?: string | null;
-          player_id?: string | null;
-          player_name?: string | null;
-          discord_id?: string | null;
+          txname?: string | null;
+          charname?: string | null;
+          discord?: string | null;
           details?: any;
+          citizenid?: string | null;
         };
         Update: {
           id?: number;
           created_at?: string;
-          server_id?: string;
-          event_type?: string;
+          source?: string;
+          event?: string;
           category?: string | null;
           type?: string | null;
-          player_id?: string | null;
-          player_name?: string | null;
-          discord_id?: string | null;
+          txname?: string | null;
+          charname?: string | null;
+          discord?: string | null;
           details?: any;
+          citizenid?: string | null;
         };
       };
 

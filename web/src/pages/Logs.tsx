@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useRouter } from '@tanstack/react-router';
-import { Container, Title, Text, Paper, Group, Box, Menu, Button, Tooltip } from '@mantine/core';
-import { Download, Bookmark } from 'lucide-react';
+import { Container, Title, Text, Paper, Group, Box, Button, Tooltip } from '@mantine/core';
+import { Download } from 'lucide-react';
 import MainLayout from '../layouts/MainLayout';
 import LogTable from '../components/LogTable';
 import { useLogsSearch, SearchFilters } from '../hooks/useLogsSearch';
@@ -11,14 +11,15 @@ import { applyLogsFilters } from '../utils/queryHelper';
 export interface Log {
 	id: string;
 	created_at: string;
-	server_id: string;
-	event_type: string;
+	source: string;
+	event: string;
 	category?: string;
 	type?: string;
-	player_id?: string;
-	player_name?: string;
-	discord_id?: string;
+	txname?: string | null;
+	charname?: string | null;
+	discord?: string | null;
 	details: any;
+	citizenid?: string | null;
 }
 
 export interface FilterPreset {
@@ -36,43 +37,7 @@ export default function LogsPage() {
 	const [totalPages, setTotalPages] = useState(1);
 	const router = useRouter();
 	const { searchFilters, handleSearch } = useLogsSearch();
-
-	const filterPresets: FilterPreset[] = [
-		{
-			id: 'recent-logins',
-			name: 'Seneste Logins',
-			filters: {
-				playerSearch: '',
-				eventTypeSearch: 'login',
-				dateRange: null,
-			},
-			category: 'player',
-			type: 'join_leave',
-		},
-		{
-			id: 'money-transactions',
-			name: 'Penge Transaktioner',
-			filters: {
-				playerSearch: '',
-				eventTypeSearch: 'transaction',
-				dateRange: null,
-			},
-			category: 'economy',
-			type: 'bank',
-		},
-		{
-			id: 'suspicious-activity',
-			name: 'Mistænkelig Aktivitet',
-			filters: {
-				playerSearch: '',
-				eventTypeSearch: '',
-				dateRange: null,
-			},
-			category: 'admin',
-			type: 'detection',
-		},
-	];
-
+	const previousUrl = useRef(router.state.location.search);
 	const LOGS_PER_PAGE = 8;
 
 	const getQueryFilters = () => {
@@ -87,7 +52,11 @@ export default function LogsPage() {
 		};
 	};
 
-	const fetchLogs = async () => {
+	const fetchLogs = async (resetPage = false) => {
+		if (resetPage) {
+			setPage(1);
+		}
+
 		setLoading(true);
 
 		try {
@@ -106,7 +75,8 @@ export default function LogsPage() {
 				return;
 			}
 
-			query = query.range((page - 1) * LOGS_PER_PAGE, page * LOGS_PER_PAGE - 1);
+			const currentPage = resetPage ? 1 : page;
+			query = query.range((currentPage - 1) * LOGS_PER_PAGE, currentPage * LOGS_PER_PAGE - 1);
 			const { data, error } = await query;
 
 			if (error) {
@@ -123,55 +93,37 @@ export default function LogsPage() {
 		}
 	};
 
-	const handleUrlChange = () => {
-		setPage(1);
-	};
+	useEffect(() => {
+		const currentUrl = router.state.location.search;
+		if (currentUrl !== previousUrl.current) {
+			previousUrl.current = currentUrl;
+			fetchLogs(true);
+		}
+	}, [router.state.location.search]);
 
 	useEffect(() => {
-		const handlePopState = () => {
-			handleUrlChange();
-		};
+		fetchLogs(false);
+	}, [page]);
 
-		window.addEventListener('popstate', handlePopState);
+	useEffect(() => {
+		fetchLogs(true);
+	}, [searchFilters]);
 
-		const unsubscribe = router.subscribe('onBeforeNavigate', () => {
-			setTimeout(() => {
-				handleUrlChange();
-			}, 50);
+	useEffect(() => {
+		const unsubscribe = router.subscribe('onResolved', () => {
+			fetchLogs(true);
 		});
 
 		return () => {
-			window.removeEventListener('popstate', handlePopState);
 			unsubscribe();
 		};
-	}, [router]);
-
-	useEffect(() => {
-		fetchLogs();
-	}, [router.state.location.search, page, searchFilters]);
+	}, []);
 
 	const filters = getQueryFilters();
 	const pageTitle = filters.type ? `${filters.type.charAt(0).toUpperCase() + filters.type.slice(1)} Logs` : 'Server Logs';
 
 	const manageSearch = (newFilters: SearchFilters) => {
 		handleSearch(newFilters);
-		setPage(1);
-	};
-
-	const applyFilterPreset = (preset: FilterPreset) => {
-		handleSearch(preset.filters);
-		setPage(1);
-
-		let navigateUrl = '/logs';
-		const params = new URLSearchParams();
-
-		if (preset.category) params.set('category', preset.category);
-		if (preset.type) params.set('type', preset.type);
-
-		const queryString = params.toString();
-		if (queryString) navigateUrl += `?${queryString}`;
-
-		router.navigate({ to: navigateUrl });
 	};
 
 	const exportLogs = () => {
@@ -180,11 +132,11 @@ export default function LogsPage() {
 			Timestamp: new Date(log.created_at).toLocaleString(),
 			Category: log.category || '',
 			Type: log.type || '',
-			EventType: log.event_type,
-			PlayerName: log.player_name || 'System',
-			PlayerID: log.player_id || '',
-			ServerID: log.server_id || '',
-			DiscordID: log.discord_id || '',
+			EventType: log.event,
+			PlayerName: log.charname || 'System',
+			PlayerID: log.txname || '',
+			ServerID: log.source || '',
+			DiscordID: log.discord || '',
 			Details: JSON.stringify(log.details),
 		}));
 
@@ -219,23 +171,6 @@ export default function LogsPage() {
 							</Box>
 
 							<Group>
-								<Menu shadow='md' width={200}>
-									<Menu.Target>
-										<Button variant='subtle' leftSection={<Bookmark size={18} />}>
-											Gemte Filtre
-										</Button>
-									</Menu.Target>
-									<Menu.Dropdown>
-										{filterPresets.map((preset) => (
-											<Menu.Item key={preset.id} onClick={() => applyFilterPreset(preset)}>
-												{preset.name}
-											</Menu.Item>
-										))}
-										<Menu.Divider />
-										<Menu.Item>Gem nuværende filter</Menu.Item>
-									</Menu.Dropdown>
-								</Menu>
-
 								<Tooltip label='Eksporter logs'>
 									<Button variant='subtle' onClick={exportLogs} leftSection={<Download size={18} />}>
 										Eksporter

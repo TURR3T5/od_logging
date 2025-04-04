@@ -20,21 +20,21 @@ export const applyLogsFilters = (
   }
 
   if (currentFilters.eventType) {
-    query = query.eq('event_type', currentFilters.eventType);
+    query = query.eq('event', currentFilters.eventType);
   }
 
   if (searchFilters.eventTypeSearch) {
-    query = query.ilike('event_type', `%${searchFilters.eventTypeSearch}%`);
+    query = query.ilike('event', `%${searchFilters.eventTypeSearch}%`);
   }
 
   if (currentFilters.serverId) {
-    query = query.eq('server_id', currentFilters.serverId);
+    query = query.eq('source', currentFilters.serverId);
   }
 
   if (currentFilters.discordId) {
     const discordId = currentFilters.discordId.trim();
     if (discordId) {
-      query = query.ilike('discord_id', `%${discordId}%`);
+      query = query.ilike('discord', `%${discordId}%`);
     }
   }
 
@@ -42,14 +42,12 @@ export const applyLogsFilters = (
     const searchTerm = searchFilters.playerSearch.trim();
     if (searchTerm) {
       const filterConditions = [
-        `player_name.ilike.%${searchTerm}%`, 
-        `server_id.ilike.%${searchTerm}%`, 
-        `discord_id.ilike.%${searchTerm}%`
+        `charname.ilike.%${searchTerm}%`, 
+        `source.ilike.%${searchTerm}%`, 
+        `discord.ilike.%${searchTerm}%`,
+        `txname.ilike.%${searchTerm}%`,
+        `citizenid.ilike.%${searchTerm}%`
       ];
-
-      if (!isNaN(Number(searchTerm))) {
-        filterConditions.push(`player_id.ilike.%${searchTerm}%`);
-      }
 
       query = query.or(filterConditions.join(','));
     }

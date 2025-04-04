@@ -307,13 +307,13 @@ export default function Sidebar() {
 
 	const handleNavigate = (path: string) => {
 		if (isNavigating) return;
-
 		setIsNavigating(true);
 
+		navigate({ to: path });
+
 		setTimeout(() => {
-			navigate({ to: path });
 			setIsNavigating(false);
-		}, 50);
+		}, 100);
 	};
 
 	useEffect(() => {

@@ -39,12 +39,13 @@ export function DateFilter({ onDateRangeChange }: DateFilterProps) {
 	return (
 		<Group gap='xs'>
 			<DateTimePicker
-				placeholder='Start date'
+				placeholder='Start dato'
 				valueFormat='DD MMM YYYY HH:mm'
 				clearable
 				size='sm'
 				value={startDate}
 				onChange={handleStartDateChange}
+				w={160}
 				rightSection={
 					startDate ? (
 						<ActionIcon
@@ -63,12 +64,13 @@ export function DateFilter({ onDateRangeChange }: DateFilterProps) {
 				}
 			/>
 			<DateTimePicker
-				placeholder='End date'
+				placeholder='Slut dato'
 				valueFormat='DD MMM YYYY HH:mm'
 				clearable
 				size='sm'
 				value={endDate}
 				onChange={handleEndDateChange}
+				w={160}
 				rightSection={
 					endDate ? (
 						<ActionIcon

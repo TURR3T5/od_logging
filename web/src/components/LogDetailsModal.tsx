@@ -36,28 +36,33 @@ export function LogDetailsModal({ opened, onClose, selectedLog }: LogDetailsModa
 				</Group>
 
 				<Group mb='xs'>
-					<Text fw={500}>Event Type:</Text>
-					<Badge color='blue'>{selectedLog.event_type}</Badge>
+					<Text fw={500}>Event:</Text>
+					<Badge color='blue'>{selectedLog.event}</Badge>
 				</Group>
 
 				<Group mb='xs'>
-					<Text fw={500}>Player:</Text>
-					<Text>{selectedLog.player_name || 'System'}</Text>
+					<Text fw={500}>Source:</Text>
+					<Text>{selectedLog.source || 'N/A'}</Text>
 				</Group>
 
 				<Group mb='xs'>
-					<Text fw={500}>Server ID:</Text>
-					<Text>{selectedLog.server_id || 'N/A'}</Text>
+					<Text fw={500}>Transaction ID (Steam):</Text>
+					<Text>{selectedLog.txname || 'N/A'}</Text>
 				</Group>
 
 				<Group mb='xs'>
-					<Text fw={500}>Steam ID:</Text>
-					<Text>{selectedLog.player_id || 'N/A'}</Text>
+					<Text fw={500}>Character Name:</Text>
+					<Text>{selectedLog.charname || 'N/A'}</Text>
+				</Group>
+
+				<Group mb='xs'>
+					<Text fw={500}>Citizen ID:</Text>
+					<Text>{selectedLog.citizenid || 'N/A'}</Text>
 				</Group>
 
 				<Group mb='xs'>
 					<Text fw={500}>Discord ID:</Text>
-					<Text>{selectedLog.discord_id || 'N/A'}</Text>
+					<Text>{selectedLog.discord || 'N/A'}</Text>
 				</Group>
 
 				<Group mb='xs'>

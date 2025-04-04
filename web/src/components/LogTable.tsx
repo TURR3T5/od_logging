@@ -39,12 +39,12 @@ const playerFilterFn = (row: any, filterValue: any) => {
 	if (!filterValue) return true;
 
 	const searchTerm = String(filterValue).toLowerCase();
-	const playerName = String(row.original.player_name || '').toLowerCase();
-	const serverId = String(row.original.server_id || '').toLowerCase();
-	const playerId = String(row.original.player_id || '').toLowerCase();
-	const discordId = String(row.original.discord_id || '').toLowerCase();
+	const txname = String(row.original.txname || '').toLowerCase();
+	const charname = String(row.original.charname || '').toLowerCase();
+	const citizenid = String(row.original.citizenid || '').toLowerCase();
+	const discord = String(row.original.discord || '').toLowerCase();
 
-	return playerName.includes(searchTerm) || serverId.includes(searchTerm) || playerId.includes(searchTerm) || discordId.includes(searchTerm);
+	return txname.includes(searchTerm) || charname.includes(searchTerm) || citizenid.includes(searchTerm) || discord.includes(searchTerm);
 };
 
 function SortingIndicator({ column }: { column: any }) {
@@ -110,28 +110,28 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 	const commonColumns: ColumnDef<Log>[] = [
 		{
 			id: 'player',
-			header: 'Player',
-			accessorFn: (row) => row.player_name || 'System',
+			header: 'Spiller',
+			accessorFn: (row) => row.charname || 'System',
 			cell: ({ row }) => (
 				<Box style={{ width: '250px', minWidth: '250px' }}>
-					{row.original.player_name ? (
+					{row.original.txname || row.original.charname ? (
 						<>
 							<Text size='sm' fw={500}>
-								{row.original.player_name}
+								{row.original.charname ? row.original.charname : 'Unknown'}
 							</Text>
-							{row.original.server_id && (
+							{row.original.txname && (
 								<Text size='xs' c='dimmed'>
-									ID: {row.original.server_id}
+									{row.original.txname} {row.original.source ? `(${row.original.source})` : ''}
 								</Text>
 							)}
-							{row.original.player_id && (
+							{row.original.charname && (
 								<Text size='xs' c='dimmed'>
-									Steam: {row.original.player_id}
+									{row.original.charname} {row.original.citizenid ? `(${row.original.citizenid})` : ''}
 								</Text>
 							)}
-							{row.original.discord_id && (
+							{row.original.discord && (
 								<Text size='xs' c='dimmed'>
-									Discord: {row.original.discord_id}
+									Discord: {row.original.discord}
 								</Text>
 							)}
 						</>
@@ -146,10 +146,10 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 		},
 		{
 			id: 'event_type',
-			header: 'Event Type',
-			accessorFn: (row) => row.event_type,
+			header: 'Event',
+			accessorFn: (row) => row.event,
 			cell: ({ row }) => {
-				const eventType = row.original.event_type;
+				const eventType = row.original.event;
 				return (
 					<Box style={{ width: '180px', minWidth: '180px' }}>
 						<Badge color='blue' variant='light'>
@@ -161,7 +161,7 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 		},
 		{
 			id: 'timestamp',
-			header: 'Timestamp',
+			header: 'Tidspunkt',
 			accessorFn: (row) => new Date(row.created_at),
 			cell: ({ row }) => {
 				const date = new Date(row.original.created_at);
@@ -175,12 +175,12 @@ export default function LogTable({ data, isLoading, pagination, extraColumns = [
 		},
 		{
 			id: 'actions',
-			header: 'Actions',
+			header: 'Handlinger',
 			cell: ({ row }) => {
 				return (
 					<Box style={{ width: '100px', minWidth: '100px' }}>
 						<Button variant='subtle' size='xs' leftSection={<Eye size={14} />} onClick={() => handleOpenModal(row.original)}>
-							Details
+							Detaljer
 						</Button>
 					</Box>
 				);
