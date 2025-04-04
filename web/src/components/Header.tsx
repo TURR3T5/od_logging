@@ -1,10 +1,10 @@
-import { Group, Text, Button, Box, Container, Menu, Badge } from '@mantine/core';
+import { Group, Text, Button, Box, Container, Menu, Badge, ActionIcon } from '@mantine/core';
 import { useAuth } from '../components/AuthProvider';
 import { useNavigate } from '@tanstack/react-router';
-import { House, LogOut, List, Book, Calendar, User, ChevronDown, ShieldUser, Wrench } from 'lucide-react';
+import { House, LogOut, List, Book, Calendar, User, ChevronDown, ShieldUser, Wrench, Menu as MenuIcon } from 'lucide-react';
 
 export default function Header() {
-	const { isAuthorized, isLoading, user, signOut, permissionLevel } = useAuth();
+	const { isAuthorized, isLoading, signOut, permissionLevel, user } = useAuth();
 	const navigate = useNavigate();
 
 	const isAdmin = permissionLevel === 'admin';
@@ -24,6 +24,59 @@ export default function Header() {
 		{ label: 'Server Logs', icon: List, onClick: () => navigate({ to: '/logs' }) },
 		{ label: 'Role Management', icon: ShieldUser, onClick: () => navigate({ to: '/admin/roles' }) },
 	];
+
+	const renderMobileMenu = () => (
+		<Menu shadow='md' width={250}>
+			<Menu.Target>
+				<ActionIcon variant='transparent' hiddenFrom='sm'>
+					<MenuIcon size={24} color='white' />
+				</ActionIcon>
+			</Menu.Target>
+			<Menu.Dropdown>
+				{publicMenuItems.map((item, index) => (
+					<Menu.Item key={index} leftSection={<item.icon size={16} />} onClick={item.onClick}>
+						{item.label}
+					</Menu.Item>
+				))}
+
+				{(isAdmin || isStaff) && (
+					<>
+						<Menu.Divider />
+						<Menu.Label>WIP</Menu.Label>
+						{wipMenuItems.map((item, index) => (
+							<Menu.Item key={index} leftSection={<item.icon size={16} />} onClick={item.onClick}>
+								{item.label}
+							</Menu.Item>
+						))}
+					</>
+				)}
+
+				{isAdmin && (
+					<>
+						<Menu.Divider />
+						<Menu.Label>Admin</Menu.Label>
+						{adminMenuItems.map((item, index) => (
+							<Menu.Item key={index} leftSection={<item.icon size={16} />} onClick={item.onClick}>
+								{item.label}
+							</Menu.Item>
+						))}
+					</>
+				)}
+
+				{isAuthorized && (
+					<>
+						<Menu.Divider />
+						<Menu.Item leftSection={<User size={16} />} onClick={() => navigate({ to: '/profile' })}>
+							Profil
+						</Menu.Item>
+						<Menu.Item color='red' leftSection={<LogOut size={16} />} onClick={signOut}>
+							Logout
+						</Menu.Item>
+					</>
+				)}
+			</Menu.Dropdown>
+		</Menu>
+	);
 
 	return (
 		<Box
@@ -54,7 +107,7 @@ export default function Header() {
 							OdessaRP
 						</Text>
 
-						<Group ml='xl' gap='xl'>
+						<Group ml='xl' gap='xl' visibleFrom='sm'>
 							{publicMenuItems.map((item, index) => (
 								<Group
 									key={index}
@@ -137,6 +190,8 @@ export default function Header() {
 									</Menu.Dropdown>
 								</Menu>
 							)}
+
+							{renderMobileMenu()}
 						</Group>
 					</Group>
 
@@ -144,9 +199,7 @@ export default function Header() {
 						{isLoading ? (
 							<Text>Loading...</Text>
 						) : isAuthorized ? (
-							<Group>
-								<Text c='gray.0'>{user?.username || (user?.email && `Velkommen, ${user.email.split('@')[0]}`)}</Text>
-
+							<Group visibleFrom='sm'>
 								{isAdmin && (
 									<Badge color='red' variant='filled' size='sm'>
 										Admin
@@ -170,6 +223,8 @@ export default function Header() {
 								Login
 							</Button>
 						)}
+
+						{renderMobileMenu()}
 					</Group>
 				</Group>
 			</Container>

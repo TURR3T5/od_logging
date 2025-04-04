@@ -36,7 +36,7 @@ export function RulesSidebar({ pinnedRules, recentlyUpdatedRules, onRuleClick }:
 
 	return (
 		<>
-			<Paper withBorder p='md' radius='md' mb='xl' style={{ backgroundColor: 'rgba(30, 30, 30, 0.6)', height: '100%' }}>
+			<Paper withBorder p='md' radius='md' mb='xl' mt='md' style={{ backgroundColor: 'rgba(30, 30, 30, 0.6)', height: '100%' }}>
 				<Group mb='sm'>
 					<Lightbulb size={24} color='#FFD700' />
 					<Title order={4}>Hurtigt Overblik - Vigtigste Regler</Title>
