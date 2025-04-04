@@ -76,7 +76,8 @@ export default function LogsPage() {
 	const LOGS_PER_PAGE = 8;
 
 	const getQueryFilters = () => {
-		const params = new URLSearchParams(window.location.search);
+		const search = router.state.location.search;
+		const params = new URLSearchParams(search);
 		return {
 			category: params.get('category') || '',
 			type: params.get('type') || '',
@@ -147,7 +148,7 @@ export default function LogsPage() {
 
 	useEffect(() => {
 		fetchLogs();
-	}, [page, searchFilters]);
+	}, [router.state.location.search, page, searchFilters]);
 
 	const filters = getQueryFilters();
 	const pageTitle = filters.type ? `${filters.type.charAt(0).toUpperCase() + filters.type.slice(1)} Logs` : 'Server Logs';

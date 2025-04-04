@@ -11,182 +11,142 @@ interface SidebarItem {
 
 const sidebarSections: SidebarItem[] = [
 	{
-		label: 'Overblik',
-		children: [{ label: 'Server Logs', path: '/logs' }],
-	},
-	{
-		label: 'Economy',
+		label: 'System Overblik',
 		children: [
-			{ label: 'Bank Transactions', path: '/logs?category=economy&type=bank' },
-			{ label: 'Player Money', path: '/logs?category=economy&type=player_money' },
-			{ label: 'Wallet', path: '/logs?category=economy&type=wallet' },
-			{ label: 'Money Laundering', path: '/logs?category=economy&type=money_laundering' },
-		],
-	},
-	{
-		label: 'Inventory',
-		children: [
-			{ label: 'Item Add/Remove', path: '/logs?category=inventory&type=item_add_remove' },
-			{ label: 'Item Movement', path: '/logs?category=inventory&type=item_movement' },
-			{ label: 'Item Gift', path: '/logs?category=inventory&type=item_gift' },
-			{ label: 'Inventory Clear', path: '/logs?category=inventory&type=inventory_clear' },
-			{ label: 'Car Trunk', path: '/logs?category=inventory&type=car_trunk' },
-			{ label: 'Car Glove Box', path: '/logs?category=inventory&type=car_glovebox' },
-		],
-	},
-	{
-		label: 'Player Activity',
-		children: [
-			{ label: 'Join/Leave', path: '/logs?category=player&type=join_leave' },
-			{ label: 'AFK Status', path: '/logs?category=player&type=afk' },
-			{ label: 'ID Checks', path: '/logs?category=player&type=id_checks' },
-			{ label: 'Crash Reports', path: '/logs?category=player&type=crash_reports' },
-			{ label: 'Me Actions', path: '/logs?category=player&type=me_actions' },
-			{ label: 'Death Logs', path: '/logs?category=player&type=death_logs' },
-			{ label: 'Shot Reports', path: '/logs?category=player&type=shot_reports' },
-			{ label: 'Loan Activity', path: '/logs?category=player&type=loan_activity' },
-			{ label: 'Respawn', path: '/logs?category=player&type=respawn' },
-		],
-	},
-	{
-		label: 'Vehicles',
-		children: [
-			{ label: 'Purchase & Sales', path: '/logs?category=vehicles&type=purchase_sales' },
-			{ label: 'Car Bank Transactions', path: '/logs?category=vehicles&type=car_bank' },
-			{ label: 'Financing', path: '/logs?category=vehicles&type=financing' },
-			{ label: 'Used Car Dealer', path: '/logs?category=vehicles&type=used_dealer' },
-		],
-	},
-	{
-		label: 'Mechanic',
-		children: [
-			{ label: 'Service Logs', path: '/logs?category=mechanic&type=service_logs' },
-			{ label: 'Billing', path: '/logs?category=mechanic&type=billing' },
-			{ label: 'Inventory Stash', path: '/logs?category=mechanic&type=inventory_stash' },
-		],
-	},
-	{
-		label: 'Criminal Activity',
-		children: [
-			{ label: 'House Robbery', path: '/logs?category=crime&type=house_robbery' },
-			{ label: 'Train Robbery', path: '/logs?category=crime&type=train_robbery' },
-			{ label: 'Money Transport', path: '/logs?category=crime&type=money_transport' },
-			{ label: 'ATM Robbery', path: '/logs?category=crime&type=atm_robbery' },
-			{ label: 'Jewelry Robbery', path: '/logs?category=crime&type=jewelry_robbery' },
-			{ label: 'Store Robbery', path: '/logs?category=crime&type=store_robbery' },
-			{ label: 'House Alarm', path: '/logs?category=crime&type=house_alarm' },
-		],
-	},
-	{
-		label: 'Drugs & Gangs',
-		children: [
-			{ label: 'Drug Sales', path: '/logs?category=drugs&type=drug_sales' },
-			{ label: 'Drug Den', path: '/logs?category=drugs&type=drug_den' },
-			{ label: 'LSD', path: '/logs?category=drugs&type=lsd' },
-			{ label: 'Meth', path: '/logs?category=drugs&type=meth' },
-			{ label: 'Cocaine', path: '/logs?category=drugs&type=cocaine' },
-			{ label: 'Gang Coins', path: '/logs?category=drugs&type=gang_coins' },
-			{ label: 'Turf Wars', path: '/logs?category=drugs&type=turf_wars' },
-		],
-	},
-	{
-		label: 'Illegal Activities',
-		children: [
-			{ label: 'Counterfeit Money', path: '/logs?category=illegal&type=counterfeit' },
-			{ label: 'Money Washing', path: '/logs?category=illegal&type=money_washing' },
-			{ label: 'Pawnshop', path: '/logs?category=illegal&type=pawnshop' },
-			{ label: 'Graffiti', path: '/logs?category=illegal&type=graffiti' },
-			{ label: 'Boosting', path: '/logs?category=illegal&type=boosting' },
-			{ label: 'Mother/Father Denmark', path: '/logs?category=illegal&type=denmark' },
-		],
-	},
-	{
-		label: 'Business & Jobs',
-		children: [
-			{ label: 'Company Register', path: '/logs?category=business&type=company_register' },
-			{ label: 'Lawyer Salary', path: '/logs?category=business&type=lawyer_salary' },
-			{ label: 'Company Bills', path: '/logs?category=business&type=company_bills' },
-			{ label: 'Taxi Bills', path: '/logs?category=business&type=taxi_bills' },
-			{ label: 'Shops', path: '/logs?category=business&type=shops' },
-			{ label: 'Boss Menu', path: '/logs?category=business&type=boss_menu' },
-			{ label: 'Offline Shop', path: '/logs?category=business&type=offline_shop' },
-			{ label: 'Company Stash', path: '/logs?category=business&type=company_stash' },
-			{ label: 'Employee Bonus', path: '/logs?category=business&type=employee_bonus' },
-		],
-	},
-	{
-		label: 'Food & Recipes',
-		children: [
-			{ label: 'New Recipe', path: '/logs?category=food&type=new_recipe' },
-			{ label: 'Change Recipe', path: '/logs?category=food&type=change_recipe' },
-			{ label: 'Delete Recipe', path: '/logs?category=food&type=delete_recipe' },
-			{ label: 'Menu Image Change', path: '/logs?category=food&type=menu_image' },
-			{ label: 'Finished Products', path: '/logs?category=food&type=finished_products' },
-		],
-	},
-	{
-		label: 'Communication',
-		children: [
-			{ label: 'Phone Calls', path: '/logs?category=comms&type=phone_calls' },
-			{ label: 'SMS Messages', path: '/logs?category=comms&type=sms' },
-			{ label: 'Darkchat', path: '/logs?category=comms&type=darkchat' },
-			{ label: 'Services', path: '/logs?category=comms&type=services' },
-			{ label: 'Odessa News', path: '/logs?category=comms&type=odessa_news' },
-			{ label: 'Mail', path: '/logs?category=comms&type=mail' },
-			{ label: 'DBA', path: '/logs?category=comms&type=dba' },
-		],
-	},
-	{
-		label: 'Social Media',
-		children: [
-			{ label: 'TikTok', path: '/logs?category=social&type=tiktok' },
-			{ label: 'Twitter', path: '/logs?category=social&type=twitter' },
-			{ label: 'Instagram', path: '/logs?category=social&type=instagram' },
-			{ label: 'Twitter Images', path: '/logs?category=social&type=twitter_images' },
-			{ label: 'Pic Chat', path: '/logs?category=social&type=pic_chat' },
-			{ label: 'Instagram Images', path: '/logs?category=social&type=instagram_images' },
-			{ label: 'Media Gallery', path: '/logs?category=social&type=media_gallery' },
-		],
-	},
-	{
-		label: 'Housing',
-		children: [
-			{ label: 'Property Records', path: '/logs?category=housing&type=property_records' },
-			{ label: 'House Actions', path: '/logs?category=housing&type=house_actions' },
-			{ label: 'Keys Management', path: '/logs?category=housing&type=keys' },
-			{ label: 'Furniture', path: '/logs?category=housing&type=furniture' },
-		],
-	},
-	{
-		label: 'Admin & Security',
-		children: [
-			{ label: 'QB Bans', path: '/logs?category=admin&type=qb_bans' },
-			{ label: 'Auto Bank Bans', path: '/logs?category=admin&type=auto_bank_bans' },
-			{ label: 'Join/Leave Security', path: '/logs?category=admin&type=join_leave_security' },
+			{ label: 'Server Logs', path: '/logs' },
+			{ label: 'Join/Leave', path: '/logs?category=system&type=join_leave' },
+			{ label: 'Crash Rapporter', path: '/logs?category=system&type=crash_reports' },
 			{ label: 'Detection Log', path: '/logs?category=admin&type=detection' },
 			{ label: 'Cheat Logs', path: '/logs?category=admin&type=cheat_logs' },
-			{ label: 'Event Protection', path: '/logs?category=admin&type=event_protection' },
-			{ label: 'Events Log', path: '/logs?category=admin&type=events' },
+			{ label: 'Event Beskyttelse', path: '/logs?category=admin&type=event_protection' },
 			{ label: 'Screenshots', path: '/logs?category=admin&type=screenshots' },
-			{ label: 'Keys Monitoring', path: '/logs?category=admin&type=keys_monitoring' },
+			{ label: 'Taster Overvågning', path: '/logs?category=admin&type=keys_monitoring' },
 		],
 	},
 	{
-		label: 'Police & Justice',
+		label: 'Økonomi',
 		children: [
-			{ label: 'Prison', path: '/logs?category=police&type=prison' },
-			{ label: 'Prison Escape', path: '/logs?category=police&type=prison_escape' },
-			{ label: 'Fines', path: '/logs?category=police&type=fines' },
-			{ label: 'Community Service', path: '/logs?category=police&type=community_service' },
-			{ label: 'MDT Info', path: '/logs?category=police&type=mdt_info' },
+			{ label: 'Bank Transaktioner', path: '/logs?category=economy&type=bank' },
+			{ label: 'Spiller Penge', path: '/logs?category=economy&type=player_money' },
+			{ label: 'Pung', path: '/logs?category=economy&type=wallet' },
+			{ label: 'Hvidvaskning', path: '/logs?category=economy&type=money_laundering' },
+			{ label: 'Firma Regninger', path: '/logs?category=business&type=company_bills' },
+			{ label: 'Taxa Regninger', path: '/logs?category=business&type=taxi_bills' },
+			{ label: 'Advokat Løn', path: '/logs?category=business&type=lawyer_salary' },
+			{ label: 'Medarbejder Bonus', path: '/logs?category=business&type=employee_bonus' },
 		],
 	},
 	{
-		label: 'Crafting & Skills',
+		label: 'Inventar & Genstande',
 		children: [
+			{ label: 'Item Tilføj/Fjern', path: '/logs?category=inventory&type=item_add_remove' },
+			{ label: 'Item Ryk', path: '/logs?category=inventory&type=item_movement' },
+			{ label: 'Item Gave', path: '/logs?category=inventory&type=item_gift' },
+			{ label: 'Inventar Rydning', path: '/logs?category=inventory&type=inventory_clear' },
+			{ label: 'Bil Bagagerum', path: '/logs?category=inventory&type=car_trunk' },
+			{ label: 'Bil Handskerum', path: '/logs?category=inventory&type=car_glovebox' },
+			{ label: 'Firma Opbevaring', path: '/logs?category=business&type=company_stash' },
+		],
+	},
+	{
+		label: 'Spiller Aktiviteter',
+		children: [
+			{ label: 'AFK Status', path: '/logs?category=player&type=afk' },
+			{ label: 'ID Kontrol', path: '/logs?category=player&type=id_checks' },
+			{ label: 'Me Actions', path: '/logs?category=player&type=me_actions' },
+			{ label: 'Døds Logs', path: '/logs?category=player&type=death_logs' },
+			{ label: 'Skud Rapporter', path: '/logs?category=player&type=shot_reports' },
+			{ label: 'Lån Aktivitet', path: '/logs?category=player&type=loan_activity' },
+			{ label: 'Genoplivning', path: '/logs?category=player&type=respawn' },
+		],
+	},
+	{
+		label: 'Køretøjer & Mekanik',
+		children: [
+			{ label: 'Køb & Salg', path: '/logs?category=vehicles&type=purchase_sales' },
+			{ label: 'Bil Bank Transaktioner', path: '/logs?category=vehicles&type=car_bank' },
+			{ label: 'Finansiering', path: '/logs?category=vehicles&type=financing' },
+			{ label: 'Brugt Bil Forhandler', path: '/logs?category=vehicles&type=used_dealer' },
+			{ label: 'Service Logs', path: '/logs?category=mechanic&type=service_logs' },
+			{ label: 'Fakturering', path: '/logs?category=mechanic&type=billing' },
+			{ label: 'Mekaniker Inventar', path: '/logs?category=mechanic&type=inventory_stash' },
+		],
+	},
+	{
+		label: 'Ulovlig Aktivitet',
+		children: [
+			{ label: 'Røverier', path: '/logs?category=crime&type=house_robbery' },
+			{ label: 'Pengetransport', path: '/logs?category=crime&type=money_transport' },
+			{ label: 'Hus Alarm', path: '/logs?category=crime&type=house_alarm' },
+			{ label: 'Falske Penge', path: '/logs?category=illegal&type=counterfeit' },
+			{ label: 'Pengevask', path: '/logs?category=illegal&type=money_washing' },
+			{ label: 'Pantelåner', path: '/logs?category=illegal&type=pawnshop' },
+			{ label: 'Graffiti', path: '/logs?category=illegal&type=graffiti' },
+			{ label: 'Boosting', path: '/logs?category=illegal&type=boosting' },
+			{ label: 'Mor/Far Danmark', path: '/logs?category=illegal&type=denmark' },
+		],
+	},
+	{
+		label: 'Stoffer & Bander',
+		children: [
+			{ label: 'Stof Salg', path: '/logs?category=drugs&type=drug_sales' },
+			{ label: 'Stof Hule', path: '/logs?category=drugs&type=drug_den' },
+			{ label: 'Stoffer', path: '/logs?category=drugs&type=lsd,meth,cocaine' },
+			{ label: 'Bande Mønter', path: '/logs?category=drugs&type=gang_coins' },
+			{ label: 'Territoriekrige', path: '/logs?category=drugs&type=turf_wars' },
+		],
+	},
+	{
+		label: 'Virksomheder & Ejendomme',
+		children: [
+			{ label: 'Virksomhedsregister', path: '/logs?category=business&type=company_register' },
+			{ label: 'Butikker', path: '/logs?category=business&type=shops' },
+			{ label: 'Boss Menu', path: '/logs?category=business&type=boss_menu' },
+			{ label: 'Offline Butik', path: '/logs?category=business&type=offline_shop' },
+			{ label: 'Ejendoms Optegnelser', path: '/logs?category=housing&type=property_records' },
+			{ label: 'Hus Handlinger', path: '/logs?category=housing&type=house_actions' },
+			{ label: 'Nøgle Administration', path: '/logs?category=housing&type=keys' },
+			{ label: 'Møbler', path: '/logs?category=housing&type=furniture' },
+		],
+	},
+	{
+		label: 'Mad & Crafting',
+		children: [
+			{ label: 'Nye Opskrifter', path: '/logs?category=food&type=new_recipe' },
+			{ label: 'Ændr Opskrift', path: '/logs?category=food&type=change_recipe' },
+			{ label: 'Slet Opskrift', path: '/logs?category=food&type=delete_recipe' },
+			{ label: 'Menu Billede Ændring', path: '/logs?category=food&type=menu_image' },
+			{ label: 'Færdige Produkter', path: '/logs?category=food&type=finished_products' },
 			{ label: 'Skillcheck AC', path: '/logs?category=crafting&type=skillcheck_ac' },
-			{ label: 'Signs Logs', path: '/logs?category=crafting&type=signs' },
+			{ label: 'Skilt Logs', path: '/logs?category=crafting&type=signs' },
 			{ label: 'OX Crafting', path: '/logs?category=crafting&type=ox_crafting' },
+		],
+	},
+	{
+		label: 'Kommunikation',
+		children: [
+			{ label: 'Telefonopkald', path: '/logs?category=comms&type=phone_calls' },
+			{ label: 'SMS', path: '/logs?category=comms&type=sms' },
+			{ label: 'Darkchat', path: '/logs?category=comms&type=darkchat' },
+			{ label: 'Tjenester', path: '/logs?category=comms&type=services' },
+			{ label: 'Odessa Nyheder', path: '/logs?category=comms&type=odessa_news' },
+			{ label: 'Mail', path: '/logs?category=comms&type=mail' },
+			{ label: 'DBA', path: '/logs?category=comms&type=dba' },
+			{ label: 'Sociale Medier', path: '/logs?category=social&type=tiktok,twitter,instagram' },
+			{ label: 'Medie Billeder', path: '/logs?category=social&type=twitter_images,instagram_images' },
+			{ label: 'Medie Galleri', path: '/logs?category=social&type=media_gallery' },
+		],
+	},
+	{
+		label: 'Retshåndhævelse',
+		children: [
+			{ label: 'Fængsel', path: '/logs?category=police&type=prison' },
+			{ label: 'Fængsels Undvigelse', path: '/logs?category=police&type=prison_escape' },
+			{ label: 'Bøder', path: '/logs?category=police&type=fines' },
+			{ label: 'Samfundstjeneste', path: '/logs?category=police&type=community_service' },
+			{ label: 'MDT Info', path: '/logs?category=police&type=mdt_info' },
+			{ label: 'QB Bans', path: '/logs?category=admin&type=qb_bans' },
+			{ label: 'Auto Bank Bans', path: '/logs?category=admin&type=auto_bank_bans' },
 		],
 	},
 ];
@@ -211,9 +171,16 @@ const useActiveState = () => {
 				const itemCategory = itemParams.get('category') || '';
 				const itemType = itemParams.get('type') || '';
 
-				if (itemCategory === activeCategory && itemType === activeType) {
-					activeSectionIndex = sIndex;
-					activeItemIndex = iIndex;
+				if (itemCategory === activeCategory) {
+					const itemTypes = itemType.split(',');
+					const activeTypes = activeType.split(',');
+
+					const hasMatchingType = activeTypes.some((activeTypeItem) => itemTypes.includes(activeTypeItem));
+
+					if (hasMatchingType) {
+						activeSectionIndex = sIndex;
+						activeItemIndex = iIndex;
+					}
 				}
 			});
 		}

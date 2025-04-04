@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { Box, Text, Group, Stack, Badge, Paper, ActionIcon, Tooltip, Loader, Collapse } from '@mantine/core';
+import { Box, Text, Group, Badge, Paper, ActionIcon, Tooltip, Loader, Collapse } from '@mantine/core';
 import { Pencil, Pin, Clock } from 'lucide-react';
 import { Rule } from '../../lib/RuleApiService';
 

@@ -4,7 +4,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { House, LogOut, List, Book, Calendar, User, ChevronDown, ShieldUser, Wrench, Menu as MenuIcon } from 'lucide-react';
 
 export default function Header() {
-	const { isAuthorized, isLoading, signOut, permissionLevel, user } = useAuth();
+	const { isAuthorized, isLoading, signOut, permissionLevel } = useAuth();
 	const navigate = useNavigate();
 
 	const isAdmin = permissionLevel === 'admin';
